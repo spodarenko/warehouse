@@ -192,7 +192,7 @@ function saveMoves(){try{const m={};D.forEach((r,i)=>{if(changed(r,i))m[i]=[r[0]
 // desktop: changes stay pending until "Застосувати" / Enter; phone: applied at once
 let S=D.map(r=>[r[0],r[3]]);
 const dirtyN=()=>D.filter((r,i)=>r[0]!==S[i][0]||r[3]!==S[i][1]).length;
-const applyMoves=()=>{saveMoves();S=D.map(r=>[r[0],r[3]]);render()};
+const applyMoves=()=>{saveMoves();S=D.map(r=>[r[0],r[3]]);pick.clear();sel=0;cur=-1;render()};
 const commit=()=>{if(matchMedia("(max-width:600px)").matches)applyMoves()};
 const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]];commit()};
 const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t);
