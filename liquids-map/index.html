@@ -121,6 +121,13 @@ body.dragging{cursor:grabbing;user-select:none}
   .stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
   .rack{grid-template-columns:repeat(3,300px);border:1px solid var(--line)}
   .acts{width:100%}
+  /* full-screen map with search on top */
+  body.full{overflow:hidden}
+  body.full .work{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);border:0}
+  body.full .work .box{margin:8px 12px;flex:none}
+  body.full .work .tabs button{padding:8px 8px}
+  body.full .work .prompt{padding:10px 14px}
+  body.full .vp{flex:1;height:auto}
   .links{grid-template-columns:repeat(2,minmax(0,1fr))}
   .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
   .links div:nth-child(2n){border-right:0}
@@ -256,7 +263,13 @@ function focusLit(){const ps=[...new Set([...(pick.size?pick:D.filter(r=>match(r
 const center=()=>[vp.clientWidth/2,vp.clientHeight/2];
 $("zIn").onclick=()=>zoomAt(z*1.25,...center(),true);
 $("zOut").onclick=()=>zoomAt(z/1.25,...center(),true);
-$("zFit").onclick=()=>fitAll(true);
+// phone: "Весь стелаж" opens the map full screen, search moves along with it
+const box=document.querySelector(".box"),boxHome=box.parentNode,work=$("map");let full=false;
+function setFull(on){full=on;document.body.classList.toggle("full",on);
+  if(on)work.prepend(box);else boxHome.appendChild(box);
+  $("zFit").textContent=on?"✕ Згорнути":"⤢ Весь стелаж";requestAnimationFrame(()=>fitAll())}
+$("zFit").onclick=()=>phone.matches?setFull(!full):fitAll(true);
+phone.addEventListener("change",()=>{if(!phone.matches&&full)setFull(false)});
 vp.addEventListener("wheel",e=>{if(!phone.matches)return;e.preventDefault();const r=vp.getBoundingClientRect();
   zoomAt(z*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)),e.clientX-r.left,e.clientY-r.top)},{passive:false});
 /* ---------- drag a liquid: move to a place or swap with another liquid ---------- */
@@ -304,7 +317,7 @@ vp.addEventListener("click",e=>{if(moved>5){e.stopPropagation();e.preventDefault
 window.addEventListener("resize",()=>fitAll());
 
 /* ---------- search & keys ---------- */
-q.addEventListener("input",()=>{sel=0;cur=-1;render(true)});
+q.addEventListener("input",()=>{sel=0;cur=-1;render(true);if(full)focusLit()});
 q.addEventListener("keydown",e=>{const n=list.querySelectorAll("li:not(.m)").length;
   if(e.key==="Enter"&&cur<0){e.preventDefault();focusLit();return}
   if(!n)return;
@@ -314,6 +327,7 @@ $("clear").onclick=()=>{if(dirtyN()){applyMoves();return}pick.clear();q.value=""
 document.addEventListener("keydown",e=>{const typing=document.activeElement===q;
   if(e.key==="/"&&!typing){e.preventDefault();q.focus();return}
   if(e.key==="Enter"&&dirtyN()&&!(typing&&cur>=0)){e.preventDefault();applyMoves();return}
+  if(e.key==="Escape"&&full&&!pick.size&&!q.value){setFull(false);return}
   if(e.key==="Escape"){if(pick.size){pick.clear();cur=-1}else{q.value="";sel=0}render();return}
   if(typing)return;
 });
