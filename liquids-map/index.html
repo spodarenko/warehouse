@@ -151,7 +151,7 @@ body.dragging{cursor:grabbing;user-select:none}
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь стелаж</button></div>
     </div>
     <div class="vp" id="vp"><div class="stage" id="stage">
-      <div class="axis" style="left:0;top:-30px;width:900px;display:grid;grid-template-columns:repeat(3,1fr)"><span>СЕКЦІЯ A</span><span>СЕКЦІЯ B</span><span>СЕКЦІЯ C</span></div>
+      <div class="axis" style="left:0;top:-30px;width:900px;grid-template-columns:repeat(3,1fr)"><span>СЕКЦІЯ A</span><span>СЕКЦІЯ B</span><span>СЕКЦІЯ C</span></div>
       <div class="rack" id="rack"></div>
     </div></div>
   </section>
@@ -187,7 +187,12 @@ const O=D.map(r=>r[0]),MK="liquid-moves";
 try{const m=JSON.parse(localStorage.getItem(MK)||"{}");for(const i in m)if(D[i]){const v=[].concat(m[i]);D[i][0]=v[0];if(v.length>1)D[i][3]=v[1]}}catch(e){}
 const changed=(r,i)=>r[0]!==O[i]||r[3]!==i;
 function saveMoves(){try{const m={};D.forEach((r,i)=>{if(changed(r,i))m[i]=[r[0],r[3]]});localStorage.setItem(MK,JSON.stringify(m))}catch(e){}}
-const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]];saveMoves()};
+// desktop: changes stay pending until "Застосувати" / Enter; phone: applied at once
+let S=D.map(r=>[r[0],r[3]]);
+const dirtyN=()=>D.filter((r,i)=>r[0]!==S[i][0]||r[3]!==S[i][1]).length;
+const applyMoves=()=>{saveMoves();S=D.map(r=>[r[0],r[3]]);render()};
+const commit=()=>{if(matchMedia("(max-width:600px)").matches)applyMoves()};
+const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]];commit()};
 const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t);
 const q=$("q"),rack=$("rack"),list=$("list"),vp=$("vp"),stage=$("stage");
 let sel=0,pick=new Set(),cur=-1;
@@ -218,6 +223,7 @@ function render(pulse){
   $("ptitle").textContent=sel&&!pick.size?"Місце "+loc(sel)+" ("+pad(sel)+")":(pick.size?"Вибрано "+pick.size:(t?"Збіги":"Усі рідини"));
   $("psub").textContent=rows.length+" поз."+(t&&hits.length>1&&!pick.size?" · клікни, щоб вибрати":"");
   $("lPick").textContent="["+pick.size+"]";
+  const dn=dirtyN();$("clear").textContent=dn?"✓ Застосувати ["+dn+"]":"✕ Очистити";
   const pr=[...pick];$("swap").hidden=pr.length!==2;
   if(pr.length===2)$("swap").textContent="⇄ Поміняти: "+pr[0][1]+" ("+loc(pr[0][0])+") ↔ "+pr[1][1]+" ("+loc(pr[1][0])+")";
   const moved=D.filter(changed).length;$("undo").hidden=!moved;$("undo").textContent="↺ Повернути переміщення ["+moved+"]";
@@ -252,7 +258,7 @@ $("zFit").onclick=()=>fitAll(true);
 vp.addEventListener("wheel",e=>{if(!phone.matches)return;e.preventDefault();const r=vp.getBoundingClientRect();
   zoomAt(z*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)),e.clientX-r.left,e.clientY-r.top)},{passive:false});
 /* ---------- drag a liquid: move to a place or swap with another liquid ---------- */
-$("undo").onclick=()=>{D.forEach((r,i)=>{r[0]=O[i];r[3]=i});saveMoves();render()};
+$("undo").onclick=()=>{D.forEach((r,i)=>{r[0]=O[i];r[3]=i});commit();render()};
 $("swap").onclick=()=>{const [a,b]=[...pick];swapRows(a,b);render(true)};
 let drag=null,suppress=false;
 const hit=e=>document.elementFromPoint(e.clientX,e.clientY);
@@ -276,7 +282,7 @@ const endDrag=e=>{if(!drag)return;const d=drag;drag=null;if(!d.g)return;
   suppress=true;setTimeout(()=>suppress=false,0);if(e.type!=="pointerup")return;
   const w=chipAt(e,d.i),c=cellAt(e),a=D[d.i];
   if(w){swapRows(a,D[+w.dataset.i]);pick=new Set([a,D[+w.dataset.i]]);sel=0;render(true)}
-  else if(c){const p=+c.id.slice(1);if(p!==a[0]){a[0]=p;a[3]=Math.max(...D.map(x=>x[3]))+1;saveMoves();pick=new Set([a]);sel=0;render(true)}}};
+  else if(c){const p=+c.id.slice(1);if(p!==a[0]){a[0]=p;a[3]=Math.max(...D.map(x=>x[3]))+1;commit();pick=new Set([a]);sel=0;render(true)}}};
 window.addEventListener("pointerup",endDrag);window.addEventListener("pointercancel",endDrag);
 document.addEventListener("click",e=>{if(suppress){e.stopPropagation();e.preventDefault()}},true);
 
@@ -302,9 +308,10 @@ q.addEventListener("keydown",e=>{const n=list.querySelectorAll("li:not(.m)").len
   if(!n)return;
   if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();cur=(cur+(e.key==="ArrowDown"?1:n-1))%n;render()}
   if(e.key==="Enter"){e.preventDefault();list.children[cur].click()}});
-$("clear").onclick=()=>{pick.clear();q.value="";sel=0;cur=-1;render();fitAll(true)};
+$("clear").onclick=()=>{if(dirtyN()){applyMoves();return}pick.clear();q.value="";sel=0;cur=-1;render();fitAll(true)};
 document.addEventListener("keydown",e=>{const typing=document.activeElement===q;
   if(e.key==="/"&&!typing){e.preventDefault();q.focus();return}
+  if(e.key==="Enter"&&dirtyN()&&!(typing&&cur>=0)){e.preventDefault();applyMoves();return}
   if(e.key==="Escape"){if(pick.size){pick.clear();cur=-1}else{q.value="";sel=0}render();return}
   if(typing)return;
 });
