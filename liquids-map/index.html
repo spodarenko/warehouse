@@ -35,6 +35,8 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;outline:none}
 .prompt input::placeholder{color:var(--faint)}
 .prompt kbd{font:inherit;font-size:12px;border:1px solid var(--line);padding:0 6px;border-radius:3px}
+.exit{display:none;flex:none;font:inherit;font-size:13px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 12px;cursor:pointer}
+.exit:active{opacity:.8}
 
 /* map: pan/zoom canvas */
 .work{padding:0;background:var(--panel2)}
@@ -131,6 +133,11 @@ body.dragging{cursor:grabbing;user-select:none}
   body.full .work .tabs button{padding:8px 8px}
   body.full .work .prompt{padding:10px 14px}
   body.full .vp{flex:1;height:auto}
+  /* full screen: search box becomes the header, with an exit button */
+  body.full .work .box{order:-1;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;display:flex;flex-direction:column-reverse}
+  body.full .work .tabs{border-bottom:0;border-top:1px solid var(--line)}
+  body.full .exit{display:block}
+  body.full #zFit{display:none}
   .links{grid-template-columns:repeat(2,minmax(0,1fr))}
   .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
   .links div:nth-child(2n){border-right:0}
@@ -152,7 +159,7 @@ body.dragging{cursor:grabbing;user-select:none}
     <p class="lead">Введи назву або номер партії. Клікни по рідині, щоб виділити її і наблизити її місце. Можна вибрати кілька.</p>
     <div class="box">
       <div class="tabs" id="tabs"></div>
-      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 913790, кармін…" autocomplete="off"><kbd>/</kbd></label>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 913790, кармін…" autocomplete="off"><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
     </div>
   </section>
 
@@ -277,6 +284,7 @@ function setFull(on){full=on;document.body.classList.toggle("full",on);
   if(on)work.prepend(box);else boxHome.appendChild(box);
   $("zFit").textContent=on?"✕ Згорнути":"⤢ Весь стелаж";requestAnimationFrame(()=>fitAll())}
 $("zFit").onclick=()=>phone.matches?setFull(!full):fitAll(true);
+$("exitFull").onclick=e=>{e.preventDefault();setFull(false)};
 phone.addEventListener("change",()=>{if(!phone.matches&&full)setFull(false)});
 vp.addEventListener("wheel",e=>{if(!phone.matches)return;e.preventDefault();const r=vp.getBoundingClientRect();
   zoomAt(z*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)),e.clientX-r.left,e.clientY-r.top)},{passive:false});
