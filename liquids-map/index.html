@@ -70,6 +70,7 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .chips i .h{grid-row:span 2;display:flex;align-items:center;padding:0 2px 0 8px;color:var(--faint);cursor:grab;touch-action:none}
 .chips i.lit .h{color:var(--bg)}
 .chips i small{grid-column:2}
+.warn{font-weight:700;font-size:10px;color:#1b1400;background:#f5c04a;border-radius:2px;padding:0 4px;white-space:nowrap}
 .chips i.src{opacity:.25;border-style:dashed}
 .chips i.swap{outline:2px dashed var(--fg);outline-offset:2px;color:var(--fg)}
 .cell.drop{background:var(--panel);box-shadow:inset 0 0 0 2px var(--fg)}
@@ -197,6 +198,14 @@ const D=[[1,"Молоко пряжене","095,4"],[1,"Смородина чор
 [10,"Полуниця-вершки","910357"],[10,"Полуниця","587116,907"],[10,"Жувальна гумка","944101"],[10,"Абрикос","911008"],[10,"Горіх волоський","293,2"],
 [11,"Паприка","C00F3550"],[11,"Екстракт аннато","NC012692A"],[11,"Curcumin / Куркумін","59223"],[11,"Кармін","NC019285A"],[11,"Яблуко натуральне","910918"],[11,"Хлорофіл","05260210"],
 [12,"Fruit Mex Pink 1100 OS","716620"],[12,"Апельсин","587001,694"],[12,"Малина","872274"],[12,"Карамельний колер","3716ZH200423"],[12,"Спіруліна","TRCF012837A"]];
+// verified against 1С nomenclature: [article, 1С name without "Ароматизатор"/"Барвник", mismatch note]
+const NOM={"Молоко пряжене":["6100068","Пряжене молоко 095,4"],"Ваніль-вершки":["8544443393","Ванільно-вершковий 913790 А"],
+"Ваніль":["8544443392","Ваніль 913790 (бісквіт)"],"Ваніль-молоко":["6105321","Ваніль-Молоко (947310)"],"Шоколад":["6099076","Шоколад 913612"],
+"Полуниця-вершки":["7000002643","Полуниця вершки 910357"],"Полуниця":["6102595","Полуниця 587116 (печиво)"],
+"Жувальна гумка":["8544434577","Жувальна гумка (944101)"],"Абрикос":["7000019271","Абрикос 911008"],
+"Паприка":["8544444359","Паприки екстракт 3550"],"Спіруліна":["7000021304","Спіруліна CFO 12837A"],
+"Vanilya / Ваніль":["8544448277","Ванільний 5.87235.901","У 1С — 5.87235.901, на тарі — 587235,012 (замінили)"]};
+D.forEach(r=>{const n=NOM[r[1]];r[4]=n?n[0]:"";r[5]=n&&n[2]||"";if(n)r[1]=n[1]});
 const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),pad=n=>String(n).padStart(2,"0");
 // physical address: section A–C = column, shelf 1–4 = row from top
 const loc=p=>"ABC"[Math.ceil(p/4)-1]+"-"+((p-1)%4+1);
@@ -213,7 +222,8 @@ const dirtyN=()=>D.filter((r,i)=>r[0]!==S[i][0]||r[3]!==S[i][1]).length;
 const applyMoves=()=>{saveMoves();S=D.map(r=>[r[0],r[3]]);pick.clear();sel=0;cur=-1;render()};
 const commit=()=>{if(matchMedia("(max-width:600px)").matches)applyMoves()};
 const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]];commit()};
-const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t);
+const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t)||r[4].includes(t);
+const sub=r=>(r[4]?"арт. "+r[4]+" · ":"")+r[2];
 const q=$("q"),rack=$("rack"),list=$("list"),vp=$("vp"),stage=$("stage");
 let sel=0,pick=new Set(),cur=-1,showAll=false;const LIMIT=8;
 const toggle=r=>{pick.has(r)?pick.delete(r):pick.add(r)};
@@ -238,7 +248,9 @@ function render(pulse){
     box.innerHTML="";c.querySelector(".cnt").textContent=byPlace(p).length+" шт";
     byPlace(p).forEach(r=>{const i=document.createElement("i");i.dataset.i=D.indexOf(r);
       const h=document.createElement("span");h.className="h";h.textContent="⋮⋮";i.append(h,r[1]);
-      const s=document.createElement("small");s.textContent=r[2];i.appendChild(s);if(lit.includes(r))i.className="lit";box.appendChild(i)});}
+      const s=document.createElement("small");s.textContent=sub(r);i.appendChild(s);
+      if(r[5]){const w=document.createElement("b");w.className="warn";w.textContent="≠ 1С";w.title=r[5];s.append(" ",w);i.title=r[5]}
+      if(lit.includes(r))i.className="lit";box.appendChild(i)});}
   const all=sel&&!pick.size?byPlace(sel):[...new Set([...pick,...(t?hits:D)])];
   // idle list shows a few rows; search, selection or "Подивитися всі" show everything
   const short=!t&&!pick.size&&!sel&&!showAll&&all.length>LIMIT,rows=short?all.slice(0,LIMIT):all;
@@ -255,7 +267,7 @@ function render(pulse){
   rows.forEach((r,i)=>{const li=document.createElement("li");li.className=(pick.has(r)?"pk":"")+(i===cur?" cur":"");
     li.innerHTML='<span class="p"></span><span></span><code></code>';
     const ix=D.indexOf(r);
-    li.children[0].textContent=loc(r[0]);li.children[1].textContent=r[1];li.children[2].textContent=r[2]+(r[0]!==O[ix]?" · було "+loc(O[ix]):"");
+    li.children[0].textContent=loc(r[0]);li.children[1].textContent=r[1];li.children[2].textContent=sub(r)+(r[0]!==O[ix]?" · було "+loc(O[ix]):"")+(r[5]?" · ⚠ "+r[5]:"");
     li.onclick=()=>{toggle(r);sel=0;render(true);focusLit()};list.appendChild(li)});
 }
 
