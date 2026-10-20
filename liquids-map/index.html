@@ -145,6 +145,29 @@ body.dragging{cursor:grabbing;user-select:none}
   .list li{padding:9px 6px}
   .bottom{gap:14px;padding:32px 16px;font-size:12px}
 }
+/* tare & data reference (moved from the «Тарування» page) */
+.ref h2{font-size:18px;margin:0 0 6px;text-wrap:balance}
+.ref .hd2{margin-bottom:24px;max-width:70ch}
+.ref .m{color:var(--muted)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
+.ref table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.ref th,.ref td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.ref th{color:var(--muted);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.ref tr:last-child td{border-bottom:0}
+.ref td.n{text-align:right;white-space:nowrap}
+.ref code{color:var(--muted);overflow-wrap:anywhere}
+.ref a{color:var(--fg)}
+.tag{display:inline-block;font-size:11px;line-height:1.5;border:1px solid var(--line);border-radius:3px;padding:0 6px;color:var(--muted);white-space:nowrap}
+.tag.w{color:#1b1400;background:#f5c04a;border-color:#f5c04a}
+.tag.ok{color:#7fc79a;border-color:#7fc79a}
+.src{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.src article{border:1px solid var(--line);border-radius:6px;padding:16px;background:var(--panel);display:grid;gap:6px;align-content:start;min-width:0}
+.src article p{margin:0;font-size:13px;color:var(--muted)}
+.src .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
+.ref pre{margin:0;padding:16px;font:inherit;font-size:12px;line-height:1.6;color:var(--fg)}
+.toc{display:flex;gap:8px 20px;flex-wrap:wrap;font-size:13px;margin-top:16px}
+@media (max-width:600px){.src{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.cell{transition:none}.cell.pulse{animation:none}.stage{transition:none!important}}
 </style>
 </head>
@@ -152,7 +175,7 @@ body.dragging{cursor:grabbing;user-select:none}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav><a href="#map">Мапа</a><button class="btn" id="clear">✕ Очистити</button></nav>
+    <nav><a href="#map">Мапа</a><a href="#tare">Тара</a><a href="#rules">Правила</a><a href="#gaps">Що бракує</a><button class="btn" id="clear">✕ Очистити</button></nav>
   </header>
 
   <section>
@@ -180,6 +203,90 @@ body.dragging{cursor:grabbing;user-select:none}
     <div class="sidehd"><div><h3 id="ptitle">Усі рідини</h3><div class="m" id="psub"></div></div><div class="m">Джерело: рукописний перелік · 16.10.2026 · «?» = прочитано неточно</div></div>
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
+  </section>
+
+  <section class="ref" id="tare">
+    <div class="hd2"><h2>Тара: розмір місця і вага тари</h2><p class="m">«Місце» — одна одиниця, яку несе комірник (мішок, упаковка, каністра). Кількість місць = кількість ÷ розмір місця, мінімум 1. Брутто = нетто + тара. Пошук угорі фільтрує й цю таблицю. Стан на 20.10.2026.</p>
+    <div class="toc"><a href="#tare">Тара</a><a href="#rules">Округлення</a><a href="#norms">Норми</a><a href="#data">Дані</a><a href="#model">Модель</a><a href="#gaps">Чого бракує</a></div></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Матеріал</th><th>Арт. 1С</th><th>Тара</th><th>Нетто, кг</th><th>Тара, кг</th><th>Брутто, кг</th><th>Де лежить</th></tr></thead>
+      <tbody id="packs"></tbody>
+    </table></div>
+  </section>
+
+  <section class="ref" id="rules">
+    <div class="hd2"><h2>Правила округлення видачі</h2><p class="m">П'ять типів правил. Зібрано для Лінії 6 і «Трубочок»; для ліній 3, 4, 5, 8, 9 — ще ні.</p></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Правило</th><th>Що робить</th><th>Лінія 6 (Деліція)</th><th>«Трубочки»</th></tr></thead>
+      <tbody>
+      <tr><td><code>ceil</code> + крок</td><td>вгору до кратного кроку (часто = мішок)</td><td>Крохмаль кукурудзяний 30; картопляний, глюкоза, молоко 25; сіль вуглеамонійна, пропіонат 0,5; В-каротин, сорбат 0,25</td><td>Цукор 50; сироватка, молоко сухе 25; яєчний порошок 1; кокосова стружка, ароматизатор кокос 0,25</td></tr>
+      <tr><td><code>nearest</code> + крок</td><td>до найближчого кратного</td><td>Олія 13,68 (уп.); соки й ароматизатори 0,1; антоціан, гліцерин, сода, сіль 1</td><td>Барвник карамельний Е150С 30 (мінімум одна каністра); етилванілін 0,05; ароматизатор пряжене молоко 0,1</td></tr>
+      <tr><td><code>fixed</code></td><td>завжди одне значення</td><td>Лимонна кислота (желе) 25; Паста Грааль 20</td><td>Олія 150,48 (11 уп.); сіль кухонна 3</td></tr>
+      <tr><td><code>keep</code></td><td>як у 1С, без округлення</td><td>Борошно в/г, меланж, Е 475, АНАТО</td><td>Борошно в/г; жир «Капромілк», жир РВД; Grindox 552, Toco50</td></tr>
+      <tr><td><code>drop</code></td><td>не видаємо, рядок видаляється</td><td>—</td><td>Лецитин соєвий (бригада бере сама), жир Z102 Sania, рисові кульки</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="ref" id="norms">
+    <div class="hd2"><h2>Норми Лінії 6</h2><p class="m">Тісто рахується на заміси (1 зміна 35, 2 зміна 37), желе — на кг ВАЛ. «Трубочки» не перераховуються: кількості беруться як у 1С.</p></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Тісто Деліції, на 1 заміс</th><th>кг</th><th>Желе, на 1 т ВАЛ</th><th>кг</th></tr></thead>
+      <tbody>
+      <tr><td>Борошно в/г</td><td class="n">33</td><td>Сік концентрований</td><td class="n">0,57</td></tr>
+      <tr><td>Меланж</td><td class="n">20</td><td>Ароматизатор</td><td class="n">0,38</td></tr>
+      <tr><td>Крохмаль кукурудзяний</td><td class="n">3</td><td>Антоціан (вишня)</td><td class="n">0,75</td></tr>
+      <tr><td>Олія</td><td class="n">2,76</td><td>АНАТО (апельсин)</td><td class="n">0,04</td></tr>
+      <tr><td>Крохмаль картопляний</td><td class="n">2</td><td>Лимонна кислота</td><td class="n">4,85</td></tr>
+      <tr><td>Глюкоза · Молоко</td><td class="n">1 · 1</td><td></td><td></td></tr>
+      <tr><td>Грааль · Сіль вуглеамонійна</td><td class="n">0,6 · 0,5</td><td></td><td></td></tr>
+      <tr><td>Гліцерин · Сорбіт · Ваніль</td><td class="n">0,36 · 0,3 · 0,25</td><td></td><td></td></tr>
+      <tr><td>Сода · Сіль · Пропіонат · Лимонна к-та</td><td class="n">0,2 · 0,15 · 0,1 · 0,1</td><td></td><td></td></tr>
+      <tr><td>В-каротин · Калій сорбат · Е 475</td><td class="n">0,05 · 0,05 · 0,04</td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="ref" id="data">
+    <div class="hd2"><h2>Які дані в нас є</h2><p class="m">Вивантаження з 1С містять дані підприємства й не публікуються.</p></div>
+    <div class="src">
+      <article><div class="row"><b>Мапа рідин</b><span class="tag ok">ця сторінка</span></div><p>Стелаж «Рідини»: 12 полиць (A–C × 1–4), 51 позиція з партіями, 12 звірено з артикулом 1С.</p></article>
+      <article><div class="row"><b>Мапа складу №2</b><span class="tag ok">сторінка</span></div><p>План підлоги: 18 місць, 29 позицій з тарою і кодом з етикетки. Артикулів 1С ще немає.</p></article>
+      <article><div class="row"><b>Презентація задуму</b><span class="tag ok">сторінка</span></div><p>Що автоматизуємо і навіщо, фази 1–3.</p><a href="../">Відкрити</a></article>
+      <article><div class="row"><b>Довідник номенклатури</b><span class="tag">JSON</span></div><p>793 позиції: артикул → назва, одиниця, група. 382 без групи; одиниці записані по-різному.</p></article>
+      <article><div class="row"><b>Норми і правила ліній</b><span class="tag">JSON</span></div><p>Лінія 6: зміни, бригада, заміси, желе й тісто. «Трубочки»: одна накладна, правила узгоджено 19–20.10, перевірено на вимозі 21204.</p></article>
+      <article><div class="row"><b>«Требование» з 1С (CSV)</b><span class="tag">зразок</span></div><p>Номер, дата, підрозділ, зміна, код, номенклатура, кількість. Після проведення є партії (для FIFO).</p></article>
+      <article><div class="row"><b>Завдання на виробництво</b><span class="tag">зразок</span></div><p>Друкована форма за день, усі лінії: бригада, зміна, підрозділ. Програма бере з нього бригаду за датою.</p></article>
+      <article><div class="row"><b>«Общее задание ПФ»</b><span class="tag w">не розібрано</span></div><p>Усі лінії й продукти, норма на 1 порцію, кг ВАЛ. Підходить, щоб рахувати всі лінії.</p></article>
+    </div>
+  </section>
+
+  <section class="ref" id="model">
+    <div class="hd2"><h2>Чернетка моделі даних для мобільного додатку</h2><p class="m">Ключ матеріалу всюди — артикул 1С. Платформа: PWA + Supabase (пропозиція 19.10).</p></div>
+    <div class="scroll"><pre>Material      артикул · назва · одиниця · група
+  └ Pack      тип (мішок/уп./каністра/шт) · нетто · тара   ← таблиця «Тара» вище
+Location      склад · зона/стелаж · місце · полиця         ← рідини A-1…C-4, склад №2 01…18
+  └ Stock     матеріал × місце · партія · кількість місць
+Batch         партія 1С · дата · код з етикетки            ← проведене «Требование» (FIFO)
+Line          лінія · продукт · бригади · заміси по змінах
+  └ Norm      матеріал · кг на заміс | кг на 1 т ВАЛ · желе/тісто
+  └ Rule      ceil | nearest | fixed | keep | drop · крок · значення
+Requisition   дата · зміна · лінія · бригада · желе/тісто
+  └ Item      матеріал · кількість · місць · партія · використано · повернення</pre></div>
+  </section>
+
+  <section class="ref" id="gaps">
+    <div class="hd2"><h2>Чого бракує</h2></div>
+    <ol class="gaps">
+      <li>Позиції на мапах не мають артикулів 1С: 39 рідин і всі 29 позицій складу №2.</li>
+      <li>Вага тари відома лише для 4 позицій. Потрібна таблиця «артикул → тип тари, нетто, тара».</li>
+      <li>Вагу «шт» не знаємо (гліцерин, сіль, сорбат тощо).</li>
+      <li>Одиниці в довіднику не нормалізовані, у 382 позицій немає групи.</li>
+      <li>Немає кількостей на місцях і партій з датами (для FIFO).</li>
+      <li>Правила є для Лінії 6 і «Трубочок». Для ліній 3, 4, 5, 8, 9 — немає. На «Трубочках» відкриті 9 питань (борошно, цукор, рисові кульки, коди в 1С).</li>
+      <li>Переміщення на мапах зберігаються лише в браузері. Потрібне спільне сховище.</li>
+      <li>Запис «Требований» у 1С працює через автозаповнювач (Лінія 6, «Трубочки»). Додаток має передавати йому вимогу, а не замінювати його.</li>
+    </ol>
   </section>
 
   <section class="links">
@@ -360,6 +467,29 @@ document.addEventListener("keydown",e=>{const typing=document.activeElement===q;
   if(e.key==="Escape"){if(pick.size){pick.clear();cur=-1}else{q.value="";sel=0}render();return}
   if(typing)return;
 });
+
+/* ---------- tare table (snapshot of the shared table, 20.10.2026) ---------- */
+// [name, article, kind, net, tare, location, note]
+const PK=[["Борошно в/г","6096223","мішок",50,null,"№2: 06, 10, 14"],["Меланж яєчний","6096204","уп.",20,null,""],["Крохмаль кукурудзяний","6096208","мішок",30,null,""],
+["Олія соняшникова високоолеїнова","8544435501","уп. = 3 шт × 4,56",13.68,null,""],["Крохмаль картопляний","6096207","мішок",25,null,""],["Глюкоза","6096218","мішок",25,null,""],
+["Молоко сухе знежирене","6096192","мішок",25,null,"№2: 01"],["Емульгатор (Паста Грааль)","8544444571","уп.",10,null,""],["Сіль вуглеамонійна","8544448566","мішок",25,null,""],
+["Сорбіт харчовий (сипучий)","6096199","мішок",25,null,"","рідкий — ?"],["Гліцерин, сіль кухонна, пропіонат, В-каротин, калій сорбат, Е 475","","шт",null,null,"","вага шт невідома"],
+["Жир пальмовий Sania","7000000609","уп.",20,null,"№2: 02, 07","артикул ?"],["Сироватка молочна","","мішок",25,null,"№2: 03"],["Карамельний колер ZHCNTO","","каністра",30,1.5,"№2: 04"],
+["FruitMax Pink 1100 OS","","уп.",15,null,"№2: 04"],["Барвник β-каротин","","уп.",9,0.36,"№2: 04"],["Арахіс смажений (подрібнений)","","уп.",10,null,"№2: 08, 13"],
+["Diamant Біле","","уп.",20,null,"№2: 09","назва ?"],["Ароматизатор Ваніль 5.87235","8544448277","каністра",12,null,"№2: 09, рідини B-3"],["Борошно кукурудзяне","","мішок",45,null,"№2: 11"],
+["Adlec","","бочка",200,null,"№2: 12","назва ?"],["Сік концентрований Апельсин","8544434003","каністра",25,null,"№2: 12","артикул ?"],["Замінник какао-масла","","уп.",20,null,"№2: 15"],
+["Ароматизатор Шоколад","","каністра",10,0.46,"№2: 16"],["Ароматизатори (мілкшейк, ваніль, ван.-вершк., полуниця, апельсин, масло)","","каністра",10,null,"№2: 16"],
+["Ароматизатор Манго","","каністра",25,null,"№2: 16"],["Кунжут","","мішок",25,null,"№2: 17"],["Льон","","мішок",25,null,"№2: 18"],["Сода харчова","8544448569","мішок",25,0.2,""],
+["Цукор білий кристалічний","6096200","мішок",50,null,"","«Трубочки»"],["Барвник карамельний E150C","6096699","каністра",30,null,"","«Трубочки»"]];
+const f3=v=>v==null?"":String(Math.round(v*1000)/1000).replace(".",",");
+PK.forEach(p=>{const tr=document.createElement("tr");
+  [p[0],p[1],p[2],p[3]==null?"?":f3(p[3]),f3(p[4]),p[3]!=null&&p[4]!=null?f3(p[3]+p[4]):"",p[5]].forEach((v,i)=>{const td=document.createElement("td");
+    if(i===1&&v){const c=document.createElement("code");c.textContent=v;td.appendChild(c)}else td.textContent=v;
+    if(i>=3&&i<=5)td.className="n";tr.appendChild(td)});
+  if(p[6]){const t=document.createElement("span");t.className="tag w";t.textContent=p[6];tr.firstChild.append(" ",t)}
+  $("packs").appendChild(tr)});
+const packRows=[...$("packs").children];
+q.addEventListener("input",()=>{const t=norm(q.value);packRows.forEach(r=>r.hidden=!!t&&!norm(r.textContent).includes(t))});
 
 render();fitAll();
 </script>
