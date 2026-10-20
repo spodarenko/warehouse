@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Склад Delicia — Storybook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: framed mono column from the warehouse maps; each section = component, each card = one state.
+   Colors: primitive palette -> semantic tokens (light / dark). Source of truth: config/ui-tokens.json */
+:root{
+  --ink-950:#0e0c0c;--ink-900:#131010;--ink-850:#1b1818;--ink-800:#2f2b2b;--ink-600:#4a4545;--ink-500:#6b6565;--ink-400:#8f8a8a;--ink-100:#f1ecec;
+  --paper-0:#ffffff;--paper-50:#f7f5f4;--paper-100:#efebea;--paper-200:#ddd6d5;
+  --green-400:#7fc79a;--green-700:#1f7a45;--green-950:#14261b;--green-50:#e3f3e8;
+  --amber-400:#f5c04a;--amber-700:#875800;--amber-950:#2c220b;--amber-50:#fbf0d4;
+  --red-400:#ff8a7a;--red-700:#b02a1f;--red-950:#2e1513;--red-50:#fbe4e1;
+  /* semantic — light */
+  --bg:var(--paper-50);--panel:var(--paper-0);--panel2:var(--paper-100);--line:var(--paper-200);
+  --fg:var(--ink-900);--muted:var(--ink-500);--faint:var(--ink-400);--action:var(--ink-900);--on-action:var(--paper-0);
+  --ok:var(--green-700);--ok-bg:var(--green-50);--warn:var(--amber-700);--warn-bg:var(--amber-50);--bad:var(--red-700);--bad-bg:var(--red-50);
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;--tap:64px;--nav:76px;--r:6px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:var(--ink-900);--panel:var(--ink-850);--panel2:var(--ink-950);--line:var(--ink-800);
+  --fg:var(--ink-100);--muted:var(--ink-400);--faint:var(--ink-600);--action:var(--ink-100);--on-action:var(--ink-900);
+  --ok:var(--green-400);--ok-bg:var(--green-950);--warn:var(--amber-400);--warn-bg:var(--amber-950);--bad:var(--red-400);--bad-bg:var(--red-950);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:var(--ink-900);--panel:var(--ink-850);--panel2:var(--ink-950);--line:var(--ink-800);
+  --fg:var(--ink-100);--muted:var(--ink-400);--faint:var(--ink-600);--action:var(--ink-100);--on-action:var(--ink-900);
+  --ok:var(--green-400);--ok-bg:var(--green-950);--warn:var(--amber-400);--warn-bg:var(--amber-950);--bad:var(--red-400);--bad-bg:var(--red-950);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.frame{max-width:1180px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+header,section{border-bottom:1px solid var(--line);padding:48px clamp(16px,5vw,64px)}
+header.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.logo{font-weight:700;font-size:24px;letter-spacing:-.06em;color:var(--muted)}
+.seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{font:inherit;font-size:12px;background:none;color:var(--muted);border:0;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--action);color:var(--on-action)}
+h1{font-size:clamp(24px,4vw,36px);letter-spacing:-.02em;line-height:1.2;margin:0 0 10px;text-wrap:balance}
+h2{font-size:18px;margin:0 0 4px;text-wrap:balance}
+.m,.lead{color:var(--muted)} .lead{max-width:66ch;margin:0}
+.hd{margin-bottom:20px;max-width:72ch}
+.toc{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:20px;font-size:13px}
+a{color:var(--fg)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+/* state grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.cell{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:16px;display:grid;gap:12px;align-content:start;min-width:0}
+.lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+/* buttons */
+.btn{font:700 18px var(--mono);min-height:var(--tap);width:100%;border-radius:var(--r);border:1px solid var(--action);background:var(--action);color:var(--on-action);cursor:pointer;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:var(--on-action)}
+.btn.is-hover{background:transparent;color:var(--fg);border-color:var(--fg)}
+.btn.is-press{opacity:.75;transform:scale(.98)}
+.btn.is-focus{outline:2px solid var(--fg);outline-offset:3px}
+.btn:disabled{background:var(--panel2);color:var(--faint);border-color:var(--line);cursor:not-allowed}
+@media (hover:hover){.btn:not(:disabled):hover{background:transparent;color:var(--fg);border-color:var(--fg)}}
+.spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(1turn)}}
+/* nav */
+.nav{display:grid;grid-template-columns:1fr 1.25fr 1fr;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+.nav button{height:var(--nav);border:0;background:none;color:var(--muted);font:700 12px var(--mono);letter-spacing:.06em;cursor:pointer;display:grid;place-items:center;align-content:center;gap:2px}
+.nav button.on{color:var(--fg);box-shadow:inset 0 3px 0 var(--fg)}
+.nav .scan{background:var(--action);color:var(--on-action);font-size:14px}
+.nav .badge{font-size:10px;background:var(--warn);color:var(--on-action);border-radius:99px;padding:0 6px}
+/* scan */
+.scanbtn{width:96px;height:96px;border-radius:50%;margin:0 auto;display:grid;place-items:center;font:700 13px var(--mono);border:2px solid var(--action);background:var(--action);color:var(--on-action);position:relative}
+.scanbtn.busy{background:var(--panel);color:var(--fg)}
+.scanbtn.busy::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--fg);opacity:.4;animation:p 1.4s ease-out infinite}
+@keyframes p{from{transform:scale(.9);opacity:.6}to{transform:scale(1.15);opacity:0}}
+.scanbtn.ok{background:var(--ok);border-color:var(--ok)} .scanbtn.bad{background:var(--bad);border-color:var(--bad)}
+.cap{text-align:center;font-size:13px;color:var(--muted)}
+/* status */
+.status{border-radius:var(--r);padding:14px;display:grid;gap:4px;font-weight:700;font-size:20px;border:1px solid}
+.status small{font-weight:400;font-size:13px;color:var(--fg)}
+.s-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+.s-warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.s-bad{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
+.s-info{background:var(--panel2);color:var(--fg);border-color:var(--line)}
+/* tags */
+.tags{display:flex;gap:8px;flex-wrap:wrap}
+.tag{font-size:12px;line-height:1.6;border:1px solid var(--line);border-radius:3px;padding:0 8px;color:var(--muted);white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:var(--ok)} .tag.warn{color:var(--on-action);background:var(--warn);border-color:var(--warn)} .tag.bad{color:var(--bad);border-color:var(--bad)} .tag.solid{background:var(--action);color:var(--on-action);border-color:var(--action)}
+/* list row */
+.row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);align-items:center}
+.row .nm{min-width:0;font-weight:500}
+.row .sub{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.row .q{font-weight:700;font-variant-numeric:tabular-nums}
+.row.done{opacity:.6} .row.done .nm{text-decoration:line-through}
+.row.err{border-color:var(--bad)} .row.part{border-left:4px solid var(--warn)} .row.sel{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg)}
+/* search */
+.search{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);padding:0 14px;min-height:var(--tap)}
+.search input{flex:1;min-width:0;border:0;background:none;color:var(--fg);font:inherit;font-size:18px;outline:none}
+.search input::placeholder{color:var(--faint)}
+.search.focus{border-color:var(--fg)}
+.search .mic{border:1px solid var(--line);background:none;color:var(--fg);border-radius:4px;width:44px;height:44px;font:inherit;cursor:pointer}
+/* stepper */
+.step{display:grid;grid-template-columns:var(--tap) 1fr var(--tap);gap:8px;align-items:center;text-align:center}
+.step button{height:var(--tap);border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);color:var(--fg);font:700 28px var(--mono);cursor:pointer}
+.step button:disabled{color:var(--faint);cursor:not-allowed}
+.qty{font:700 40px/1 var(--mono);font-variant-numeric:tabular-nums}
+.loc{font:700 26px var(--mono)}
+/* toast */
+.toast{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--action);color:var(--on-action);border-radius:var(--r);padding:12px 14px;font-weight:500}
+.toast button{font:700 13px var(--mono);background:none;border:1px solid currentColor;color:inherit;border-radius:4px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.timer{height:3px;background:var(--on-action);opacity:.5;width:60%;border-radius:2px}
+/* skeleton / empty */
+.sk{height:14px;border-radius:3px;background:var(--line)} .sk.w6{width:60%} .sk.w8{width:80%} .sk.big{height:40px}
+.empty{text-align:center;color:var(--muted);display:grid;gap:8px;padding:12px 0}
+.empty b{color:var(--fg)}
+/* phone */
+.phones{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
+.phone{background:var(--panel);border:1px solid var(--line);border-radius:22px;height:560px;display:flex;flex-direction:column;overflow:hidden}
+.ptop{padding:14px 16px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.ptop b{display:block;color:var(--fg);font-size:16px}
+.pbody{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;justify-content:flex-end;min-height:0;overflow:hidden}
+.pbody.top{justify-content:flex-start}
+.phone .nav{border:0;border-top:1px solid var(--line);border-radius:0}
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+tr:last-child td{border-bottom:0}
+.sw{display:inline-block;width:18px;height:18px;border-radius:3px;border:1px solid var(--line);vertical-align:middle;margin-right:8px}
+code{color:var(--muted)}
+.ia{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);padding:16px}
+@media (prefers-reduced-motion:reduce){.spin,.scanbtn.busy::after{animation:none}}
+@media (max-width:600px){header,section{padding:32px 0}header.bar{padding-block:12px}}
+</style>
+
+<div class="frame">
+<header class="bar">
+  <div class="logo">delicia</div>
+  <div class="seg" role="group" aria-label="Тема">
+    <button id="t-light" data-t="light" aria-pressed="false">Біла</button>
+    <button id="t-dark" data-t="dark" aria-pressed="false">Темна</button>
+    <button id="t-sys" data-t="" aria-pressed="true">Система</button>
+  </div>
+</header>
+
+<section>
+  <h1>Storybook додатку комірника</h1>
+  <p class="lead">Усі елементи інтерфейсу та їхні стани в стилі мап складу. Керування однією рукою: дії внизу, кнопки від 64 px, статус кольором і словом. Дві теми, кольори прив'язані до токенів. Дані — приклади з Лінії 6.</p>
+  <div class="toc"><a href="#ia">IA</a><a href="#colors">Кольори</a><a href="#buttons">Кнопки</a><a href="#nav">Навігація</a><a href="#scan">Скан</a><a href="#status">Статуси</a><a href="#tags">Мітки</a><a href="#rows">Рядки</a><a href="#search">Пошук</a><a href="#stepper">Лічильник</a><a href="#toast">Скасування</a><a href="#loading">Завантаження</a><a href="#screens">Екрани</a><a href="#versions">Версії</a></div>
+  <p class="m" style="margin:16px 0 0">v0.2 · 19.10.2026 · токени: <code>config/ui-tokens.json</code></p>
+</section>
+
+<section id="ia">
+  <div class="hd"><h2>Інформаційна архітектура</h2><p class="m">Три входи внизу екрана. Будь-яка дія — не далі 2 кроків від головного.</p></div>
+  <div class="ia"><pre class="mermaid">
+flowchart TD
+  HOME["Головний: лінія, зміна, наступна дія"]
+  HOME --> WHERE["ДЕ ЛЕЖИТЬ"]
+  HOME --> SCAN["СКАН"]
+  HOME --> ISSUE["ВИДАЧА"]
+  WHERE --> W1["Пошук: 2-3 літери / голос"] --> W2["Матеріал: місце, партії FIFO"]
+  W2 --> MOVE["Перемістити"]
+  W2 --> INV["Інвентаризація +1/-1"]
+  SCAN --> S1{"Що відскановано?"}
+  S1 -->|тара з вимоги| OK["ВИДАТИ N місць"]
+  S1 -->|не той матеріал| BAD["НЕ ТОЙ МАТЕРІАЛ"]
+  S1 -->|тара з лінії| RET["Повернення: брутто - тара"]
+  S1 -->|місце| W2
+  ISSUE --> I1["Вимоги на сьогодні"] --> I2["Вимога лінії: желе / тісто"]
+  I2 --> OK
+  OK --> BAL["Баланс лінії"]
+  RET --> BAL
+  </pre></div>
+</section>
+
+<section id="colors">
+  <div class="hd"><h2>Кольори: прив'язки</h2><p class="m">Компоненти беруть лише семантичні токени (<code>--ok</code>, <code>--action</code>…). Кожен семантичний токен посилається на колір палітри; тема змінює лише посилання. Нові кольори в компонентах заборонені — спершу токен.</p></div>
+  <div class="scroll"><table id="bind"><thead><tr><th>Токен</th><th>Призначення</th><th>Біла тема</th><th>Темна тема</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="buttons">
+  <div class="hd"><h2>Кнопка</h2><p class="m">Висота 64 px, на всю ширину. Одна головна кнопка на екран.</p></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Головна · звичайна</span><button class="btn">ВИДАТИ 12 МІСЦЬ</button></div>
+    <div class="cell"><span class="lbl">Головна · наведення</span><button class="btn is-hover">ВИДАТИ 12 МІСЦЬ</button></div>
+    <div class="cell"><span class="lbl">Головна · натиснута</span><button class="btn is-press">ВИДАТИ 12 МІСЦЬ</button></div>
+    <div class="cell"><span class="lbl">Головна · фокус</span><button class="btn is-focus">ВИДАТИ 12 МІСЦЬ</button></div>
+    <div class="cell"><span class="lbl">Головна · вимкнена</span><button class="btn" disabled>СПЕРШУ СКАН</button></div>
+    <div class="cell"><span class="lbl">Головна · збереження</span><button class="btn"><span class="spin"></span>ЗБЕРІГАЮ…</button></div>
+    <div class="cell"><span class="lbl">Другорядна</span><button class="btn ghost">ПОКАЗАТИ НА МАПІ</button></div>
+    <div class="cell"><span class="lbl">Другорядна · вимкнена</span><button class="btn ghost" disabled>ПОКАЗАТИ НА МАПІ</button></div>
+    <div class="cell"><span class="lbl">Небезпечна</span><button class="btn danger">СПИСАТИ 2 МІСЦЯ</button></div>
+  </div>
+</section>
+
+<section id="nav">
+  <div class="hd"><h2>Нижня навігація</h2><p class="m">76 px, під великим пальцем. Скан завжди по центру й виділений.</p></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Активна «Де лежить»</span><div class="nav"><button class="on">ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button>ВИДАЧА</button></div></div>
+    <div class="cell"><span class="lbl">Активна «Видача»</span><div class="nav"><button>ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button class="on">ВИДАЧА</button></div></div>
+    <div class="cell"><span class="lbl">Видача з лічильником</span><div class="nav"><button>ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button>ВИДАЧА<span class="badge">3</span></button></div></div>
+  </div>
+</section>
+
+<section id="scan">
+  <div class="hd"><h2>Кнопка скану</h2><p class="m">Чотири стани. Успіх і помилка супроводжуються вібрацією (коротка / подвійна).</p></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Готова</span><div class="scanbtn">СКАН</div><div class="cap">натисни й наведи</div></div>
+    <div class="cell"><span class="lbl">Сканує</span><div class="scanbtn busy">…</div><div class="cap">шукаю штрихкод</div></div>
+    <div class="cell"><span class="lbl">Успіх</span><div class="scanbtn ok">✓</div><div class="cap">Цукор білий · партія 03.10</div></div>
+    <div class="cell"><span class="lbl">Помилка</span><div class="scanbtn bad">✗</div><div class="cap">не той матеріал</div></div>
+  </div>
+</section>
+
+<section id="status">
+  <div class="hd"><h2>Статус</h2><p class="m">Колір і слово разом, щоб читалось і без кольору.</p></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Успіх</span><div class="status s-ok">✓ ВИДАНО<small>Цукор білий кристалічний · 2 міш.</small></div></div>
+    <div class="cell"><span class="lbl">Увага</span><div class="status s-warn">! ЧАСТКОВО<small>Видано 2 з 12 міш. Решта — Склад №2 · 07</small></div></div>
+    <div class="cell"><span class="lbl">Помилка</span><div class="status s-bad">✗ НЕ ТОЙ МАТЕРІАЛ<small>Відскановано: Сік Полуниця. Потрібно: Сік Вишня</small></div></div>
+    <div class="cell"><span class="lbl">Інформація</span><div class="status s-info">FIFO: бери партію 28.09<small>вона найстаріша на цьому місці</small></div></div>
+  </div>
+</section>
+
+<section id="tags">
+  <div class="hd"><h2>Мітки</h2></div>
+  <div class="cell"><div class="tags"><span class="tag">желе</span><span class="tag solid">тісто</span><span class="tag ok">видано</span><span class="tag warn">очікує</span><span class="tag bad">розбіжність</span><span class="tag">мішок 25 кг</span><span class="tag">FIFO 1</span></div></div>
+</section>
+
+<section id="rows">
+  <div class="hd"><h2>Рядок вимоги</h2><p class="m">Увесь рядок — зона натиску. Стан видно з краю, рамки й мітки.</p></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Очікує</span><div class="row"><span class="nm">Борошно в/г</span><span class="q">1 155 кг</span><span class="sub">Склад №2 · 07 · 23 міш.</span></div></div>
+    <div class="cell"><span class="lbl">Частково</span><div class="row part"><span class="nm">Крохмаль кукурудзяний</span><span class="q">60 / 120</span><span class="sub">2 з 4 міш. · Склад №2 · 04</span></div></div>
+    <div class="cell"><span class="lbl">Видано</span><div class="row done"><span class="nm">Сік концентрований Вишня</span><span class="q">3,5 кг</span><span class="sub">✓ 07:42 · Сподаренко А.</span></div></div>
+    <div class="cell"><span class="lbl">Помилка</span><div class="row err"><span class="nm">Барвник АНТОЦІАН</span><span class="q">5 кг</span><span class="sub" style="color:var(--bad)">немає на місці Рідини · B-2</span></div></div>
+    <div class="cell"><span class="lbl">Вибраний</span><div class="row sel"><span class="nm">Лимонна кислота</span><span class="q">25 кг</span><span class="sub">1 міш. · Рідини · A-3</span></div></div>
+  </div>
+</section>
+
+<section id="search">
+  <div class="hd"><h2>Пошук</h2><p class="m">2–3 літери або голос. Клавіатура — лише як запасний шлях.</p></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Порожній</span><label class="search" for="s1">&gt;<input id="s1" placeholder="бор, цук, 6096…"><button class="mic" type="button" aria-label="Голос">🎙</button></label></div>
+    <div class="cell"><span class="lbl">Фокус</span><label class="search focus" for="s2">&gt;<input id="s2" placeholder="бор, цук, 6096…"><button class="mic" type="button" aria-label="Голос">🎙</button></label></div>
+    <div class="cell"><span class="lbl">Знайдено</span><label class="search" for="s3">&gt;<input id="s3" value="бор"><button class="mic" type="button" aria-label="Голос">🎙</button></label><div class="row"><span class="nm">Борошно в/г</span><span class="loc" style="font-size:18px">№2 · 07</span></div></div>
+    <div class="cell"><span class="lbl">Нічого</span><label class="search" for="s4">&gt;<input id="s4" value="ваніл"><button class="mic" type="button" aria-label="Голос">🎙</button></label><div class="empty"><b>Нічого не знайдено</b>Спробуй артикул або відскануй етикетку</div></div>
+  </div>
+</section>
+
+<section id="stepper">
+  <div class="hd"><h2>Лічильник місць</h2></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Звичайний</span><div class="step"><button>−</button><span class="qty">18</span><button>+</button></div></div>
+    <div class="cell"><span class="lbl">Мінімум</span><div class="step"><button disabled>−</button><span class="qty">0</span><button>+</button></div></div>
+    <div class="cell"><span class="lbl">Розбіжність з обліком</span><div class="step"><button>−</button><span class="qty" style="color:var(--warn)">16</span><button>+</button></div><span class="tag warn" style="justify-self:center">в обліку 18</span></div>
+  </div>
+</section>
+
+<section id="toast">
+  <div class="hd"><h2>Скасування</h2><p class="m">Замість «Ви впевнені?». Висить 5 секунд над навігацією.</p></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Активне</span><div class="toast">Видано 2 міш.<button>СКАСУВАТИ</button></div><div class="timer"></div></div>
+    <div class="cell"><span class="lbl">Скасовано</span><div class="toast">Видачу скасовано</div></div>
+  </div>
+</section>
+
+<section id="loading">
+  <div class="hd"><h2>Завантаження, порожньо, без зв'язку</h2></div>
+  <div class="grid">
+    <div class="cell"><span class="lbl">Завантаження</span><div class="sk big"></div><div class="sk w8"></div><div class="sk w6"></div></div>
+    <div class="cell"><span class="lbl">Порожньо</span><div class="empty"><b>Вимог на сьогодні ще немає</b>Вони з'являться після розрахунку на ПК складу</div></div>
+    <div class="cell"><span class="lbl">Без зв'язку</span><div class="status s-warn">! НЕМАЄ ЗВ'ЯЗКУ<small>Дія збережеться, щойно з'явиться інтернет</small></div></div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="hd"><h2>Екрани</h2><p class="m">Компоненти, зібрані в екрани з IA.</p></div>
+  <div class="phones">
+    <div class="phone"><div class="ptop"><b>Лінія №6 (Деліція)</b>2 зміна · 37 замісів</div>
+      <div class="pbody"><span class="lbl">наступне</span><div style="font-size:18px;font-weight:700">Борошно в/г</div><div class="loc">Склад №2 · 07</div><button class="btn">ВИДАТИ 23 МІШ.</button></div>
+      <div class="nav"><button>ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button class="on">ВИДАЧА</button></div></div>
+
+    <div class="phone"><div class="ptop"><b>Вимога · тісто</b>Лінія №6 · 19.10.2026</div>
+      <div class="pbody"><div class="status s-ok">✓ ВИДАНО<small>Цукор білий · партія 03.10</small></div><div class="qty">2 / 12 міш.</div><div class="toast">Видано 2 міш.<button>СКАСУВАТИ</button></div></div>
+      <div class="nav"><button>ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button class="on">ВИДАЧА</button></div></div>
+
+    <div class="phone"><div class="ptop"><b>Вимога · желе</b>Лінія №6 · 19.10.2026</div>
+      <div class="pbody"><div class="status s-bad">✗ НЕ ТОЙ МАТЕРІАЛ<small>Відскановано: Сік Полуниця. Потрібно: Сік Вишня</small></div><div class="loc">Рідини · B-2</div><button class="btn ghost">ПОКАЗАТИ НА МАПІ</button></div>
+      <div class="nav"><button>ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button class="on">ВИДАЧА</button></div></div>
+
+    <div class="phone"><div class="ptop"><b>Лінія №6 (Деліція) желе</b>4 рядки · видано 1</div>
+      <div class="pbody top"><div class="row done"><span class="nm">Сік конц. Вишня</span><span class="q">3,5 кг</span></div><div class="row"><span class="nm">Барвник АНТОЦІАН</span><span class="q">5 кг</span></div><div class="row"><span class="nm">Ароматизатор Вишня</span><span class="q">2,5 кг</span></div><div class="row"><span class="nm">Лимонна кислота</span><span class="q">25 кг</span><span class="sub">1 міш. · мішок 25 кг</span></div></div>
+      <div class="nav"><button>ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button class="on">ВИДАЧА<span class="badge">3</span></button></div></div>
+
+    <div class="phone"><div class="ptop"><b>Де лежить</b>пошук</div>
+      <div class="pbody top"><label class="search focus" for="s5">&gt;<input id="s5" value="крох"><button class="mic" type="button" aria-label="Голос">🎙</button></label><div class="row"><span class="nm">Крохмаль кукурудзяний</span><span class="q">№2 · 04</span><span class="sub">мішок 30 кг · FIFO: 28.09</span></div><div class="row"><span class="nm">Крохмаль картопляний</span><span class="q">№2 · 05</span><span class="sub">мішок 25 кг</span></div></div>
+      <div class="nav"><button class="on">ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button>ВИДАЧА</button></div></div>
+
+    <div class="phone"><div class="ptop"><b>Повернення з лінії №6</b>Цукор білий кристалічний</div>
+      <div class="pbody"><div class="row"><span class="nm">Брутто з ваги</span><span class="q">18,4 кг</span></div><div class="row"><span class="nm">Тара (мішок)</span><span class="q">−0,2 кг</span></div><div class="status s-ok">Нетто 18,2 кг<small>піде в залишок на лінії</small></div><button class="btn">ПОВЕРНУТИ</button></div>
+      <div class="nav"><button>ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button>ВИДАЧА</button></div></div>
+
+    <div class="phone"><div class="ptop"><b>Склад №2 · 07</b>Інвентаризація</div>
+      <div class="pbody"><span class="lbl" style="text-align:center">Борошно в/г · мішок 50 кг</span><div class="step"><button>−</button><span class="qty" style="color:var(--warn)">16</span><button>+</button></div><span class="tag warn" style="align-self:center">в обліку 18</span><button class="btn">ЗБЕРЕГТИ</button></div>
+      <div class="nav"><button class="on">ДЕ<br>ЛЕЖИТЬ</button><button class="scan">◉ СКАН</button><button>ВИДАЧА</button></div></div>
+  </div>
+</section>
+
+<section id="versions">
+  <div class="hd"><h2>Версії</h2><p class="m">Повний журнал — <code>docs/CHANGELOG.md</code>.</p></div>
+  <div class="scroll"><table><thead><tr><th>Версія</th><th>Дата</th><th>Що змінилось</th></tr></thead><tbody>
+    <tr><td>v0.2</td><td>19.10.2026</td><td>Стиль мап складу (моно, рамка). Біла й темна теми. Палітра → семантичні токени. Усі компоненти зі станами, 7 екранів.</td></tr>
+    <tr><td>v0.1</td><td>19.10.2026</td><td>Перша чернетка: IA, 6 екранів.</td></tr>
+  </tbody></table></div>
+</section>
+</div>
+
+<script>
+// binding table: semantic token -> palette primitive per theme (mirrors config/ui-tokens.json)
+const BIND=[
+ ["bg","фон сторінки","paper-50","ink-900"],["panel","картка, телефон","paper-0","ink-850"],["panel2","поле, рядок","paper-100","ink-950"],
+ ["line","рамки, роздільники","paper-200","ink-800"],["fg","основний текст","ink-900","ink-100"],["muted","підписи","ink-500","ink-400"],
+ ["faint","підказки, вимкнене","ink-400","ink-600"],["action","головна кнопка, скан","ink-900","ink-100"],["on-action","текст на кнопці","paper-0","ink-900"],
+ ["ok","видано, успіх","green-700","green-400"],["ok-bg","фон успіху","green-50","green-950"],["warn","частково, очікує","amber-700","amber-400"],
+ ["warn-bg","фон уваги","amber-50","amber-950"],["bad","помилка, розбіжність","red-700","red-400"],["bad-bg","фон помилки","red-50","red-950"]];
+const cs=getComputedStyle(document.documentElement),tb=document.querySelector("#bind tbody");
+const sw=p=>`<span class="sw" style="background:var(--${p})"></span>${p} <code>${cs.getPropertyValue("--"+p).trim()}</code>`;
+tb.innerHTML=BIND.map(([t,u,l,d])=>`<tr><td><span class="sw" style="background:var(--${t})"></span>--${t}</td><td>${u}</td><td>${sw(l)}</td><td>${sw(d)}</td></tr>`).join("");
+// theme switch
+const root=document.documentElement,btns=[...document.querySelectorAll(".seg button")];
+function setTheme(t){if(t)root.dataset.theme=t;else delete root.dataset.theme;btns.forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.t===t)));try{localStorage.setItem("theme",t)}catch(e){}}
+btns.forEach(b=>b.onclick=()=>setTheme(b.dataset.t));
+let saved="";try{saved=localStorage.getItem("theme")||""}catch(e){}
+setTheme(saved);
+</script>
+
+<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true,theme:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"default"});</script>
+</html>

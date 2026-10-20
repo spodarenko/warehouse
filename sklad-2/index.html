@@ -1,0 +1,356 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Мапа складу №2</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: framed column with hairline borders (opencode-like); rack on a pan/zoom canvas; list section; link-grid footer.
+   Deliberately single dark look. */
+:root{--bg:#131010;--panel:#1b1818;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#8f8a8a;--faint:#4a4545;--line:#2f2b2b;
+--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+.frame{max-width:1080px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+section,header{border-bottom:1px solid var(--line);padding:64px clamp(16px,7.5vw,80px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:20px;min-height:80px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1}
+.logo span{color:var(--muted)}
+nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}.hr{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none}nav a:hover,nav a.on{color:var(--fg)}nav a.on{border-bottom:1px solid var(--fg)}
+.btn{font:inherit;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
+@media (hover:hover){.btn:hover{background:transparent;color:var(--fg)}}
+.btn:active{opacity:.8}
+button:focus-visible,.cell:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin:0 0 12px;text-wrap:balance}
+.lead{color:var(--muted);max-width:62ch;margin:0 0 28px;line-height:2}
+.box{border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);padding:0 12px}
+.tabs button{font:inherit;background:none;border:0;color:var(--muted);padding:12px 10px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on,.tabs button:hover{color:var(--fg);border-bottom-color:var(--fg)}
+.prompt{display:flex;align-items:center;gap:12px;padding:16px 22px;color:var(--muted)}
+.prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;outline:none}
+.prompt input::placeholder{color:var(--faint)}
+.prompt kbd{font:inherit;font-size:12px;border:1px solid var(--line);padding:0 6px;border-radius:3px}
+.exit{display:none;flex:none;font:inherit;font-size:13px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 12px;cursor:pointer}
+.exit:active{opacity:.8}
+
+/* map: pan/zoom canvas */
+.work{padding:0;background:var(--panel2)}
+.cap{color:var(--muted);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 24px;border-bottom:1px solid var(--line)}
+.zoom{display:flex;align-items:center;border:1px solid var(--line);border-radius:4px}
+.zoom button{font:inherit;background:none;color:var(--fg);border:0;border-right:1px solid var(--line);min-width:36px;height:32px;cursor:pointer;padding:0 10px}
+.zoom button:last-child{border-right:0}
+.zoom button:hover{background:var(--panel)}
+.zoom output{min-width:56px;text-align:center;border-right:1px solid var(--line);line-height:32px;font-variant-numeric:tabular-nums}
+/* desktop: plain full-width rack; pan/zoom only on phone (see media query) */
+.zoom,.axis{display:none}
+.rack{display:grid;grid-template-columns:repeat(2,minmax(0,.8fr)) repeat(2,minmax(0,1fr)) minmax(0,1.2fr);grid-auto-rows:minmax(150px,auto);gap:10px;padding:16px;background:var(--panel2)}
+.aisle{grid-column:3/5;grid-row:2/5;border:1px dashed var(--line);border-radius:4px;display:grid;place-items:center;color:var(--faint);font-size:12px;letter-spacing:.08em}
+.cell .zl{font-size:11px;color:var(--muted)}.cell a{color:var(--fg)}
+.cell{color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:20px;cursor:pointer;display:grid;grid-template-rows:auto auto 1fr;gap:10px;transition:opacity .2s,background .2s}
+.cell:hover{background:var(--panel)}
+.cell .hd{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.cell .hd b{color:var(--fg);font-size:18px}
+.cell .loc{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:-8px}
+.cell.dim{opacity:.3}
+.cell.on{background:var(--panel);box-shadow:inset 0 0 0 1px var(--fg)}
+.cell.sel{outline:1px dashed var(--fg);outline-offset:-8px}
+.cell.pulse{animation:pulse 1.2s ease-out 1}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(241,236,236,.5)}100%{box-shadow:0 0 0 14px rgba(241,236,236,0)}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-content:start}
+.chips i{font-style:normal;font-size:13px;line-height:1.4;border:1px solid var(--line);border-radius:3px;padding:4px 10px;color:var(--muted);background:var(--panel2);cursor:pointer;display:grid}
+.chips i small{font-size:11px;opacity:.7}
+.chips i:hover{color:var(--fg);border-color:var(--muted)}
+.chips i.lit{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.chips i{grid-template-columns:auto minmax(0,1fr);column-gap:8px;padding-left:0}
+.chips i .h{grid-row:span 2;display:flex;align-items:center;padding:0 2px 0 8px;color:var(--faint);cursor:grab;touch-action:none}
+.chips i.lit .h{color:var(--bg)}
+.chips i small{grid-column:2}
+.warn{font-weight:700;font-size:10px;color:#1b1400;background:#f5c04a;border-radius:2px;padding:0 4px;white-space:nowrap}
+.chips i.src{opacity:.25;border-style:dashed}
+.chips i.swap{outline:2px dashed var(--fg);outline-offset:2px;color:var(--fg)}
+.cell.drop{background:var(--panel);box-shadow:inset 0 0 0 2px var(--fg)}
+.ghost{position:fixed;z-index:10;pointer-events:none;transform:translate(14px,14px);background:var(--fg);color:var(--bg);padding:6px 12px;border-radius:4px;font-size:13px;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.ghost small{display:block;opacity:.6;font-size:11px}
+body.dragging{cursor:grabbing;user-select:none}
+.ubtn{font:inherit;font-size:12px;background:none;color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:4px 10px;cursor:pointer}
+.ubtn:hover{border-color:var(--fg)}
+#swap{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* list */
+.side{font-size:13px}
+.side h3{margin:0;font-size:14px}
+.side .m{color:var(--muted)}
+.sidehd{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 24px}
+.list li{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:8px;padding:6px;cursor:pointer;border-radius:3px}
+.list li:hover{background:var(--panel)}
+.list li .p{color:var(--muted)}
+.list li code{grid-column:2;color:var(--faint);overflow-wrap:anywhere}
+.list li.pk{background:var(--fg);color:var(--bg)}
+.list li.pk .p,.list li.pk code{color:var(--bg)}
+.list li.cur{outline:1px solid var(--muted)}
+.list li.m{display:block;color:var(--muted)}
+.more{font:inherit;margin-top:24px;background:none;color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:10px 18px;cursor:pointer;transition:border-color .15s,background .15s}
+.more:hover{border-color:var(--fg);background:var(--panel)}
+@media (max-width:600px){.more{width:100%}}
+
+.links{padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.links div{padding:32px 12px;text-align:center;border-right:1px solid var(--line);transition:background .15s}
+.links div:last-child{border-right:0}
+.links div:hover{background:var(--panel)}
+.links div span{color:var(--muted)}
+.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+
+@media (max-width:600px){
+  body{padding-left:0;padding-right:0;font-size:13px}
+  .frame{border:0}
+  section,header{padding:40px 16px}
+  header{padding-block:14px;min-height:0}
+  nav,.hr{gap:14px;font-size:12px}
+  .logo{font-size:20px}
+  h1{font-size:22px}
+  .lead{margin-bottom:16px}
+  .prompt{padding:12px 14px}
+  .prompt kbd,.cap .hint{display:none}
+  .cap{padding:10px 16px}
+  .zoom{display:flex}
+  .axis{display:grid;position:absolute;color:var(--muted);font-size:13px;letter-spacing:.08em}
+  .vp{position:relative;height:62vh;overflow:hidden;touch-action:none;cursor:grab;user-select:none;
+    background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px}
+  .vp.panning{cursor:grabbing}
+  .stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+  .rack{grid-template-columns:repeat(2,200px) repeat(2,240px) 280px;width:max-content}
+  .acts{width:100%}
+  /* full-screen map with search on top */
+  body.full{overflow:hidden}
+  body.full .work{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);border:0}
+  body.full .work .box{margin:8px 12px;flex:none}
+  body.full .work .tabs button{padding:8px 8px}
+  body.full .work .prompt{padding:10px 14px}
+  body.full .vp{flex:1;height:auto}
+  /* full screen: search box becomes the header, with an exit button */
+  body.full .work .box{order:-1;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;display:flex;flex-direction:column-reverse}
+  body.full .work .tabs{border-bottom:0;border-top:1px solid var(--line)}
+  body.full .exit{display:block}
+  body.full #zFit{display:none}
+  .links{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
+  .links div:nth-child(2n){border-right:0}
+  .list li{padding:9px 6px}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){.cell{transition:none}.cell.pulse{animation:none}.stage{transition:none!important}}
+</style>
+<div class="frame">
+  <header>
+    <div class="logo"><span>delicia</span></div>
+    <div class="hr"><nav><a href="../liquids-map/">Рідини</a><a class="on" href="../sklad-2/">Склад №2</a><a href="../liquids-map/#tare">Тарування</a></nav><button class="btn" id="clear">✕ Очистити</button></div>
+  </header>
+
+  <section>
+    <h1>Де лежить сировина на складі №2</h1>
+    <p class="lead">Введи назву, код або вагу тари. Клікни по позиції, щоб виділити її і наблизити її місце. Можна вибрати кілька.</p>
+    <div class="box">
+      <div class="tabs" id="tabs"></div>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="борошно, жир, 5.87116…" autocomplete="off"><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
+    </div>
+  </section>
+
+  <section class="work" id="map">
+    <div class="cap">
+      <span class="hint">План складу №2 · на місцях 01 і 04 лежить багато різного, однакові матеріали не плутати · тягни назву на інше місце, щоб перемістити</span>
+      <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
+      <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
+    </div>
+    <div class="vp" id="vp"><div class="stage" id="stage">
+      <div class="rack" id="rack"><div class="aisle">ПРОХІД</div></div>
+    </div></div>
+  </section>
+
+  <section class="side">
+    <div class="sidehd"><div><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div></div><div class="m">Джерело: рукописна схема складу · «?» = прочитано неточно<br>Окремо в записах: льон 2 (закреслено) · житні пл. – · вівсянка 1 · кунжут 2</div></div>
+    <ul class="list" id="list"></ul>
+    <button class="more" id="more" hidden></button>
+  </section>
+
+  <section class="links">
+    <div>Місць <span id="lN"></span></div><div>Позицій <span id="lTotal"></span></div><div>Вибрано <span id="lPick">[0]</span></div><div>Неточних <span id="lQ"></span></div><div>Склад №2</div>
+  </section>
+</div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Склад №2</span><span>Українська</span></div>
+<script>
+// [place, name, tare · code]
+const D=[[1,"Молоко сухе","25 кг"],[2,"Жир пальм. Sania","20 кг"],[3,"Сироватка молочна","25 кг"],
+[4,"Карамельний колер ZHCNTO ?","30 кг (31,5 кг з тарою)"],[4,"FruitMax Pink 1100 OS (з буряком)","15 кг · 716629"],[4,"Барвник β-каротин","9 кг (9,36 кг) · 09260381"],
+[5,"Борошно сіяне","різнобій"],[6,"Борошно пшеничне 1 сорт","мішок 50 кг"],[7,"Жир пальм. Sania","20 кг · 7000000609"],[8,"Арахіс смажений подрібнений","10 кг"],
+[9,"Diamant Біле ?","20 кг · 2.14892.455"],[9,"Ароматизатор Ваніль","12 кг · 5.87235.012"],
+[10,"Борошно 1 сорт","мішок 50 кг"],[11,"Борошно кукурудзяне","45 кг"],
+[12,"Adlec ?","бочка 200 кг"],[12,"Апельсиновий концентрований сік","25 кг · 2601308610"],
+[13,"Арахіс смажений","10 кг"],[14,"Борошно пшеничне 1 сорт","50 кг"],[15,"Замінник какао-масла","20 кг"],
+[16,"Ароматизатор Шоколад","10 кг (тара 0,46 кг)"],[16,"Смак мілкшейку","10 кг"],[16,"Ваніль","10 кг"],[16,"Ванільно-вершковий","10 кг"],
+[16,"Ароматизатор Полуниця","10 кг · 5.87116.901"],[16,"Апельсин","10 кг · 5.87001.694"],[16,"Ароматизатор Масло","10 кг · 5.86903.901"],[16,"Манго","25 кг · 5.82T04.364 ?"],
+[17,"Кунжут","25 кг"],[18,"Льон","25 кг"]];
+D.forEach(r=>{r[4]="";r[5]=""});
+// floor plan from the sketch: [column, row, column span]; left wall 11–18, right wall 10…1, centre 9, 8, 4
+const N=18,GA={1:[5,7],2:[5,6],3:[5,5],4:[4,5],5:[5,4],6:[5,3],7:[5,2],8:[4,1],9:[3,1],10:[5,1],
+11:[1,1,2],12:[1,2,2],13:[1,3,2],14:[1,4,2],15:[1,5,2],16:[1,7,2],17:[1,6],18:[2,6]};
+const ZONE={16:"Рідини · аромати"};
+const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),pad=n=>String(n).padStart(2,"0");
+const loc=p=>"№"+pad(p);
+D.forEach((r,i)=>r[3]=i); // r[3] = order inside a place
+const byPlace=p=>D.filter(r=>r[0]===p).sort((a,b)=>a[3]-b[3]);
+// moves and swaps: kept in this browser only
+const O=D.map(r=>r[0]),MK="warehouse2-moves";
+try{const m=JSON.parse(localStorage.getItem(MK)||"{}");for(const i in m)if(D[i]){const v=[].concat(m[i]);D[i][0]=v[0];if(v.length>1)D[i][3]=v[1]}}catch(e){}
+const changed=(r,i)=>r[0]!==O[i]||r[3]!==i;
+function saveMoves(){try{const m={};D.forEach((r,i)=>{if(changed(r,i))m[i]=[r[0],r[3]]});localStorage.setItem(MK,JSON.stringify(m))}catch(e){}}
+let S=D.map(r=>[r[0],r[3]]);
+const dirtyN=()=>D.filter((r,i)=>r[0]!==S[i][0]||r[3]!==S[i][1]).length;
+const applyMoves=()=>{saveMoves();S=D.map(r=>[r[0],r[3]]);pick.clear();sel=0;cur=-1;render()};
+const commit=()=>{if(matchMedia("(max-width:600px)").matches)applyMoves()};
+const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]];commit()};
+const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t);
+const sub=r=>r[2];
+const q=$("q"),rack=$("rack"),list=$("list"),vp=$("vp"),stage=$("stage");
+let sel=0,pick=new Set(),cur=-1,showAll=false;const LIMIT=8;
+const toggle=r=>{pick.has(r)?pick.delete(r):pick.add(r)};
+
+$("lN").textContent="["+N+"]";
+$("lTotal").textContent="["+D.length+"]";
+$("lQ").textContent="["+D.filter(r=>r[1].includes("?")||r[2].includes("?")).length+"]";
+["борошно","жир","арахіс","ароматизатор","ваніль","25 кг","мішок"].forEach(w=>{const b=document.createElement("button");b.textContent=w;
+  b.onclick=()=>{q.value=q.value===w?"":w;sel=0;cur=-1;render(true);focusLit()};$("tabs").appendChild(b)});
+
+for(let p=1;p<=N;p++){const c=document.createElement("div");c.className="cell";c.id="c"+p;c.tabIndex=0;c.setAttribute("role","button");
+  const g=GA[p];c.style.gridColumn=g[0]+" / span "+(g[2]||1);c.style.gridRow=g[1];
+  c.innerHTML='<span class="hd"><b>'+pad(p)+'</b><span class="cnt"></span></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../liquids-map/">мапа рідин ↗</a></span>':'')+'<span class="chips"></span>';
+  c.onclick=e=>{if(e.target.closest("a"))return;const chip=e.target.closest("i[data-i]");
+    if(chip){toggle(D[+chip.dataset.i]);sel=0}else{sel=sel===p?0:p;pick.clear()}render()};
+  rack.appendChild(c)}
+
+function render(pulse){
+  const t=norm(q.value),hits=D.filter(r=>match(r,t));
+  const lit=pick.size?[...pick]:(t?hits:[]),places=new Set(lit.map(r=>r[0]));
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",norm(b.textContent)===t));
+  for(let p=1;p<=N;p++){const c=$("c"+p),box=c.querySelector(".chips");
+    c.className="cell"+(lit.length?(places.has(p)?" on":" dim"):"")+(sel===p?" sel":"")+(pulse&&places.has(p)?" pulse":"");
+    box.innerHTML="";c.querySelector(".cnt").textContent=byPlace(p).length+" поз.";
+    byPlace(p).forEach(r=>{const i=document.createElement("i");i.dataset.i=D.indexOf(r);
+      const h=document.createElement("span");h.className="h";h.textContent="⋮⋮";i.append(h,r[1]);
+      const s=document.createElement("small");s.textContent=sub(r);i.appendChild(s);
+      if(lit.includes(r))i.className="lit";box.appendChild(i)});}
+  const all=sel&&!pick.size?byPlace(sel):[...new Set([...pick,...(t?hits:D)])];
+  const short=!t&&!pick.size&&!sel&&!showAll&&all.length>LIMIT,rows=short?all.slice(0,LIMIT):all;
+  $("more").hidden=!t&&!pick.size&&!sel&&all.length>LIMIT?false:true;
+  $("more").textContent=showAll?"Згорнути список":"Подивитися всі ("+all.length+")";
+  $("ptitle").textContent=sel&&!pick.size?"Місце "+loc(sel)+(ZONE[sel]?" · "+ZONE[sel]:""):(pick.size?"Вибрано "+pick.size:(t?"Збіги":"Уся сировина"));
+  $("psub").textContent=rows.length+" поз."+(t&&hits.length>1&&!pick.size?" · клікни, щоб вибрати":"");
+  $("lPick").textContent="["+pick.size+"]";
+  const dn=dirtyN();$("clear").textContent=dn?"✓ Застосувати ["+dn+"]":"✕ Очистити";
+  const pr=[...pick];$("swap").hidden=pr.length!==2;
+  if(pr.length===2)$("swap").textContent="⇄ Поміняти: "+pr[0][1]+" ("+loc(pr[0][0])+") ↔ "+pr[1][1]+" ("+loc(pr[1][0])+")";
+  const moved=D.filter(changed).length;$("undo").hidden=!moved;$("undo").textContent="↺ Повернути переміщення ["+moved+"]";
+  list.innerHTML=rows.length?"":'<li class="m">Нічого не знайдено. Спробуй коротший запит.</li>';
+  rows.forEach((r,i)=>{const li=document.createElement("li");li.className=(pick.has(r)?"pk":"")+(i===cur?" cur":"");
+    li.innerHTML='<span class="p"></span><span></span><code></code>';
+    const ix=D.indexOf(r);
+    li.children[0].textContent=loc(r[0]);li.children[1].textContent=r[1];li.children[2].textContent=sub(r)+(r[0]!==O[ix]?" · було "+loc(O[ix]):"");
+    li.onclick=()=>{toggle(r);sel=0;render(true);focusLit()};list.appendChild(li)});
+}
+
+/* ---------- pan & zoom ---------- */
+const phone=matchMedia("(max-width:600px)");
+let z=1,tx=0,ty=0;
+const ZMIN=.25,ZMAX=3,clampZ=v=>Math.min(ZMAX,Math.max(ZMIN,v));
+function apply(anim){if(!phone.matches){stage.style.transform="";return}stage.style.transition=anim?"transform .35s ease":"none";
+  stage.style.transform="translate("+tx+"px,"+ty+"px) scale("+z+")";$("zl").textContent=Math.round(z*100)+"%"}
+function zoomAt(nz,cx,cy,anim){nz=clampZ(nz);tx=cx-(cx-tx)*nz/z;ty=cy-(cy-ty)*nz/z;z=nz;apply(anim)}
+// fit a box (stage coords) into the viewport
+function fitBox(x,y,w,h,max,anim){const W=vp.clientWidth,H=vp.clientHeight,m=32;
+  z=clampZ(Math.min((W-2*m)/w,(H-2*m)/h,max));tx=(W-w*z)/2-x*z;ty=(H-h*z)/2-y*z;apply(anim)}
+const fitAll=anim=>fitBox(0,0,rack.offsetWidth,rack.offsetHeight,1.5,anim);
+function focusLit(){const ps=[...new Set([...(pick.size?pick:D.filter(r=>match(r,norm(q.value))))].map(r=>r[0]))];
+  if(!ps.length||ps.length===N||(!pick.size&&!q.value)){fitAll(true);return}
+  let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
+  ps.forEach(p=>{const c=$("c"+p);x1=Math.min(x1,c.offsetLeft);y1=Math.min(y1,c.offsetTop);x2=Math.max(x2,c.offsetLeft+c.offsetWidth);y2=Math.max(y2,c.offsetTop+c.offsetHeight)});
+  fitBox(x1,y1,x2-x1,y2-y1,1.6,true)}
+const center=()=>[vp.clientWidth/2,vp.clientHeight/2];
+$("zIn").onclick=()=>zoomAt(z*1.25,...center(),true);
+$("zOut").onclick=()=>zoomAt(z/1.25,...center(),true);
+// phone: "Весь стелаж" opens the map full screen, search moves along with it
+const box=document.querySelector(".box"),boxHome=box.parentNode,work=$("map");let full=false;
+function setFull(on){full=on;document.body.classList.toggle("full",on);
+  if(on)work.prepend(box);else boxHome.appendChild(box);
+  $("zFit").textContent=on?"✕ Згорнути":"⤢ Весь склад";requestAnimationFrame(()=>fitAll())}
+$("zFit").onclick=()=>phone.matches?setFull(!full):fitAll(true);
+$("exitFull").onclick=e=>{e.preventDefault();setFull(false)};
+phone.addEventListener("change",()=>{if(!phone.matches&&full)setFull(false)});
+vp.addEventListener("wheel",e=>{if(!phone.matches)return;e.preventDefault();const r=vp.getBoundingClientRect();
+  zoomAt(z*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+/* ---------- drag a liquid: move to a place or swap with another liquid ---------- */
+$("undo").onclick=()=>{D.forEach((r,i)=>{r[0]=O[i];r[3]=i});commit();render()};
+$("swap").onclick=()=>{const [a,b]=[...pick];swapRows(a,b);render(true)};
+let drag=null,suppress=false;
+const hit=e=>document.elementFromPoint(e.clientX,e.clientY);
+const cellAt=e=>{const t=hit(e);return t&&t.closest(".cell")};
+const chipAt=(e,self)=>{const t=hit(e),w=t&&t.closest(".chips i[data-i]");return w&&+w.dataset.i!==self?w:null};
+const clearDrop=()=>document.querySelectorAll(".drop,.swap").forEach(c=>c.classList.remove("drop","swap"));
+const place=p=>loc(p)+" (місце "+pad(p)+")";
+// mouse: grab the whole chip; touch: only the ⋮⋮ handle, so the map still pans
+const grabs=e=>{const t=e.target.closest(".chips i[data-i]");return t&&(e.pointerType==="mouse"||e.target.closest(".h"))?t:null};
+document.addEventListener("pointerdown",e=>{const t=grabs(e);if(t)drag={i:+t.dataset.i,x:e.clientX,y:e.clientY,g:null,src:t}});
+window.addEventListener("pointermove",e=>{if(!drag)return;const r=D[drag.i];
+  if(!drag.g){if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;
+    drag.g=document.createElement("div");drag.g.className="ghost";document.body.appendChild(drag.g);document.body.classList.add("dragging");drag.src.classList.add("src")}
+  e.preventDefault();drag.g.style.left=e.clientX+"px";drag.g.style.top=e.clientY+"px";
+  clearDrop();const c=cellAt(e),w=chipAt(e,drag.i);if(c)c.classList.add("drop");if(w)w.classList.add("swap");
+  drag.g.textContent=r[1]+" · партія "+r[2];const s=document.createElement("small");const o=w&&D[+w.dataset.i];
+  s.textContent=o?"⇄ поміняти з «"+o[1]+"»"+(o[0]===r[0]?" на полиці "+loc(r[0]):": "+loc(r[0])+" ↔ "+loc(o[0]))
+    :"з "+place(r[0])+"  →  "+(c?"на "+place(+c.id.slice(1)):"наведи на місце або на іншу рідину");drag.g.appendChild(s)});
+const endDrag=e=>{if(!drag)return;const d=drag;drag=null;if(!d.g)return;
+  d.g.remove();d.src.classList.remove("src");document.body.classList.remove("dragging");clearDrop();
+  suppress=true;setTimeout(()=>suppress=false,0);if(e.type!=="pointerup")return;
+  const w=chipAt(e,d.i),c=cellAt(e),a=D[d.i];
+  if(w){swapRows(a,D[+w.dataset.i]);pick=new Set([a,D[+w.dataset.i]]);sel=0;render(true)}
+  else if(c){const p=+c.id.slice(1);if(p!==a[0]){a[0]=p;a[3]=Math.max(...D.map(x=>x[3]))+1;commit();pick=new Set([a]);sel=0;render(true)}}};
+window.addEventListener("pointerup",endDrag);window.addEventListener("pointercancel",endDrag);
+document.addEventListener("click",e=>{if(suppress){e.stopPropagation();e.preventDefault()}},true);
+
+// one pointer pans, two pointers pinch-zoom
+const P=new Map();let moved=0,pinch=null;
+vp.addEventListener("pointerdown",e=>{if(!phone.matches||grabs(e))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=0;
+  if(P.size===2){const [a,b]=[...P.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),x:(a.x+b.x)/2,y:(a.y+b.y)/2}}});
+window.addEventListener("pointermove",e=>{const o=P.get(e.pointerId);if(!o)return;
+  const n={x:e.clientX,y:e.clientY};P.set(e.pointerId,n);
+  if(P.size===1){tx+=n.x-o.x;ty+=n.y-o.y;moved+=Math.abs(n.x-o.x)+Math.abs(n.y-o.y);if(moved>5)vp.classList.add("panning");apply()}
+  else if(P.size===2&&pinch){const [a,b]=[...P.values()],d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2,r=vp.getBoundingClientRect();
+    tx+=mx-pinch.x;ty+=my-pinch.y;zoomAt(z*d/pinch.d,mx-r.left,my-r.top);pinch={d,x:mx,y:my};moved=99}});
+const up=e=>{P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size)vp.classList.remove("panning")};
+window.addEventListener("pointerup",up);window.addEventListener("pointercancel",up);
+// a pan or pinch is not a click
+vp.addEventListener("click",e=>{if(moved>5){e.stopPropagation();e.preventDefault()}},true);
+window.addEventListener("resize",()=>fitAll());
+
+/* ---------- search & keys ---------- */
+q.addEventListener("input",()=>{sel=0;cur=-1;render(true);if(full)focusLit()});
+q.addEventListener("keydown",e=>{const n=list.querySelectorAll("li:not(.m)").length;
+  if(e.key==="Enter"&&cur<0){e.preventDefault();focusLit();return}
+  if(!n)return;
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();cur=(cur+(e.key==="ArrowDown"?1:n-1))%n;render()}
+  if(e.key==="Enter"){e.preventDefault();list.children[cur].click()}});
+$("more").onclick=()=>{showAll=!showAll;render()};
+$("clear").onclick=()=>{if(dirtyN()){applyMoves();return}pick.clear();q.value="";sel=0;cur=-1;render();fitAll(true)};
+document.addEventListener("keydown",e=>{const typing=document.activeElement===q;
+  if(e.key==="/"&&!typing){e.preventDefault();q.focus();return}
+  if(e.key==="Enter"&&dirtyN()&&!(typing&&cur>=0)){e.preventDefault();applyMoves();return}
+  if(e.key==="Escape"&&full&&!pick.size&&!q.value){setFull(false);return}
+  if(e.key==="Escape"){if(pick.size){pick.clear();cur=-1}else{q.value="";sel=0}render();return}
+  if(typing)return;
+});
+
+render();fitAll();
+</script>
+
+</body></html>
