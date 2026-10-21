@@ -924,17 +924,16 @@ $('q').addEventListener('keydown', e => {
 });
 $('q').addEventListener('focus', () => { if ($('q').value.trim()) dropdown($('q').value.trim().toLowerCase()); });
 document.addEventListener('click', e => { if (!e.target.closest('.box')) $('dd').hidden = true; });
-// full screen, as in liquids-map; remembered per device so a tablet reopens in it
+// full screen, as in liquids-map; the page always opens in it on every device
 let full = false;
 function setFull(on) {
   full = on;
   document.body.classList.toggle('full', on);
-  try { localStorage.setItem('labels.full', on ? '1' : ''); } catch (e) {}
 }
 $('full').onclick = () => { setFull(true); $('q').focus(); };
 $('exitFull').onclick = e => { e.preventDefault(); setFull(false); };
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && full) setFull(false); });
-try { if (localStorage.getItem('labels.full')) setFull(true); } catch (e) {}
+setFull(true);
 $('more').onclick = () => { shown += PAGE; render(); };
 $('clear').onclick = () => { $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus(); };
 
