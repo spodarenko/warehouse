@@ -59,6 +59,13 @@ h3{margin:0;font-size:16px}
 .label .time{font-size:11pt;margin-top:auto}
 .label .art{font-size:9pt}
 #paper{display:none}
+/* footer: stats grid + bottom line, as in liquids-map */
+.links{padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.links div{padding:32px 12px;text-align:center;border-right:1px solid var(--line)}
+.links div:last-child{border-right:0}
+.links div span{color:var(--muted)}
+.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+body.full .links{display:none}
 /* full screen (as in liquids-map, on any device): search box is the header with an exit button,
    list fills the screen, print bar at the bottom after a pick */
 .exit{display:none;flex:none;font:inherit;font-size:13px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 12px;cursor:pointer}
@@ -89,6 +96,10 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
 .fullbtn{display:block;margin:0 0 16px;min-height:44px;font:inherit;font-size:14px;background:none;color:var(--fg);border:1px solid #6b6565;border-radius:4px;padding:6px 12px;cursor:pointer}
 /* phone: compact header, sticky search, one-column tap list, bottom bar after a pick (desktop above is unchanged) */
 @media (max-width:640px){
+  .links{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
+  .links div:nth-child(2n){border-right:0}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
   body{padding:0;font-size:16px;line-height:1.4}
   .frame{border:0}
   header{position:static;min-height:0;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;border:0}
@@ -119,7 +130,7 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
 @page{size:60mm 30mm;margin:0}
 @media print{
   body{background:#fff;padding:0}
-  .frame{display:none!important}
+  .frame,.bottom{display:none!important}
   #paper{display:block}
 }
 </style>
@@ -155,7 +166,11 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
   </section>
+  <section class="links">
+    <div>Сировини <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом <span id="lArt"></span></div><div>Без артикулу <span id="lNoArt"></span></div><div>Стікер 60×30</div>
+  </section>
 </div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span></div>
 <div id="paper"></div>
 <script>
 const ITEMS = {
@@ -879,6 +894,7 @@ function render() {
   }
   if (!hits.length) $('list').innerHTML = '<li class="e">Нічого не знайдено</li>';
   $('psub').textContent = hits.length + ' з ' + codes.length;
+  $('lFound').textContent = '[' + hits.length + ']';
   $('more').hidden = hits.length <= shown;
   $('more').textContent = 'Показати ще (' + (hits.length - shown) + ')';
 }
@@ -953,6 +969,10 @@ $('print').addEventListener('click', () => {
 });
 
 render();
+const withArt = codes.filter(c => ITEMS[c].article).length;
+$('lTotal').textContent = '[' + codes.length + ']';
+$('lArt').textContent = '[' + withArt + ']';
+$('lNoArt').textContent = '[' + (codes.length - withArt) + ']';
 // sample sticker until an item is picked
 fill($('sample'), ITEMS['Цукор'] ? 'Цукор' : codes[0], stamp());
 $('sample').style.opacity = .5;
