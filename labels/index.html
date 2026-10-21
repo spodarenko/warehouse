@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Стікери</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Same look as liquids-map: framed column, hairline borders, single dark theme (config/ui-tokens.json).
+   Label size: 60x30 mm (Citizen CMP-30IIL via RawBT). */
+:root{--bg:#131010;--panel:#1b1818;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#8f8a8a;--faint:#4a4545;--line:#2f2b2b;
+--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+.frame{max-width:1080px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+section,header{border-bottom:1px solid var(--line);padding:64px clamp(16px,7.5vw,80px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:20px;min-height:80px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1}
+.logo span{color:var(--muted)}
+nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+nav a{color:var(--fg);text-decoration:none}
+.btn{font:inherit;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
+@media (hover:hover){.btn:hover:not(:disabled){background:transparent;color:var(--fg)}}
+.btn:active{opacity:.8}
+.btn:disabled{opacity:.3;cursor:default}
+h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin:0 0 12px;text-wrap:balance}
+h3{margin:0;font-size:16px}
+.m{color:var(--muted);font-size:12px}
+.lead{color:var(--muted);max-width:62ch;margin:0 0 28px;line-height:2}
+.box{border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.box{position:relative}
+.dd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:10;list-style:none;margin:0;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:6px;max-height:50vh;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.dd li{padding:10px 12px;border-radius:3px;cursor:pointer}
+.dd li code{display:block;color:var(--faint);font-size:12px}
+.dd li.on,.dd li:hover{background:var(--line)}
+.prompt{display:flex;align-items:center;gap:12px;padding:16px 22px;color:var(--muted)}
+.prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;outline:none}
+.prompt input::placeholder{color:var(--faint)}
+.sidehd{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 24px}
+.list li{display:grid;grid-template-columns:minmax(0,1fr);padding:6px;cursor:pointer;border-radius:3px}
+@media (hover:hover){.list li:hover{background:var(--panel)}}
+.list li code{color:var(--faint);overflow-wrap:anywhere}
+.list li.pk{background:var(--fg);color:var(--bg)}
+.list li.pk code{color:var(--bg)}
+.list li.e{display:block;color:var(--muted);cursor:default}
+.more{font:inherit;background:none;border:1px solid var(--line);color:var(--muted);border-radius:4px;padding:6px 14px;margin-top:16px;cursor:pointer}
+.work{background:var(--panel2);display:flex;gap:32px;flex-wrap:wrap;align-items:center}
+.preview{background:#fff;border-radius:4px;padding:10px;flex:none}
+.ctl{display:flex;flex-direction:column;gap:12px;min-width:200px;flex:1}
+.ctl .row{display:flex;gap:8px;align-items:center}
+.ctl input{width:72px;font:inherit;font-size:16px;text-align:center;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px}
+.ctl .btn{padding:12px 14px;font-weight:700}
+/* label itself — same markup on screen and paper */
+.label{width:60mm;height:30mm;padding:1.5mm 2mm;color:#000;background:#fff;font-family:var(--mono);display:flex;flex-direction:column;overflow:hidden;break-after:page}
+.label .name{font-size:12pt;font-weight:700;line-height:1.15;max-height:4.6em;overflow:hidden}
+.label .time{font-size:11pt;margin-top:auto}
+.label .art{font-size:9pt}
+#paper{display:none}
+/* phone: compact header, sticky search, one-column tap list, bottom bar after a pick (desktop above is unchanged) */
+@media (max-width:640px){
+  body{padding:0;font-size:16px;line-height:1.4}
+  .frame{border:0}
+  header{position:static;min-height:0;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;border:0}
+  .logo{font-size:20px}
+  nav{display:none}
+  section{padding:0}
+  .intro{position:sticky;top:0;z-index:5;background:var(--bg);padding:4px 16px 12px;border-bottom:1px solid var(--line)}
+  .intro h1,.intro .lead,.dd{display:none!important}
+  .prompt{padding:0 16px;height:56px}
+  .prompt input{font-size:18px}
+  .sidehd{padding:12px 16px 4px;margin:0}
+  .list{display:block;padding-bottom:16px}
+  .list li{min-height:56px;padding:10px 16px;border-radius:0;border-bottom:1px solid var(--line)}
+  .list li:active{background:var(--panel)}
+  .list li code{color:var(--muted);font-size:13px}
+  .more{margin:16px;width:calc(100% - 32px);height:48px}
+  .work{display:none}
+  body.picked .work{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;position:fixed;left:0;right:0;bottom:0;z-index:6;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);border-bottom:0}
+  body.picked .list{padding-bottom:calc(200px + env(safe-area-inset-bottom,0px))}
+  .preview{padding:4px}
+  .preview .label{zoom:.7}
+  .ctl{min-width:0;gap:8px;display:contents}
+  #cur{display:none}
+  .ctl .row{justify-content:flex-end}
+  .ctl input{width:88px;height:48px;font-size:18px}
+  .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
+}
+@page{size:60mm 30mm;margin:0}
+@media print{
+  body{background:#fff;padding:0}
+  .frame{display:none}
+  #paper{display:block}
+}
+</style>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div class="logo"><span>delicia</span>sklad</div>
+    <nav><a href="../liquids-map/">Рідини</a><a href="../sklad-2/">Склад №2</a><button class="btn" id="clear">✕ Очистити</button></nav>
+  </header>
+
+  <section class="intro">
+    <h1>Стікери на сировину</h1>
+    <p class="lead">Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.</p>
+    <div class="box">
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"></label>
+      <ul class="dd" id="dd" hidden></ul>
+    </div>
+  </section>
+
+  <section class="work">
+    <div class="preview"><div class="label" id="sample"><div class="name">Оберіть товар</div></div></div>
+    <div class="ctl">
+      <div class="m" id="cur">Так виглядатиме стікер 60×30 мм. Оберіть товар у списку нижче.</div>
+      <div class="row"><span>Копій</span><input id="copies" type="number" min="1" max="50" value="1" inputmode="numeric"></div>
+      <button class="btn" id="print" disabled>Друкувати</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div></div>
+    <ul class="list" id="list"></ul>
+    <button class="more" id="more" hidden></button>
+  </section>
+</div>
+<div id="paper"></div>
+<script>
+const ITEMS = {
+    "Ароматизатор абрикос 911008":  {
+                                        "unit":  "кг",
+                                        "group":  "Ароматизатори",
+                                        "article":  "7000019271"
+                                    },
+    "Ароматизатор апельсин":  {
+                                  "unit":  "кг",
+                                  "group":  "Ароматизатори",
+                                  "article":  "6099064"
+                              },
+    "Ароматизатор Бісквіт (947310)":  {
+                                          "unit":  "кг",
+                                          "group":  "Ароматизатори",
+                                          "article":  "8544434576"
+                                      },
+    "Ароматизатор Ваніль-Молоко (947310)":  {
+                                                "unit":  "кг",
+                                                "group":  "Ароматизатори",
+                                                "article":  "6105321"
+                                            },
+    "Ароматизатор ванільний 5.87235.901":  {
+                                               "unit":  "кг",
+                                               "group":  "Ароматизатори",
+                                               "article":  "8544448277"
+                                           },
+    "Ароматизатор ванільно-вершковий 913726А":  {
+                                                    "unit":  "кг",
+                                                    "group":  "Ароматизатори",
+                                                    "article":  "6094029"
+                                                },
+    "Ароматизатор Вершковий 5.86971.042":  {
+                                               "unit":  "кг",
+                                               "group":  "Ароматизатори",
+                                               "article":  "8544433707"
+                                           },
+    "Ароматизатор вишня":  {
+                               "unit":  "кг",
+                               "group":  "Ароматизатори",
+                               "article":  "8544444043"
+                           },
+    "Ароматизатор гіркий шоколад":  {
+                                        "unit":  "кг",
+                                        "group":  "Ароматизатори",
+                                        "article":  "6099065"
+                                    },
+    "Ароматизатор горіх грецький":  {
+                                        "unit":  "кг",
+                                        "group":  "Ароматизатори",
+                                        "article":  ""
+                                    },
+    "Ароматизатор жувальна гумка (944101)":  {
+                                                 "unit":  "кг",
+                                                 "group":  "Ароматизатори",
+                                                 "article":  "8544434577"
+                                             },
+    "Ароматизатор Йогурт 992422":  {
+                                       "unit":  "кг",
+                                       "group":  "Ароматизатори",
+                                       "article":  "7000017990"
+                                   },
+    "Ароматизатор кактус 915801":  {
+                                       "unit":  "кг",
+                                       "group":  "Ароматизатори",
+                                       "article":  "7000011810"
+                                   },
+    "Ароматизатор кокос":  {
+                               "unit":  "кг",
+                               "group":  "Ароматизатори",
+                               "article":  "6099068"
+                           },
+    "Ароматизатор кокос 911109":  {
+                                      "unit":  "кг",
+                                      "group":  "Ароматизатори",
+                                      "article":  "8544433852"
+                                  },
+    "Ароматизатор лимон":  {
+                               "unit":  "кг",
+                               "group":  "Ароматизатори",
+                               "article":  "6093374"
+                           },
+    "Ароматизатор малина":  {
+                                "unit":  "кг",
+                                "group":  "Ароматизатори",
+                                "article":  "6094017"
+                            },
+    "Ароматизатор масло":  {
+                               "unit":  "кг",
+                               "group":  "Ароматизатори",
+                               "article":  "6099069"
+                           },
+    "Ароматизатор масло вершки 831809":  {
+                                             "unit":  "кг",
+                                             "group":  "Ароматизатори",
+                                             "article":  "7000000538"
+                                         },
+    "Ароматизатор молоко тип Дульче де Лече":  {
+                                                   "unit":  "кг",
+                                                   "group":  "Ароматизатори",
+                                                   "article":  "8544436994"
+                                               },
+    "Ароматизатор молочний шоколад":  {
+                                          "unit":  "кг",
+                                          "group":  "Ароматизатори",
+                                          "article":  "6099071"
+                                      },
+    "Ароматизатор натур. масло 38166":  {
+                                            "unit":  "кг",
+                                            "group":  "Ароматизатори",
+                                            "article":  "8544440564"
+                                        },
+    "Ароматизатор пломбір":  {
+                                 "unit":  "кг",
+                                 "group":  "Ароматизатори",
+                                 "article":  "6094295"
+                             },
+    "Ароматизатор полуниця 587116 (печиво)":  {
+                                                  "unit":  "кг",
+                                                  "group":  "Ароматизатори",
+                                                  "article":  "6102595"
+                                              },
+    "Ароматизатор полуниця вершки 910357":  {
+                                                "unit":  "кг",
+                                                "group":  "Ароматизатори",
+                                                "article":  "7000002643"
+                                            },
+    "Ароматизатор пряжене молоко (675995)":  {
+                                                 "unit":  "кг",
+                                                 "group":  "Ароматизатори",
+                                                 "article":  "6099073"
+                                             },
+    "Ароматизатор пряжене молоко 095,4":  {
+                                              "unit":  "кг",
+                                              "group":  "Ароматизатори",
+                                              "article":  "6100068"
+                                          },
+    "Ароматизатор ром":  {
+                             "unit":  "кг",
+                             "group":  "Ароматизатори",
+                             "article":  "6099074"
+                         },
+    "Ароматизатор свинина":  {
+                                 "unit":  "кг",
+                                 "group":  "Ароматизатори",
+                                 "article":  "8544438240"
+                             },
+    "Ароматизатор Смак мілкшейку":  {
+                                        "unit":  "кг",
+                                        "group":  "Ароматизатори",
+                                        "article":  "8544438779"
+                                    },
+    "Ароматизатор смородина":  {
+                                   "unit":  "кг",
+                                   "group":  "Ароматизатори",
+                                   "article":  "6093603"
+                               },
+    "Ароматизатор шоколад 913612":  {
+                                        "unit":  "кг",
+                                        "group":  "Ароматизатори",
+                                        "article":  "6099076"
+                                    },
+    "Ароматизатор шоколад тип Тоблерон":  {
+                                              "unit":  "кг",
+                                              "group":  "Ароматизатори",
+                                              "article":  "8544436995"
+                                          },
+    "Ароматизатор яблуко":  {
+                                "unit":  "кг",
+                                "group":  "Ароматизатори",
+                                "article":  "6093602"
+                            },
+    "Ароматизатор Яєчний лікер 651327":  {
+                                             "unit":  "кг",
+                                             "group":  "Ароматизатори",
+                                             "article":  "6101532"
+                                         },
+    "Етилованілін":  {
+                         "unit":  "кг",
+                         "group":  "Ароматизатори",
+                         "article":  "6096214"
+                     },
+    "Мед":  {
+                "unit":  "кг",
+                "group":  "Ароматизатори",
+                "article":  "6091703"
+            },
+    "Начинка Cremico/Креміко":  {
+                                    "unit":  "кг",
+                                    "group":  "Ароматизатори",
+                                    "article":  "7000000718"
+                                },
+    "Акрілавей 3500BG":  {
+                             "unit":  "кг",
+                             "group":  "Основна сировина",
+                             "article":  "8544435742"
+                         },
+    "Аніс":  {
+                 "unit":  "кг",
+                 "group":  "Основна сировина",
+                 "article":  "6089206"
+             },
+    "Антиоксидант Grindox 552":  {
+                                     "unit":  "кг",
+                                     "group":  "Основна сировина",
+                                     "article":  "7000017497"
+                                 },
+    "Антиоксидант Guardian Toco50":  {
+                                         "unit":  "кг",
+                                         "group":  "Основна сировина",
+                                         "article":  "8544438149"
+                                     },
+    "Арахіс смажений подрібнений":  {
+                                        "unit":  "кг",
+                                        "group":  "Основна сировина",
+                                        "article":  "6097001"
+                                    },
+    "Барвник CFO 12837A Спіруліна синій порошок 4CU":  {
+                                                           "unit":  "кг",
+                                                           "group":  "Основна сировина",
+                                                           "article":  "7000021304"
+                                                       },
+    "Барвник NC 1080 куркумін екстракт":  {
+                                              "unit":  "кг",
+                                              "group":  "Основна сировина",
+                                              "article":  "7000021305"
+                                          },
+    "Барвник NCO19298A Пурпурна солодка картопля":  {
+                                                        "unit":  "кг",
+                                                        "group":  "Основна сировина",
+                                                        "article":  "7000021302"
+                                                    },
+    "Барвник кармін екстракт OSL 12":  {
+                                           "unit":  "кг",
+                                           "group":  "Основна сировина",
+                                           "article":  "8544434613"
+                                       },
+    "Барвник OF 0027 Анато порошок":  {
+                                          "unit":  "кг",
+                                          "group":  "Основна сировина",
+                                          "article":  "6088289"
+                                      },
+    "Барвник В-каротин (провітамін А в олії)":  {
+                                                    "unit":  "кг",
+                                                    "group":  "Основна сировина",
+                                                    "article":  "6096225"
+                                                },
+    "Барвник Е 133 Діамантовий синій":  {
+                                            "unit":  "кг",
+                                            "group":  "Основна сировина",
+                                            "article":  "7000001943"
+                                        },
+    "Барвник Е 516 Діамантовий білий":  {
+                                            "unit":  "кг",
+                                            "group":  "Основна сировина",
+                                            "article":  "7000021679"
+                                        },
+    "Барвник зелений Е 141 міднохлорофіловий":  {
+                                                    "unit":  "кг",
+                                                    "group":  "Основна сировина",
+                                                    "article":  "6092484"
+                                                },
+    "Барвник карамельний колір Аромаколор DS7 (150d)":  {
+                                                            "unit":  "кг",
+                                                            "group":  "Основна сировина",
+                                                            "article":  ""
+                                                        },
+    "Барвник натуральний кармін №37 рідкий":  {
+                                                  "unit":  "кг",
+                                                  "group":  "Основна сировина",
+                                                  "article":  "7000013308"
+                                              },
+    "Барвник Паприки екстракт OSL":  {
+                                         "unit":  "кг",
+                                         "group":  "Основна сировина",
+                                         "article":  "6093591"
+                                     },
+    "Барвник СО 204776 АНТОЦІАН":  {
+                                       "unit":  "кг",
+                                       "group":  "Основна сировина",
+                                       "article":  ""
+                                   },
+    "Борошно 1 гатунок":  {
+                              "unit":  "кг",
+                              "group":  "Основна сировина",
+                              "article":  "6096222"
+                          },
+    "Борошно 1 гатунок ОРГАНІЧНЕ":  {
+                                        "unit":  "кг",
+                                        "group":  "Основна сировина",
+                                        "article":  "8544438266"
+                                    },
+    "Борошно в/г":  {
+                        "unit":  "кг",
+                        "group":  "Основна сировина",
+                        "article":  "6096223"
+                    },
+    "Борошно житнє":  {
+                          "unit":  "кг",
+                          "group":  "Основна сировина",
+                          "article":  "6096224"
+                      },
+    "Борошно кукурудзяне":  {
+                                "unit":  "кг",
+                                "group":  "Основна сировина",
+                                "article":  "6091684"
+                            },
+    "Гліцерин":  {
+                     "unit":  "кг",
+                     "group":  "Основна сировина",
+                     "article":  "6096217"
+                 },
+    "Глюкоза":  {
+                    "unit":  "кг",
+                    "group":  "Основна сировина",
+                    "article":  "6096218"
+                },
+    "Глюкозно-фруктозний сироп ГФС-42":  {
+                                             "unit":  "кг",
+                                             "group":  "Основна сировина",
+                                             "article":  "6089505"
+                                         },
+    "Горіх мускатний":  {
+                            "unit":  "кг",
+                            "group":  "Основна сировина",
+                            "article":  "6099921"
+                        },
+    "Гуміарабік":  {
+                       "unit":  "кг",
+                       "group":  "Основна сировина",
+                       "article":  ""
+                   },
+    "Емульгатор MYVEROL 18-04 K":  {
+                                       "unit":  "кг",
+                                       "group":  "Основна сировина",
+                                       "article":  ""
+                                   },
+    "Емульгатор PGPR (E476)":  {
+                                   "unit":  "кг",
+                                   "group":  "Основна сировина",
+                                   "article":  "6096215"
+                               },
+    "Емульгатор Гріндстед STS 30":  {
+                                        "unit":  "кг",
+                                        "group":  "Основна сировина",
+                                        "article":  "8544432565"
+                                    },
+    "Емульгатор для бісквіта Спонголіт 450":  {
+                                                  "unit":  "кг",
+                                                  "group":  "Основна сировина",
+                                                  "article":  "8544432558"
+                                              },
+    "Емульгатор для бісквіта(Ovalett)":  {
+                                             "unit":  "кг",
+                                             "group":  "Основна сировина",
+                                             "article":  "8544438169"
+                                         },
+    "Емульгатор Е 475":  {
+                             "unit":  "кг",
+                             "group":  "Основна сировина",
+                             "article":  "6107401"
+                         },
+    "Жир \"КАПРОМІЛК\"":  {
+                              "unit":  "кг",
+                              "group":  "Основна сировина",
+                              "article":  "8544435489"
+                          },
+    "Жир для глазурі":  {
+                            "unit":  "кг",
+                            "group":  "Основна сировина",
+                            "article":  "6096211"
+                        },
+    "Жир рослинний РВД олія пальмова":  {
+                                            "unit":  "кг",
+                                            "group":  "Основна сировина",
+                                            "article":  "6099930"
+                                        },
+    "Замінник молочного жиру Z202 ТМ Sania":  {
+                                                  "unit":  "кг",
+                                                  "group":  "Основна сировина",
+                                                  "article":  "8544438845"
+                                              },
+    "Імбир":  {
+                  "unit":  "кг",
+                  "group":  "Основна сировина",
+                  "article":  "6096213"
+              },
+    "Какао-порошок алкалізований":  {
+                                        "unit":  "кг",
+                                        "group":  "Основна сировина",
+                                        "article":  "6096210"
+                                    },
+    "Какао-порошок натуральний":  {
+                                      "unit":  "кг",
+                                      "group":  "Основна сировина",
+                                      "article":  "6094748"
+                                  },
+    "Калій сорбат харчовий":  {
+                                  "unit":  "кг",
+                                  "group":  "Основна сировина",
+                                  "article":  "6096171"
+                              },
+    "Клейковина пшенична":  {
+                                "unit":  "кг",
+                                "group":  "Основна сировина",
+                                "article":  "7000015658"
+                            },
+    "Кокосова олія РВД":  {
+                              "unit":  "кг",
+                              "group":  "Основна сировина",
+                              "article":  "8544438846"
+                          },
+    "Кориця":  {
+                   "unit":  "кг",
+                   "group":  "Основна сировина",
+                   "article":  "8544447872"
+               },
+    "Коріандр":  {
+                     "unit":  "кг",
+                     "group":  "Основна сировина",
+                     "article":  "8544448118"
+                 },
+    "Крохмаль картопляний":  {
+                                 "unit":  "кг",
+                                 "group":  "Основна сировина",
+                                 "article":  "6096207"
+                             },
+    "Крохмаль кукурудзяний":  {
+                                  "unit":  "кг",
+                                  "group":  "Основна сировина",
+                                  "article":  "6096208"
+                              },
+    "Крохмаль модифікований кукурудзяний":  {
+                                                "unit":  "кг",
+                                                "group":  "Основна сировина",
+                                                "article":  "6105044"
+                                            },
+    "Ксилолад К":  {
+                       "unit":  "кг",
+                       "group":  "Основна сировина",
+                       "article":  "8544438601"
+                   },
+    "Кунжут":  {
+                   "unit":  "кг",
+                   "group":  "Основна сировина",
+                   "article":  "8544447890"
+               },
+    "Лецитин соєвий":  {
+                           "unit":  "кг",
+                           "group":  "Основна сировина",
+                           "article":  "6096206"
+                       },
+    "Лимонна кислота":  {
+                            "unit":  "кг",
+                            "group":  "Основна сировина",
+                            "article":  "8544448568"
+                        },
+    "Льон насіння":  {
+                         "unit":  "кг",
+                         "group":  "Основна сировина",
+                         "article":  "6091991"
+                     },
+    "Мед ОРГАНІЧНИЙ":  {
+                           "unit":  "кг",
+                           "group":  "Основна сировина",
+                           "article":  "8544438314"
+                       },
+    "Меланж яєчний":  {
+                          "unit":  "кг",
+                          "group":  "Основна сировина",
+                          "article":  "6096204"
+                      },
+    "Молоко незбиране згущене з цукром 8,5%":  {
+                                                   "unit":  "кг",
+                                                   "group":  "Основна сировина",
+                                                   "article":  "6096195"
+                                               },
+    "Молоко сухе знежирене":  {
+                                  "unit":  "кг",
+                                  "group":  "Основна сировина",
+                                  "article":  "6096192"
+                              },
+    "Молочна кислота":  {
+                            "unit":  "кг",
+                            "group":  "Основна сировина",
+                            "article":  "6096191"
+                        },
+    "Наповнювач \"Мак\" Премиум лайт":  {
+                                            "unit":  "кг",
+                                            "group":  "Основна сировина",
+                                            "article":  "8544435570"
+                                        },
+    "Насіння соняшника лущене":  {
+                                     "unit":  "кг",
+                                     "group":  "Основна сировина",
+                                     "article":  "6096190"
+                                 },
+    "Начинка \"Абрикос\"":  {
+                                "unit":  "кг",
+                                "group":  "Основна сировина",
+                                "article":  "6088617"
+                            },
+    "Начинка \"Вишня\"":  {
+                              "unit":  "кг",
+                              "group":  "Основна сировина",
+                              "article":  "6088618"
+                          },
+    "Начинка жирова (Чоколіна)":  {
+                                      "unit":  "кг",
+                                      "group":  "Основна сировина",
+                                      "article":  "8544440593"
+                                  },
+    "Начинка зі смаком шоколаду (Чоколіна Термо)":  {
+                                                        "unit":  "кг",
+                                                        "group":  "Основна сировина",
+                                                        "article":  "8544438911"
+                                                    },
+    "Олія соняшникова":  {
+                             "unit":  "кг",
+                             "group":  "Основна сировина",
+                             "article":  "6096187"
+                         },
+    "Олія соняшникова високоолеїнова":  {
+                                            "unit":  "кг",
+                                            "group":  "Основна сировина",
+                                            "article":  "8544435501"
+                                        },
+    "Патока":  {
+                   "unit":  "кг",
+                   "group":  "Основна сировина",
+                   "article":  "6096186"
+               },
+    "Пекарський порошок":  {
+                               "unit":  "кг",
+                               "group":  "Основна сировина",
+                               "article":  "8544448116"
+                           },
+    "Пектин цитрусовий":  {
+                              "unit":  "кг",
+                              "group":  "Основна сировина",
+                              "article":  "6099935"
+                          },
+    "Пірофосфат натрію Е450":  {
+                                   "unit":  "кг",
+                                   "group":  "Основна сировина",
+                                   "article":  "6096189"
+                               },
+    "Пластівці вівсяні ОРГАНІЧНІ":  {
+                                        "unit":  "кг",
+                                        "group":  "Основна сировина",
+                                        "article":  "8544438267"
+                                    },
+    "Пластівці вівсяні різані, подріблені":  {
+                                                 "unit":  "кг",
+                                                 "group":  "Основна сировина",
+                                                 "article":  "6096866"
+                                             },
+    "Пластівці житні":  {
+                            "unit":  "кг",
+                            "group":  "Основна сировина",
+                            "article":  "7000017298"
+                        },
+    "Повидло яблучне":  {
+                            "unit":  "кг",
+                            "group":  "Основна сировина",
+                            "article":  "6096194"
+                        },
+    "Посипка цукрова":  {
+                            "unit":  "кг",
+                            "group":  "Основна сировина",
+                            "article":  "6092524"
+                        },
+    "Пропіонат кальцію":  {
+                              "unit":  "кг",
+                              "group":  "Основна сировина",
+                              "article":  "7000019708"
+                          },
+    "Сирний порошок":  {
+                           "unit":  "кг",
+                           "group":  "Основна сировина",
+                           "article":  "8544437578"
+                       },
+    "Сироватка молочна суха":  {
+                                   "unit":  "кг",
+                                   "group":  "Основна сировина",
+                                   "article":  "6096197"
+                               },
+    "Сік концентрований Апельсин":  {
+                                        "unit":  "кг",
+                                        "group":  "Основна сировина",
+                                        "article":  "8544434003"
+                                    },
+    "Сік концентрований Вишня":  {
+                                     "unit":  "кг",
+                                     "group":  "Основна сировина",
+                                     "article":  "8544437568"
+                                 },
+    "Сік концентрований Малина":  {
+                                      "unit":  "кг",
+                                      "group":  "Основна сировина",
+                                      "article":  "8544437567"
+                                  },
+    "Сік концентрований Полуниця":  {
+                                        "unit":  "кг",
+                                        "group":  "Основна сировина",
+                                        "article":  "8544437569"
+                                    },
+    "Сік концентрований Чорна смородина":  {
+                                               "unit":  "кг",
+                                               "group":  "Основна сировина",
+                                               "article":  "8544437570"
+                                           },
+    "Сік концентрований яблучний 70 Брікс":  {
+                                                 "unit":  "кг",
+                                                 "group":  "Основна сировина",
+                                                 "article":  "8544439426"
+                                             },
+    "Сіль вуглеамонійна":  {
+                               "unit":  "кг",
+                               "group":  "Основна сировина",
+                               "article":  "8544448566"
+                           },
+    "Сіль кухонна":  {
+                         "unit":  "кг",
+                         "group":  "Основна сировина",
+                         "article":  "6096198"
+                     },
+    "Сода харчова":  {
+                         "unit":  "кг",
+                         "group":  "Основна сировина",
+                         "article":  "8544448569"
+                     },
+    "Сорбітол у водному розчині":  {
+                                       "unit":  "кг",
+                                       "group":  "Основна сировина",
+                                       "article":  "8544434061"
+                                   },
+    "Суміш для печива \"Флорида \"(Американер ванільний)":  {
+                                                                "unit":  "кг",
+                                                                "group":  "Основна сировина",
+                                                                "article":  "6094496"
+                                                            },
+    "Суміш Мафін ванільна 1/15 кг Альфа-хліб":  {
+                                                    "unit":  "кг",
+                                                    "group":  "Основна сировина",
+                                                    "article":  "8544436961"
+                                                },
+    "Суміш прянощів для пряника (BOWIKA PREMIUM)":  {
+                                                        "unit":  "кг",
+                                                        "group":  "Основна сировина",
+                                                        "article":  "8544436040"
+                                                    },
+    "Суха суміш Easy Biscuit":  {
+                                    "unit":  "кг",
+                                    "group":  "Основна сировина",
+                                    "article":  "8544437929"
+                                },
+    "Хлібопекарський поліпшувач":  {
+                                       "unit":  "кг",
+                                       "group":  "Основна сировина",
+                                       "article":  "6088753"
+                                   },
+    "Цедра апельсинова":  {
+                              "unit":  "кг",
+                              "group":  "Основна сировина",
+                              "article":  "8544434297"
+                          },
+    "Цукор":  {
+                  "unit":  "кг",
+                  "group":  "Основна сировина",
+                  "article":  "6096200"
+              },
+    "Чорний шоколад в краплях (Пуратос)":  {
+                                               "unit":  "кг",
+                                               "group":  "Основна сировина",
+                                               "article":  "8544436235"
+                                           },
+    "Яєчний порошок":  {
+                           "unit":  "кг",
+                           "group":  "Основна сировина",
+                           "article":  "6096202"
+                       }
+};
+const codes = Object.keys(ITEMS);
+const PAGE = 60;
+const $ = id => document.getElementById(id);
+let current = null, hits = codes, shown = PAGE;
+
+const stamp = () => new Date().toLocaleString('uk-UA', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+
+function fill(el, code, time) {
+  el.innerHTML = '<div class="name"></div><div class="time"></div><div class="art"></div>';
+  el.querySelector('.name').textContent = code;
+  el.querySelector('.time').textContent = time;
+  el.querySelector('.art').textContent = ITEMS[code].article ? 'Арт. ' + ITEMS[code].article : '';
+}
+
+function pick(c) {
+  current = c;
+  $('sample').style.opacity = 1;
+  fill($('sample'), c, stamp());
+  $('cur').textContent = (ITEMS[c].article || 'без артикулу') + ' · ' + ITEMS[c].unit + ' · ' + ITEMS[c].group;
+  $('print').disabled = false;
+  render();
+  document.body.classList.add('picked');
+  if (matchMedia('(max-width:640px)').matches) $('q').blur();  // phone: hide keyboard, bottom bar shows the sticker
+  else $('sample').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function render() {
+  $('list').innerHTML = '';
+  for (const c of hits.slice(0, shown)) {
+    const li = document.createElement('li');
+    li.innerHTML = '<span></span><code></code>';
+    li.firstChild.textContent = c;
+    li.lastChild.textContent = (ITEMS[c].article || 'без артикулу') + ' · ' + ITEMS[c].unit + ' · ' + ITEMS[c].group;
+    if (c === current) li.className = 'pk';
+    li.onclick = () => pick(c);
+    $('list').append(li);
+  }
+  if (!hits.length) $('list').innerHTML = '<li class="e">Нічого не знайдено</li>';
+  $('psub').textContent = hits.length + ' з ' + codes.length;
+  $('more').hidden = hits.length <= shown;
+  $('more').textContent = 'Показати ще (' + (hits.length - shown) + ')';
+}
+
+$('q').addEventListener('input', () => {
+  const q = $('q').value.trim().toLowerCase();
+  hits = q ? codes.filter(c => c.toLowerCase().includes(q) || ITEMS[c].article.includes(q)) : codes;
+  shown = PAGE;
+  $('ptitle').textContent = q ? 'Знайдено' : 'Уся сировина';
+  render();
+  dropdown(q);
+});
+
+// suggestions right under the search field
+let ddPos = -1;
+function dropdown(q) {
+  const dd = $('dd');
+  dd.innerHTML = ''; ddPos = -1;
+  dd.hidden = !q;
+  if (!q) return;
+  for (const c of hits.slice(0, 10)) {
+    const li = document.createElement('li');
+    li.innerHTML = '<span></span><code></code>';
+    li.firstChild.textContent = c;
+    li.lastChild.textContent = (ITEMS[c].article || 'без артикулу') + ' · ' + ITEMS[c].unit + ' · ' + ITEMS[c].group;
+    li.onclick = () => { dd.hidden = true; $('q').value = c; pick(c); };
+    dd.append(li);
+  }
+  if (!hits.length) dd.innerHTML = '<li class="e">Нічого не знайдено</li>';
+}
+$('q').addEventListener('keydown', e => {
+  const items = [...$('dd').querySelectorAll('li:not(.e)')];
+  if ($('dd').hidden || !items.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    ddPos = (ddPos + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+    items.forEach((li, i) => li.classList.toggle('on', i === ddPos));
+    items[ddPos].scrollIntoView({block:'nearest'});
+  } else if (e.key === 'Enter') {
+    items[Math.max(ddPos, 0)].click();
+  } else if (e.key === 'Escape') {
+    $('dd').hidden = true;
+  }
+});
+$('q').addEventListener('focus', () => { if ($('q').value.trim()) dropdown($('q').value.trim().toLowerCase()); });
+document.addEventListener('click', e => { if (!e.target.closest('.box')) $('dd').hidden = true; });
+$('more').onclick = () => { shown += PAGE; render(); };
+$('clear').onclick = () => { $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus(); };
+
+$('print').addEventListener('click', () => {
+  const n = Math.min(50, Math.max(1, parseInt($('copies').value) || 1));
+  const time = stamp();  // date/time = moment of printing
+  $('paper').innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'label';
+    fill(el, current, time);
+    $('paper').append(el);
+  }
+  fill($('sample'), current, time);
+  window.print();
+});
+
+render();
+// sample sticker until an item is picked
+fill($('sample'), ITEMS['Цукор'] ? 'Цукор' : codes[0], stamp());
+$('sample').style.opacity = .5;
+</script>
+</body>
+</html>
