@@ -59,6 +59,34 @@ h3{margin:0;font-size:16px}
 .label .time{font-size:11pt;margin-top:auto}
 .label .art{font-size:9pt}
 #paper{display:none}
+/* full screen (as in liquids-map, on any device): search box is the header with an exit button,
+   list fills the screen, print bar at the bottom after a pick */
+.exit{display:none;flex:none;font:inherit;font-size:13px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 12px;cursor:pointer}
+.exit:active{opacity:.8}
+body.full{overflow:hidden}
+body.full .frame{position:fixed;inset:0;z-index:20;max-width:none;display:flex;flex-direction:column;border:0;background:var(--bg);padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+body.full .frame>header,body.full .intro h1,body.full .intro .lead,body.full .dd,body.full #full,body.full #cur{display:none!important}
+body.full .intro{flex:none;padding:0;position:static}
+body.full .box{border:0;border-bottom:1px solid #6b6565;border-radius:0}
+body.full .prompt{height:56px;padding:0 16px}
+body.full .prompt input{font-size:18px}
+body.full .exit{display:block}
+body.full .lst{order:1;flex:1;overflow:auto;padding:0}
+body.full .sidehd{padding:12px 16px 4px;margin:0}
+body.full .list{display:block}
+body.full .list li{min-height:56px;padding:10px 16px;border-radius:0;border-bottom:1px solid var(--line);font-size:16px}
+body.full .list li code{color:var(--muted);font-size:13px}
+body.full .more{margin:16px;width:calc(100% - 32px);height:48px}
+body.full .work{order:2;flex:none;display:none}
+body.full.picked .list{padding-bottom:0}
+body.full.picked .work{position:static;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);border-bottom:0}
+body.full .preview{padding:4px}
+body.full .preview .label{zoom:.7}
+body.full .ctl{display:contents}
+body.full .ctl .row{justify-content:flex-end}
+body.full .ctl input{width:88px;height:48px;font-size:18px}
+body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
+.fullbtn{font:inherit;font-size:13px;background:none;color:var(--fg);border:1px solid #6b6565;border-radius:4px;padding:6px 12px;cursor:pointer}
 /* phone: compact header, sticky search, one-column tap list, bottom bar after a pick (desktop above is unchanged) */
 @media (max-width:640px){
   body{padding:0;font-size:16px;line-height:1.4}
@@ -107,7 +135,7 @@ h3{margin:0;font-size:16px}
     <h1>Стікери на сировину</h1>
     <p class="lead">Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.</p>
     <div class="box">
-      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"></label>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
       <ul class="dd" id="dd" hidden></ul>
     </div>
   </section>
@@ -121,8 +149,8 @@ h3{margin:0;font-size:16px}
     </div>
   </section>
 
-  <section>
-    <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div></div>
+  <section class="lst">
+    <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div><button class="fullbtn" id="full" type="button">⤢ На весь екран</button></div>
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
   </section>
@@ -833,7 +861,7 @@ function pick(c) {
   $('print').disabled = false;
   render();
   document.body.classList.add('picked');
-  if (matchMedia('(max-width:640px)').matches) $('q').blur();  // phone: hide keyboard, bottom bar shows the sticker
+  if (full || matchMedia('(max-width:640px)').matches) $('q').blur();  // phone: hide keyboard, bottom bar shows the sticker
   else $('sample').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
@@ -896,6 +924,17 @@ $('q').addEventListener('keydown', e => {
 });
 $('q').addEventListener('focus', () => { if ($('q').value.trim()) dropdown($('q').value.trim().toLowerCase()); });
 document.addEventListener('click', e => { if (!e.target.closest('.box')) $('dd').hidden = true; });
+// full screen, as in liquids-map; remembered per device so a tablet reopens in it
+let full = false;
+function setFull(on) {
+  full = on;
+  document.body.classList.toggle('full', on);
+  try { localStorage.setItem('labels.full', on ? '1' : ''); } catch (e) {}
+}
+$('full').onclick = () => { setFull(true); $('q').focus(); };
+$('exitFull').onclick = e => { e.preventDefault(); setFull(false); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && full) setFull(false); });
+try { if (localStorage.getItem('labels.full')) setFull(true); } catch (e) {}
 $('more').onclick = () => { shown += PAGE; render(); };
 $('clear').onclick = () => { $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus(); };
 
