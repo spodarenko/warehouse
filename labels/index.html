@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Стікери</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 /* Same look as liquids-map: framed column, hairline borders, single dark theme (config/ui-tokens.json).
    Label size: 60x30 mm (Citizen CMP-30IIL via RawBT). */
@@ -94,6 +95,20 @@ body.full .ctl .row{justify-content:flex-end}
 body.full .ctl input{width:88px;height:48px;font-size:18px}
 body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
 .log{list-style:none;margin:0 0 12px;padding:0}
+/* settings dialog */
+dialog{background:var(--panel);color:var(--fg);border:1px solid #6b6565;border-radius:6px;padding:20px;width:min(420px,calc(100% - 32px));font:inherit;font-size:14px}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog h4{margin:20px 0 8px;font-size:14px}
+dialog input{width:100%;min-height:44px;font:inherit;font-size:16px;background:var(--bg);color:var(--fg);border:1px solid #6b6565;border-radius:4px;padding:8px 12px}
+dialog .row{display:flex;gap:8px}
+dialog .row input{flex:1;min-width:0}
+dialog .btn{min-height:44px;font-weight:700}
+dialog #dUnlock{width:100%;margin-top:8px}
+dialog .fullbtn{width:100%}
+.dlg-hd{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px}
+.dlg-hd .x{font:inherit;background:none;border:0;color:var(--fg);font-size:20px;width:44px;height:44px;cursor:pointer}
+.qr{background:#fff;padding:12px;margin-top:12px;width:max-content}
+.linkbtn{font:inherit;background:none;border:0;color:var(--muted);cursor:pointer;padding:0;text-decoration:underline}
 .fullbtn{display:block;margin:0 0 16px;min-height:44px;font:inherit;font-size:14px;background:none;color:var(--fg);border:1px solid #6b6565;border-radius:4px;padding:6px 12px;cursor:pointer}
 /* phone: compact header, sticky search, one-column tap list, bottom bar after a pick (desktop above is unchanged) */
 @media (max-width:640px){
@@ -147,8 +162,6 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
     <h1>Стікери на сировину</h1>
     <p class="lead">Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.</p>
     <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
-    <button class="fullbtn" id="printerMode" type="button">🖨 Цей пристрій — принтер: вимкнено</button>
-    <button class="fullbtn" id="keyBtn" type="button">🔑 Змінити ключ складу / ім'я</button>
     <div class="box">
       <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
       <ul class="dd" id="dd" hidden></ul>
@@ -175,7 +188,29 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
     <div>Сировини <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом <span id="lArt"></span></div><div>Без артикулу <span id="lNoArt"></span></div><div>Стікер 60×30</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span><button class="linkbtn" id="settings" type="button">⚙ Налаштування</button></div>
+<dialog id="dlg">
+  <form method="dialog" class="dlg-hd"><b>⚙ Налаштування</b><button class="x" aria-label="Закрити">✕</button></form>
+  <div id="dLock">
+    <p class="m" id="dLockMsg"></p>
+    <input id="dKey" type="password" autocomplete="off" placeholder="Ключ складу">
+    <button class="btn" id="dUnlock" type="button">Відкрити</button>
+  </div>
+  <div id="dPanel" hidden>
+    <p class="m" id="dDevice"></p>
+    <h4>Друк з телефонів</h4>
+    <button class="fullbtn" id="sPrinter" type="button"></button>
+    <h4>Підключити телефон працівника</h4>
+    <div class="row"><input id="dWho" placeholder="Ім'я працівника" autocomplete="off"><button class="btn" id="dQr" type="button">QR-код</button></div>
+    <div class="qr" id="qr" hidden></div>
+    <p class="m" id="qrHint" hidden>Працівник наводить камеру телефона на код і відкриває посилання. Телефон запам'ятає ключ та ім'я, вводити нічого не треба.</p>
+    <h4>Ключ складу</h4>
+    <div class="row"><input id="dNewKey" type="password" placeholder="Новий ключ, від 12 символів" autocomplete="off"><button class="btn" id="dSetKey" type="button">Змінити</button></div>
+    <p class="m">Після зміни ключа телефони треба підключити заново.</p>
+    <h4>Цей пристрій</h4>
+    <button class="fullbtn" id="dForget" type="button">Відключити цей пристрій</button>
+  </div>
+</dialog>
 <div id="paper"></div>
 <script>
 const ITEMS = {
@@ -996,21 +1031,26 @@ async function deriveKey(pass) {
   return crypto.subtle.deriveKey({name: 'PBKDF2', salt: enc.encode(TOPIC), iterations: 100000, hash: 'SHA-256'},
     base, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
 }
-// asks for the warehouse key (and the person's name on phones) once per device
-async function ensureKey(needName) {
-  let pass = store('labels.key');
-  if (!pass) {
-    pass = (prompt('Ключ складу (однаковий на телефонах і планшеті):') || '').trim();
-    if (!pass) return false;
-    store('labels.key', pass);
-  }
-  if (needName && !store('labels.who')) {
-    const who = (prompt('Ваше ім\'я (для журналу друку):') || '').trim();
-    if (!who) return false;
-    store('labels.who', who);
-  }
-  if (!aesKey) aesKey = await deriveKey(pass);
+// Access: whoever knows the warehouse key is the admin. Workers never type it: the admin opens
+// ⚙ Налаштування, enters the key and shows a QR code; scanning it stores key + worker name on the phone.
+const PAIR = '#pair=';
+const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
+function setKey(k) { store('labels.key', k); aesKey = null; }
+async function loadKey() {
+  const k = store('labels.key');
+  if (!k) return false;
+  if (!aesKey) aesKey = await deriveKey(k);
   return true;
+}
+// a phone opened through the admin's QR link: save key + name, drop them from the address bar
+if (location.hash.startsWith(PAIR)) {
+  try {
+    const p = JSON.parse(unb64url(location.hash.slice(PAIR.length)));
+    setKey(p.k); store('labels.who', p.who);
+    relay('✓ Телефон підключено: ' + p.who + '. Можна друкувати на планшеті.');
+  } catch (e) { relay('✕ Посилання підключення пошкоджене. Попросіть новий QR-код.'); }
+  history.replaceState(null, '', location.pathname + location.search);
 }
 const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -1026,7 +1066,10 @@ async function unseal(text) {
 }
 
 $('remote').addEventListener('click', async () => {
-  if (!await ensureKey(true)) return;
+  if (!store('labels.who') || !await loadKey()) {
+    relay('Телефон не підключено до планшета. Попросіть адміністратора показати QR-код.');
+    return;
+  }
   const n = copiesOf($('copies').value), name = current;
   relay('Надсилаю на планшет…');
   try {
@@ -1035,11 +1078,6 @@ $('remote').addEventListener('click', async () => {
     relay('✓ Надіслано на планшет: ' + name + ' × ' + n);
   } catch (e) { relay('✕ Не вдалося надіслати. Перевірте інтернет.'); }
 });
-$('keyBtn').onclick = () => {
-  store('labels.key', ''); store('labels.who', ''); aesKey = null;
-  relay('Ключ і ім\'я скинуто. Їх спитають при наступному друці.');
-  if (source) setPrinter(true);
-};
 
 // printer journal: last 30 jobs, kept on the tablet
 const journal = () => { try { return JSON.parse(store('labels.log') || '[]'); } catch (e) { return []; } };
@@ -1057,9 +1095,8 @@ function showJournal() {
 let source = null;
 async function setPrinter(on) {
   if (source) { source.close(); source = null; }
-  if (on && !await ensureKey(false)) on = false;
+  if (on && !await loadKey()) on = false;
   store('labels.printer', on ? '1' : '');
-  $('printerMode').textContent = '🖨 Цей пристрій — принтер: ' + (on ? 'увімкнено' : 'вимкнено');
   if (!on) { $('relay').hidden = true; showJournal(); return; }
   source = new EventSource(RELAY + '/sse');
   source.onopen = () => relay('● Принтер на зв\'язку, чекаю завдань з телефонів');
@@ -1082,8 +1119,54 @@ async function setPrinter(on) {
   };
   showJournal();
 }
-$('printerMode').onclick = () => setPrinter(!source);
 if (store('labels.printer')) setPrinter(true);
+
+// ⚙ settings: opens only with the warehouse key (on a new device the key typed here becomes its key)
+const dlg = $('dlg');
+function showDevice() {
+  const who = store('labels.who');
+  $('dDevice').textContent = 'Цей пристрій: ' + (source ? 'принтер, друкує завдання з телефонів'
+    : who ? 'телефон «' + who + '»' : 'ключ є, але це не принтер і не телефон працівника');
+  $('sPrinter').textContent = source ? '🖨 Вимкнути режим принтера' : '🖨 Зробити цей пристрій принтером';
+}
+$('settings').onclick = () => {
+  $('dLockMsg').textContent = store('labels.key') ? 'Введіть ключ складу, щоб відкрити налаштування.' : 'Новий пристрій. Введіть ключ складу.';
+  $('dKey').value = '';
+  $('dLock').hidden = false; $('dPanel').hidden = true; $('qr').hidden = $('qrHint').hidden = true;
+  dlg.showModal();
+  $('dKey').focus();
+};
+$('dUnlock').onclick = () => {
+  const k = $('dKey').value.trim(), cur = store('labels.key');
+  if (!k) return;
+  if (cur && k !== cur) { $('dLockMsg').textContent = '✕ Невірний ключ.'; return; }
+  if (!cur) setKey(k);
+  $('dLock').hidden = true; $('dPanel').hidden = false;
+  showDevice();
+};
+$('dKey').onkeydown = e => { if (e.key === 'Enter') $('dUnlock').click(); };
+$('sPrinter').onclick = async () => { await setPrinter(!source); showDevice(); };
+$('dQr').onclick = () => {
+  const who = $('dWho').value.trim();
+  if (!who) { $('dWho').focus(); return; }
+  const url = location.origin + location.pathname + PAIR + b64url(JSON.stringify({k: store('labels.key'), who}));
+  $('qr').innerHTML = '';
+  new QRCode($('qr'), {text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M});
+  $('qr').hidden = $('qrHint').hidden = false;
+};
+$('dSetKey').onclick = async () => {
+  const k = $('dNewKey').value.trim();
+  if (k.length < 12) { $('dNewKey').focus(); return; }
+  setKey(k); $('dNewKey').value = '';
+  if (source) await setPrinter(true);
+  relay('✓ Ключ змінено. Підключіть телефони заново.');
+};
+$('dForget').onclick = async () => {
+  await setPrinter(false);
+  setKey(''); store('labels.who', '');
+  dlg.close();
+  relay('Пристрій відключено.');
+};
 
 render();
 const withArt = codes.filter(c => ITEMS[c].article).length;
