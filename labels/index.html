@@ -93,7 +93,8 @@ body.full .preview .label{zoom:.7}
 body.full .ctl{display:contents}
 body.full .ctl .row{justify-content:flex-end}
 body.full .ctl input{width:88px;height:48px;font-size:18px}
-body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
+body.full .ctl .btn,body.full .ctl .relay{grid-column:1/-1;height:56px;font-size:18px}
+body.full .ctl .relay{height:auto;font-size:14px}
 .log{list-style:none;margin:0 0 12px;padding:0}
 /* settings dialog */
 dialog{background:var(--panel);color:var(--fg);border:1px solid #6b6565;border-radius:6px;padding:20px;width:min(420px,calc(100% - 32px));font:inherit;font-size:14px}
@@ -141,6 +142,7 @@ dialog .fullbtn{width:100%}
   .ctl .row{justify-content:flex-end}
   .ctl input{width:88px;height:48px;font-size:18px}
   .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
+  .ctl .relay{grid-column:1/-1}
 }
 @page{size:60mm 30mm;margin:0}
 @media print{
@@ -174,11 +176,12 @@ dialog .fullbtn{width:100%}
       <div class="row"><span>Копій</span><input id="copies" type="number" min="1" max="50" value="1" inputmode="numeric"></div>
       <button class="btn" id="print" disabled>Друкувати</button>
       <button class="btn" id="remote" disabled>Друкувати на планшеті</button>
+      <div class="m relay" id="relay" hidden></div>
     </div>
   </section>
 
   <section class="lst">
-    <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div><div class="m relay" id="relay" hidden></div></div>
+    <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div></div>
     <ul class="m log" id="log" hidden></ul>
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
