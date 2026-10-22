@@ -17,7 +17,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-
 .frame{max-width:1080px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
 section,header{border-bottom:1px solid var(--line);padding:64px clamp(16px,7.5vw,80px)}
 header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:20px;min-height:80px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
-.logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1}
+.logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1;user-select:none;-webkit-user-select:none}
 .logo span{color:var(--muted)}
 nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 nav a{color:var(--fg);text-decoration:none}
@@ -108,7 +108,6 @@ dialog .fullbtn{width:100%}
 .dlg-hd{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px}
 .dlg-hd .x{font:inherit;background:none;border:0;color:var(--fg);font-size:20px;width:44px;height:44px;cursor:pointer}
 .qr{background:#fff;padding:12px;margin-top:12px;width:max-content}
-.linkbtn{font:inherit;background:none;border:0;color:var(--muted);cursor:pointer;padding:0;text-decoration:underline}
 .fullbtn{display:block;margin:0 0 16px;min-height:44px;font:inherit;font-size:14px;background:none;color:var(--fg);border:1px solid #6b6565;border-radius:4px;padding:6px 12px;cursor:pointer}
 /* phone: compact header, sticky search, one-column tap list, bottom bar after a pick (desktop above is unchanged) */
 @media (max-width:640px){
@@ -188,7 +187,7 @@ dialog .fullbtn{width:100%}
     <div>Сировини <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом <span id="lArt"></span></div><div>Без артикулу <span id="lNoArt"></span></div><div>Стікер 60×30</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span><button class="linkbtn" id="settings" type="button">⚙ Налаштування</button></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span></div>
 <dialog id="dlg">
   <form method="dialog" class="dlg-hd"><b>⚙ Налаштування</b><button class="x" aria-label="Закрити">✕</button></form>
   <div id="dLock">
@@ -1121,15 +1120,22 @@ async function setPrinter(on) {
 }
 if (store('labels.printer')) setPrinter(true);
 
-// ⚙ settings: opens only with the warehouse key (on a new device the key typed here becomes its key)
+// ⚙ settings: hidden entry (5 quick taps on the logo), then the warehouse key
+// (on a new device the key typed here becomes its key)
 const dlg = $('dlg');
+let taps = 0, tapTimer = 0;
+document.querySelector('.logo').addEventListener('click', () => {
+  clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => { taps = 0; }, 1500);
+  if (++taps === 5) { taps = 0; openSettings(); }
+});
 function showDevice() {
   const who = store('labels.who');
   $('dDevice').textContent = 'Цей пристрій: ' + (source ? 'принтер, друкує завдання з телефонів'
     : who ? 'телефон «' + who + '»' : 'ключ є, але це не принтер і не телефон працівника');
   $('sPrinter').textContent = source ? '🖨 Вимкнути режим принтера' : '🖨 Зробити цей пристрій принтером';
 }
-$('settings').onclick = () => {
+function openSettings() {
   $('dLockMsg').textContent = store('labels.key') ? 'Введіть ключ складу, щоб відкрити налаштування.' : 'Новий пристрій. Введіть ключ складу.';
   $('dKey').value = '';
   $('dLock').hidden = false; $('dPanel').hidden = true; $('qr').hidden = $('qrHint').hidden = true;
