@@ -93,6 +93,7 @@ body.full .ctl{display:contents}
 body.full .ctl .row{justify-content:flex-end}
 body.full .ctl input{width:88px;height:48px;font-size:18px}
 body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
+.log{list-style:none;margin:0 0 12px;padding:0}
 .fullbtn{display:block;margin:0 0 16px;min-height:44px;font:inherit;font-size:14px;background:none;color:var(--fg);border:1px solid #6b6565;border-radius:4px;padding:6px 12px;cursor:pointer}
 /* phone: compact header, sticky search, one-column tap list, bottom bar after a pick (desktop above is unchanged) */
 @media (max-width:640px){
@@ -147,6 +148,7 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
     <p class="lead">Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.</p>
     <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
     <button class="fullbtn" id="printerMode" type="button">🖨 Цей пристрій — принтер: вимкнено</button>
+    <button class="fullbtn" id="keyBtn" type="button">🔑 Змінити ключ складу / ім'я</button>
     <div class="box">
       <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
       <ul class="dd" id="dd" hidden></ul>
@@ -165,6 +167,7 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
 
   <section class="lst">
     <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div><div class="m relay" id="relay" hidden></div></div>
+    <ul class="m log" id="log" hidden></ul>
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
   </section>
@@ -976,37 +979,111 @@ $('print').addEventListener('click', () => {
   fill($('sample'), current, stamp());
 });
 
-// remote printing: a phone sends {name, copies} to an ntfy.sh topic, the tablet in printer mode prints it
-const RELAY = 'https://ntfy.sh/' + 'delicia-labels-8d96bc600576c5a5';
+// remote printing: a phone sends an encrypted {name, copies, who, t} to an ntfy.sh topic,
+// the tablet in printer mode decrypts it with the same warehouse key and prints; anything else is ignored.
+// The key is typed once per device and kept only there (never in the page source).
+const TOPIC = 'delicia-labels-8d96bc600576c5a5';
+const RELAY = 'https://ntfy.sh/' + TOPIC;
+const MAX_AGE = 10 * 60 * 1000;  // job time (phone clock) vs ntfy server time; protects from replays together with `seen`
+const seen = new Set();  // IVs of jobs already handled
 const relay = msg => { $('relay').hidden = false; $('relay').textContent = msg; };
+const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (e) { return ''; } };
 
-$('remote').addEventListener('click', () => {
+let aesKey = null;
+async function deriveKey(pass) {
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name: 'PBKDF2', salt: enc.encode(TOPIC), iterations: 100000, hash: 'SHA-256'},
+    base, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
+}
+// asks for the warehouse key (and the person's name on phones) once per device
+async function ensureKey(needName) {
+  let pass = store('labels.key');
+  if (!pass) {
+    pass = (prompt('Ключ складу (однаковий на телефонах і планшеті):') || '').trim();
+    if (!pass) return false;
+    store('labels.key', pass);
+  }
+  if (needName && !store('labels.who')) {
+    const who = (prompt('Ваше ім\'я (для журналу друку):') || '').trim();
+    if (!who) return false;
+    store('labels.who', who);
+  }
+  if (!aesKey) aesKey = await deriveKey(pass);
+  return true;
+}
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function seal(obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name: 'AES-GCM', iv}, aesKey, new TextEncoder().encode(JSON.stringify(obj)));
+  return b64(iv) + '.' + b64(ct);
+}
+async function unseal(text) {
+  const [iv, ct] = text.split('.');
+  const pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(iv)}, aesKey, unb64(ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+$('remote').addEventListener('click', async () => {
+  if (!await ensureKey(true)) return;
   const n = copiesOf($('copies').value), name = current;
   relay('Надсилаю на планшет…');
-  fetch(RELAY, {method: 'POST', body: JSON.stringify({name, copies: n})})
-    .then(r => { if (!r.ok) throw r.status; relay('✓ Надіслано на планшет: ' + name + ' × ' + n); })
-    .catch(() => relay('✕ Не вдалося надіслати. Перевірте інтернет.'));
+  try {
+    const r = await fetch(RELAY, {method: 'POST', body: await seal({name, copies: n, who: store('labels.who'), t: Date.now()})});
+    if (!r.ok) throw r.status;
+    relay('✓ Надіслано на планшет: ' + name + ' × ' + n);
+  } catch (e) { relay('✕ Не вдалося надіслати. Перевірте інтернет.'); }
 });
+$('keyBtn').onclick = () => {
+  store('labels.key', ''); store('labels.who', ''); aesKey = null;
+  relay('Ключ і ім\'я скинуто. Їх спитають при наступному друці.');
+  if (source) setPrinter(true);
+};
+
+// printer journal: last 30 jobs, kept on the tablet
+const journal = () => { try { return JSON.parse(store('labels.log') || '[]'); } catch (e) { return []; } };
+function showJournal() {
+  const log = journal();
+  $('log').hidden = !source || !log.length;
+  $('log').innerHTML = '';
+  for (const j of log) {
+    const li = document.createElement('li');
+    li.textContent = j.at + ' · ' + j.who + ' · ' + j.name + ' × ' + j.copies;
+    $('log').append(li);
+  }
+}
 
 let source = null;
-function setPrinter(on) {
-  try { localStorage.setItem('labels.printer', on ? '1' : ''); } catch (e) {}
-  $('printerMode').textContent = '🖨 Цей пристрій — принтер: ' + (on ? 'увімкнено' : 'вимкнено');
+async function setPrinter(on) {
   if (source) { source.close(); source = null; }
-  if (!on) { $('relay').hidden = true; return; }
+  if (on && !await ensureKey(false)) on = false;
+  store('labels.printer', on ? '1' : '');
+  $('printerMode').textContent = '🖨 Цей пристрій — принтер: ' + (on ? 'увімкнено' : 'вимкнено');
+  if (!on) { $('relay').hidden = true; showJournal(); return; }
   source = new EventSource(RELAY + '/sse');
   source.onopen = () => relay('● Принтер на зв\'язку, чекаю завдань з телефонів');
   source.onerror = () => relay('○ Немає зв\'язку, перепідключаюсь…');
-  source.onmessage = e => {
+  source.onmessage = async e => {
     let job;
-    try { const m = JSON.parse(e.data); if (m.event !== 'message') return; job = JSON.parse(m.message); } catch (err) { return; }
+    try {
+      const m = JSON.parse(e.data);
+      if (m.event !== 'message') return;
+      job = await unseal(m.message);
+      if (seen.has(m.message.split(".")[0]) || Math.abs(m.time * 1000 - job.t) > MAX_AGE) return;  // replayed or stale
+      seen.add(m.message.split(".")[0]);
+    } catch (err) { relay('⚠ Відхилено завдання з чужим ключем'); return; }
     if (!ITEMS[job.name]) return;
-    printLabels(job.name, copiesOf(job.copies));
-    relay('● Надруковано: ' + job.name + ' × ' + copiesOf(job.copies) + ' (' + stamp() + ')');
+    const n = copiesOf(job.copies);
+    printLabels(job.name, n);
+    store('labels.log', JSON.stringify([{at: stamp(), who: job.who, name: job.name, copies: n}, ...journal()].slice(0, 30)));
+    relay('● Надруковано: ' + job.name + ' × ' + n + ' · ' + job.who);
+    showJournal();
   };
+  showJournal();
 }
 $('printerMode').onclick = () => setPrinter(!source);
-try { if (localStorage.getItem('labels.printer')) setPrinter(true); } catch (e) {}
+if (store('labels.printer')) setPrinter(true);
 
 render();
 const withArt = codes.filter(c => ITEMS[c].article).length;
