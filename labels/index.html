@@ -96,6 +96,10 @@ body.full .ctl input{width:88px;height:48px;font-size:18px}
 body.full .ctl .btn,body.full .ctl .relay{grid-column:1/-1;height:44px;font-size:15px}
 body.full .ctl .relay{height:auto;font-size:14px}
 .log{list-style:none;margin:0 0 12px;padding:0}
+/* printer mode (tablet): no list header; the print journal opens from its own button */
+body.printer .sidehd{display:none}
+body.full #logBtn{margin:8px 16px}
+body.full .log{margin:0 16px 8px;max-height:30vh;overflow:auto}
 /* settings dialog */
 dialog{background:var(--panel);color:var(--fg);border:1px solid #6b6565;border-radius:6px;padding:20px;width:min(420px,calc(100% - 32px));font:inherit;font-size:14px}
 dialog::backdrop{background:rgba(0,0,0,.6)}
@@ -163,6 +167,8 @@ dialog .fullbtn{width:100%}
     <h1>Стікери на сировину</h1>
     <p class="lead">Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.</p>
     <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
+    <button class="fullbtn" id="logBtn" type="button" hidden></button>
+    <ul class="m log" id="log" hidden></ul>
     <div class="box">
       <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
       <ul class="dd" id="dd" hidden></ul>
@@ -182,7 +188,6 @@ dialog .fullbtn{width:100%}
 
   <section class="lst">
     <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div></div>
-    <ul class="m log" id="log" hidden></ul>
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
   </section>
@@ -1091,11 +1096,16 @@ $('remote').addEventListener('click', async () => {
   } catch (e) { relay('✕ Не вдалося надіслати. Перевірте інтернет.'); }
 });
 
-// printer journal: last 30 jobs, kept on the tablet
+// printer journal: last 30 jobs, kept on the tablet; folded behind its own button
 const journal = () => { try { return JSON.parse(store('labels.log') || '[]'); } catch (e) { return []; } };
+let logOpen = false;
+$('logBtn').onclick = () => { logOpen = !logOpen; showJournal(); };
 function showJournal() {
   const log = journal();
-  $('log').hidden = !source || !log.length;
+  document.body.classList.toggle('printer', !!source);
+  $('logBtn').hidden = !source;
+  $('logBtn').textContent = (logOpen ? '▾' : '▸') + ' Журнал друку [' + log.length + ']';
+  $('log').hidden = !source || !logOpen || !log.length;
   $('log').innerHTML = '';
   for (const j of log) {
     const li = document.createElement('li');
