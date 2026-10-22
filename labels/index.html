@@ -146,6 +146,7 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
     <h1>Стікери на сировину</h1>
     <p class="lead">Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.</p>
     <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
+    <button class="fullbtn" id="printerMode" type="button">🖨 Цей пристрій — принтер: вимкнено</button>
     <div class="box">
       <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
       <ul class="dd" id="dd" hidden></ul>
@@ -158,11 +159,12 @@ body.full .ctl .btn{grid-column:1/-1;height:56px;font-size:18px}
       <div class="m" id="cur">Так виглядатиме стікер 60×30 мм. Оберіть товар у списку нижче.</div>
       <div class="row"><span>Копій</span><input id="copies" type="number" min="1" max="50" value="1" inputmode="numeric"></div>
       <button class="btn" id="print" disabled>Друкувати</button>
+      <button class="btn" id="remote" disabled>Друкувати на планшеті</button>
     </div>
   </section>
 
   <section class="lst">
-    <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div></div>
+    <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div><div class="m relay" id="relay" hidden></div></div>
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
   </section>
@@ -875,6 +877,7 @@ function pick(c) {
   fill($('sample'), c, stamp());
   $('cur').textContent = (ITEMS[c].article || 'без артикулу') + ' · ' + ITEMS[c].unit + ' · ' + ITEMS[c].group;
   $('print').disabled = false;
+  $('remote').disabled = false;
   render();
   document.body.classList.add('picked');
   if (full || matchMedia('(max-width:640px)').matches) $('q').blur();  // phone: hide keyboard, bottom bar shows the sticker
@@ -954,19 +957,56 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && full) setF
 $('more').onclick = () => { shown += PAGE; render(); };
 $('clear').onclick = () => { $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus(); };
 
-$('print').addEventListener('click', () => {
-  const n = Math.min(50, Math.max(1, parseInt($('copies').value) || 1));
+const copiesOf = v => Math.min(50, Math.max(1, parseInt(v) || 1));
+
+function printLabels(name, n) {
   const time = stamp();  // date/time = moment of printing
   $('paper').innerHTML = '';
   for (let i = 0; i < n; i++) {
     const el = document.createElement('div');
     el.className = 'label';
-    fill(el, current, time);
+    fill(el, name, time);
     $('paper').append(el);
   }
-  fill($('sample'), current, time);
   window.print();
+}
+
+$('print').addEventListener('click', () => {
+  printLabels(current, copiesOf($('copies').value));
+  fill($('sample'), current, stamp());
 });
+
+// remote printing: a phone sends {name, copies} to an ntfy.sh topic, the tablet in printer mode prints it
+const RELAY = 'https://ntfy.sh/' + 'delicia-labels-8d96bc600576c5a5';
+const relay = msg => { $('relay').hidden = false; $('relay').textContent = msg; };
+
+$('remote').addEventListener('click', () => {
+  const n = copiesOf($('copies').value), name = current;
+  relay('Надсилаю на планшет…');
+  fetch(RELAY, {method: 'POST', body: JSON.stringify({name, copies: n})})
+    .then(r => { if (!r.ok) throw r.status; relay('✓ Надіслано на планшет: ' + name + ' × ' + n); })
+    .catch(() => relay('✕ Не вдалося надіслати. Перевірте інтернет.'));
+});
+
+let source = null;
+function setPrinter(on) {
+  try { localStorage.setItem('labels.printer', on ? '1' : ''); } catch (e) {}
+  $('printerMode').textContent = '🖨 Цей пристрій — принтер: ' + (on ? 'увімкнено' : 'вимкнено');
+  if (source) { source.close(); source = null; }
+  if (!on) { $('relay').hidden = true; return; }
+  source = new EventSource(RELAY + '/sse');
+  source.onopen = () => relay('● Принтер на зв\'язку, чекаю завдань з телефонів');
+  source.onerror = () => relay('○ Немає зв\'язку, перепідключаюсь…');
+  source.onmessage = e => {
+    let job;
+    try { const m = JSON.parse(e.data); if (m.event !== 'message') return; job = JSON.parse(m.message); } catch (err) { return; }
+    if (!ITEMS[job.name]) return;
+    printLabels(job.name, copiesOf(job.copies));
+    relay('● Надруковано: ' + job.name + ' × ' + copiesOf(job.copies) + ' (' + stamp() + ')');
+  };
+}
+$('printerMode').onclick = () => setPrinter(!source);
+try { if (localStorage.getItem('labels.printer')) setPrinter(true); } catch (e) {}
 
 render();
 const withArt = codes.filter(c => ITEMS[c].article).length;
