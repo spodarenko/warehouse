@@ -53,6 +53,10 @@ h3{margin:0;font-size:16px}
 .ctl .row{display:flex;gap:8px;align-items:center}
 .ctl input{width:72px;font:inherit;font-size:16px;text-align:center;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px}
 .ctl .btn{padding:12px 14px;font-weight:700}
+.ctl .btn:disabled{opacity:1;background:transparent;color:var(--nav);border-color:var(--line)}
+/* paired phone: the main button sends to the tablet-printer, local print is a quiet link under it */
+.ctl .btn.alt{background:none;border:0;color:var(--nav);font-weight:400;text-decoration:underline;padding:4px;height:auto!important;font-size:13px!important}
+.ctl .btn.alt:disabled{visibility:hidden}
 /* label itself — same markup on screen and paper */
 .label{width:60mm;height:30mm;padding:2mm 4mm;color:#000;background:#fff;font-family:var(--mono);display:flex;flex-direction:column;overflow:hidden;break-after:page}
 .label .name{font-size:12pt;font-weight:700;line-height:1.15;max-height:4.6em;overflow:hidden}
@@ -179,8 +183,8 @@ dialog .fullbtn{width:100%}
     <div class="ctl">
       <div class="m" id="cur">Так виглядатиме стікер 60×30 мм. Оберіть товар у списку нижче.</div>
       <div class="row"><span>Копій</span><input id="copies" type="number" min="1" max="50" value="1" inputmode="numeric"></div>
+      <button class="btn" id="remote" disabled hidden>Друкувати</button>
       <button class="btn" id="print" disabled>Друкувати</button>
-      <button class="btn" id="remote" disabled>Друкувати на планшеті</button>
       <div class="m relay" id="relay" hidden></div>
     </div>
   </section>
@@ -1075,10 +1079,19 @@ if (location.hash.startsWith(PAIR)) {
   try {
     const p = JSON.parse(unb64url(location.hash.slice(PAIR.length)));
     setKey(p.k); store('labels.who', p.who);
-    relay('✓ Телефон підключено: ' + p.who + '. Можна друкувати на планшеті.');
+    relay('✓ Телефон підключено: ' + p.who + '. Стікери друкуватиме планшет-принтер.');
   } catch (e) { relay('✕ Посилання підключення пошкоджене. Попросіть новий QR-код.'); }
   history.replaceState(null, '', location.pathname + location.search);
 }
+// one main «Друкувати»: a paired phone sends to the tablet-printer, any other device prints itself
+function setupPrint() {
+  const paired = !!store('labels.who');
+  $('remote').hidden = !paired;
+  $('print').classList.toggle('alt', paired);
+  $('print').textContent = paired ? 'або надрукувати на цьому пристрої' : 'Друкувати';
+  if (paired && $('relay').hidden) relay('Надрукує планшет-принтер');
+}
+setupPrint();
 const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 async function seal(obj) {
@@ -1204,6 +1217,7 @@ $('dForget').onclick = async () => {
   await setPrinter(false);
   setKey(''); store('labels.who', '');
   dlg.close();
+  setupPrint();
   relay('Пристрій відключено.');
 };
 
