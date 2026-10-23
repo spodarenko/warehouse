@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Довідка складу</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<style>
+/* Layout: framed column with hairline borders (opencode-like); rack on a pan/zoom canvas; list section; link-grid footer.
+   Deliberately single dark look. */
+:root{--bg:#131010;--panel:#1b1818;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#8f8a8a;--faint:#4a4545;--line:#2f2b2b;
+--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+.frame{max-width:1080px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+section,header{border-bottom:1px solid var(--line);padding:64px clamp(16px,7.5vw,80px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:20px;min-height:80px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1}
+.logo span{color:var(--muted)}
+nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none}nav a:hover,nav a.on{color:var(--fg)}
+.btn{font:inherit;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
+@media (hover:hover){.btn:hover:not(:disabled){background:transparent;color:var(--fg)}}
+.btn:active{opacity:.8}
+.btn:disabled{opacity:.3;cursor:default}
+button:focus-visible,.cell:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin:0 0 12px;text-wrap:balance}
+.lead{color:var(--muted);max-width:62ch;margin:0 0 28px;line-height:2}
+.box{border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);padding:0 12px}
+.tabs button{font:inherit;background:none;border:0;color:var(--muted);padding:12px 10px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on,.tabs button:hover{color:var(--fg);border-bottom-color:var(--fg)}
+.prompt{display:flex;align-items:center;gap:12px;padding:16px 22px;color:var(--muted)}
+.prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;outline:none}
+.prompt input::placeholder{color:var(--faint)}
+.prompt kbd{font:inherit;font-size:12px;border:1px solid var(--line);padding:0 6px;border-radius:3px}
+.exit{display:none;flex:none;font:inherit;font-size:13px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 12px;cursor:pointer}
+.exit:active{opacity:.8}
+
+/* map: pan/zoom canvas */
+.work{padding:0;background:var(--panel2)}
+.cap{color:var(--muted);font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 24px;border-bottom:1px solid var(--line)}
+.zoom{display:flex;align-items:center;border:1px solid var(--line);border-radius:4px}
+.zoom button{font:inherit;background:none;color:var(--fg);border:0;border-right:1px solid var(--line);min-width:36px;height:32px;cursor:pointer;padding:0 10px}
+.zoom button:last-child{border-right:0}
+.zoom button:hover{background:var(--panel)}
+.zoom output{min-width:56px;text-align:center;border-right:1px solid var(--line);line-height:32px;font-variant-numeric:tabular-nums}
+/* desktop: plain full-width rack; pan/zoom only on phone (see media query) */
+.zoom,.axis{display:none}
+.rack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(200px,auto));grid-auto-flow:column;background:var(--bg)}
+.cell{color:var(--fg);background:var(--bg);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px;cursor:pointer;display:grid;grid-template-rows:auto auto 1fr;gap:10px;transition:opacity .2s,background .2s}
+.cell:nth-child(n+9){border-right:0}
+.cell:nth-child(4n){border-bottom:0}
+.cell:hover{background:var(--panel)}
+.cell .hd{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.cell .hd b{color:var(--fg);font-size:18px}
+.cell .loc{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:-8px}
+.cell.dim{opacity:.3}
+.cell.on{background:var(--panel);box-shadow:inset 0 0 0 1px var(--fg)}
+.cell.sel{outline:1px dashed var(--fg);outline-offset:-8px}
+.cell.pulse{animation:pulse 1.2s ease-out 1}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(241,236,236,.5)}100%{box-shadow:0 0 0 14px rgba(241,236,236,0)}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-content:start}
+.chips i{font-style:normal;font-size:13px;line-height:1.4;border:1px solid var(--line);border-radius:3px;padding:4px 10px;color:var(--muted);background:var(--panel2);cursor:pointer;display:grid}
+.chips i small{font-size:11px;opacity:.7}
+.chips i:hover{color:var(--fg);border-color:var(--muted)}
+.chips i.lit{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.chips i{grid-template-columns:auto minmax(0,1fr);column-gap:8px;padding-left:0}
+.chips i .h{grid-row:span 2;display:flex;align-items:center;padding:0 2px 0 8px;color:var(--faint);cursor:grab;touch-action:none}
+.chips i.lit .h{color:var(--bg)}
+.chips i small{grid-column:2}
+.warn{font-weight:700;font-size:10px;color:#1b1400;background:#f5c04a;border-radius:2px;padding:0 4px;white-space:nowrap}
+.chips i.src{opacity:.25;border-style:dashed}
+.chips i.swap{outline:2px dashed var(--fg);outline-offset:2px;color:var(--fg)}
+.cell.drop{background:var(--panel);box-shadow:inset 0 0 0 2px var(--fg)}
+.ghost{position:fixed;z-index:10;pointer-events:none;transform:translate(14px,14px);background:var(--fg);color:var(--bg);padding:6px 12px;border-radius:4px;font-size:13px;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.ghost small{display:block;opacity:.6;font-size:11px}
+body.dragging{cursor:grabbing;user-select:none}
+.ubtn{font:inherit;font-size:12px;background:none;color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:4px 10px;cursor:pointer}
+.ubtn:hover{border-color:var(--fg)}
+#swap{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* list */
+.side{font-size:13px}
+.side h3{margin:0;font-size:14px}
+.side .m{color:var(--muted)}
+.sidehd{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 24px}
+.list li{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:8px;padding:6px;cursor:pointer;border-radius:3px}
+.list li:hover{background:var(--panel)}
+.list li .p{color:var(--muted)}
+.list li code{grid-column:2;color:var(--faint);overflow-wrap:anywhere}
+.list li.pk{background:var(--fg);color:var(--bg)}
+.list li.pk .p,.list li.pk code{color:var(--bg)}
+.list li.cur{outline:1px solid var(--muted)}
+.list li.m{display:block;color:var(--muted)}
+.more{font:inherit;margin-top:24px;background:none;color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:10px 18px;cursor:pointer;transition:border-color .15s,background .15s}
+.more:hover{border-color:var(--fg);background:var(--panel)}
+@media (max-width:600px){.more{width:100%}}
+
+.links{padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.links div{padding:32px 12px;text-align:center;border-right:1px solid var(--line);transition:background .15s}
+.links div:last-child{border-right:0}
+.links div:hover{background:var(--panel)}
+.links div span{color:var(--muted)}
+.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+
+@media (max-width:600px){
+  body{padding-left:0;padding-right:0;font-size:13px}
+  .frame{border:0}
+  section,header{padding:40px 16px}
+  header{padding-block:14px;min-height:0}
+  nav a{display:none}
+  .logo{font-size:20px}
+  h1{font-size:22px}
+  .lead{margin-bottom:16px}
+  .prompt{padding:12px 14px}
+  .prompt kbd,.cap .hint{display:none}
+  .cap{padding:10px 16px}
+  .zoom{display:flex}
+  .axis{display:grid;position:absolute;color:var(--muted);font-size:13px;letter-spacing:.08em}
+  .vp{position:relative;height:62vh;overflow:hidden;touch-action:none;cursor:grab;user-select:none;
+    background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px}
+  .vp.panning{cursor:grabbing}
+  .stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+  .rack{grid-template-columns:repeat(3,300px);border:1px solid var(--line)}
+  .acts{width:100%}
+  /* full-screen map with search on top */
+  body.full{overflow:hidden}
+  body.full .work{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);border:0}
+  body.full .work .box{margin:8px 12px;flex:none}
+  body.full .work .tabs button{padding:8px 8px}
+  body.full .work .prompt{padding:10px 14px}
+  body.full .vp{flex:1;height:auto}
+  /* full screen: search box becomes the header, with an exit button */
+  body.full .work .box{order:-1;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;display:flex;flex-direction:column-reverse}
+  body.full .work .tabs{border-bottom:0;border-top:1px solid var(--line)}
+  body.full .exit{display:block}
+  body.full #zFit{display:none}
+  .links{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
+  .links div:nth-child(2n){border-right:0}
+  .list li{padding:9px 6px}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
+}
+/* tare & data reference (moved from the «Тарування» page) */
+.ref h2{font-size:18px;margin:0 0 6px;text-wrap:balance}
+.ref .hd2{margin-bottom:24px;max-width:70ch}
+.ref .m{color:var(--muted)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
+.ref table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.ref th,.ref td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.ref th{color:var(--muted);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.ref tr:last-child td{border-bottom:0}
+.ref td.n{text-align:right;white-space:nowrap}
+.ref code{color:var(--muted);overflow-wrap:anywhere}
+.ref a{color:var(--fg)}
+.tag{display:inline-block;font-size:11px;line-height:1.5;border:1px solid var(--line);border-radius:3px;padding:0 6px;color:var(--muted);white-space:nowrap}
+.tag.w{color:#1b1400;background:#f5c04a;border-color:#f5c04a}
+.tag.ok{color:#7fc79a;border-color:#7fc79a}
+.src{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.src article{border:1px solid var(--line);border-radius:6px;padding:16px;background:var(--panel);display:grid;gap:6px;align-content:start;min-width:0}
+.src article p{margin:0;font-size:13px;color:var(--muted)}
+.src .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
+.ref pre{margin:0;padding:16px;font:inherit;font-size:12px;line-height:1.6;color:var(--fg)}
+.toc{display:flex;gap:8px 20px;flex-wrap:wrap;font-size:13px;margin-top:16px}
+@media (max-width:600px){.src{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.cell{transition:none}.cell.pulse{animation:none}.stage{transition:none!important}}
+.burger{display:none;padding:0;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;cursor:pointer}
+/* three equal bars drawn in CSS (the ☰ glyph sits off-centre on iPhone) */
+.burger span,.burger span::before,.burger span::after{display:block;width:18px;height:2px;border-radius:1px;background:var(--fg)}
+.burger span{position:relative}
+.burger span::before,.burger span::after{content:"";position:absolute;left:0}
+.burger span::before{top:-6px}
+.burger span::after{top:6px}
+/* no built-in search icon / clear cross (iPhone adds a magnifier to type=search) */
+.prompt input{-webkit-appearance:none;appearance:none}
+.prompt input::-webkit-search-decoration,.prompt input::-webkit-search-cancel-button{-webkit-appearance:none}
+/* phone: ☰ opens the menu under the header */
+@media (max-width:600px){
+  .burger{display:grid;place-items:center}
+  .mnav{margin-left:auto}
+  body.menu .mnav{display:flex!important;flex-flow:row wrap;align-items:stretch;gap:0 8px;width:100%;order:3;padding-top:8px}
+  body.menu .mnav nav{width:100%}
+  body.menu .mnav nav{display:flex!important;flex-direction:column;align-items:stretch;gap:0}
+  body.menu nav a{display:block!important;width:100%;padding:14px 0;border-top:1px solid var(--line);font-size:16px}
+  body.menu .mnav .btn{flex:1;min-height:44px;margin-top:12px}
+}
+/* light theme (config/ui-tokens.json → semantic.light): ☀/☾ in the header, remembered in this browser for all pages */
+:root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#6b6565;--faint:#8f8a8a}
+.theme{font:inherit;font-size:16px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:36px;height:36px;cursor:pointer;flex:none}
+@media (hover:hover){.theme:hover{border-color:var(--fg)}}
+@media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
+</style>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div class="logo"><span>delicia</span>sklad</div>
+    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-2/">Склад №2</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
+  </header>
+
+  <section>
+    <h1>Довідка складу</h1>
+    <p class="lead">Тара й вага місць, правила округлення, норми. Пошук фільтрує таблицю тари.</p>
+    <div class="box">
+      <div class="tabs" id="tabs"></div>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="борошно, 6096223, мішок…" autocomplete="off"><kbd>/</kbd></label>
+    </div>
+  </section>
+
+  <section class="ref" id="tare">
+    <div class="hd2"><h2>Тара: розмір місця і вага тари</h2><p class="m">«Місце» — одна одиниця, яку несе комірник (мішок, упаковка, каністра). Кількість місць = кількість ÷ розмір місця, мінімум 1. Брутто = нетто + тара. Пошук угорі фільтрує й цю таблицю. Стан на 20.10.2026.</p>
+    <div class="toc"><a href="#tare">Тара</a><a href="#rules">Округлення</a><a href="#norms">Норми</a><a href="#data">Дані</a><a href="#model">Модель</a><a href="#gaps">Чого бракує</a></div></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Матеріал</th><th>Арт. 1С</th><th>Тара</th><th>Нетто, кг</th><th>Тара, кг</th><th>Брутто, кг</th><th>Де лежить</th></tr></thead>
+      <tbody id="packs"></tbody>
+    </table></div>
+  </section>
+
+  <section class="ref" id="rules">
+    <div class="hd2"><h2>Правила округлення видачі</h2><p class="m">П'ять типів правил. Зібрано для Лінії 6 і «Трубочок»; для ліній 3, 4, 5, 8, 9 — ще ні.</p></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Правило</th><th>Що робить</th><th>Лінія 6 (Деліція)</th><th>«Трубочки»</th></tr></thead>
+      <tbody>
+      <tr><td><code>ceil</code> + крок</td><td>вгору до кратного кроку (часто = мішок)</td><td>Крохмаль кукурудзяний 30; картопляний, глюкоза, молоко 25; сіль вуглеамонійна, пропіонат 0,5; В-каротин, сорбат 0,25</td><td>Цукор 50; сироватка, молоко сухе 25; яєчний порошок 1; кокосова стружка, ароматизатор кокос 0,25</td></tr>
+      <tr><td><code>nearest</code> + крок</td><td>до найближчого кратного</td><td>Олія 13,68 (уп.); соки й ароматизатори 0,1; антоціан, гліцерин, сода, сіль 1</td><td>Барвник карамельний Е150С 30 (мінімум одна каністра); етилванілін 0,05; ароматизатор пряжене молоко 0,1</td></tr>
+      <tr><td><code>fixed</code></td><td>завжди одне значення</td><td>Лимонна кислота (желе) 25; Паста Грааль 20</td><td>Олія 150,48 (11 уп.); сіль кухонна 3</td></tr>
+      <tr><td><code>keep</code></td><td>як у 1С, без округлення</td><td>Борошно в/г, меланж, Е 475, АНАТО</td><td>Борошно в/г; жир «Капромілк», жир РВД; Grindox 552, Toco50</td></tr>
+      <tr><td><code>drop</code></td><td>не видаємо, рядок видаляється</td><td>—</td><td>Лецитин соєвий (бригада бере сама), жир Z102 Sania, рисові кульки</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="ref" id="norms">
+    <div class="hd2"><h2>Норми Лінії 6</h2><p class="m">Тісто рахується на заміси (1 зміна 35, 2 зміна 37), желе — на кг ВАЛ. «Трубочки» не перераховуються: кількості беруться як у 1С.</p></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Тісто Деліції, на 1 заміс</th><th>кг</th><th>Желе, на 1 т ВАЛ</th><th>кг</th></tr></thead>
+      <tbody>
+      <tr><td>Борошно в/г</td><td class="n">33</td><td>Сік концентрований</td><td class="n">0,57</td></tr>
+      <tr><td>Меланж</td><td class="n">20</td><td>Ароматизатор</td><td class="n">0,38</td></tr>
+      <tr><td>Крохмаль кукурудзяний</td><td class="n">3</td><td>Антоціан (вишня)</td><td class="n">0,75</td></tr>
+      <tr><td>Олія</td><td class="n">2,76</td><td>АНАТО (апельсин)</td><td class="n">0,04</td></tr>
+      <tr><td>Крохмаль картопляний</td><td class="n">2</td><td>Лимонна кислота</td><td class="n">4,85</td></tr>
+      <tr><td>Глюкоза · Молоко</td><td class="n">1 · 1</td><td></td><td></td></tr>
+      <tr><td>Грааль · Сіль вуглеамонійна</td><td class="n">0,6 · 0,5</td><td></td><td></td></tr>
+      <tr><td>Гліцерин · Сорбіт · Ваніль</td><td class="n">0,36 · 0,3 · 0,25</td><td></td><td></td></tr>
+      <tr><td>Сода · Сіль · Пропіонат · Лимонна к-та</td><td class="n">0,2 · 0,15 · 0,1 · 0,1</td><td></td><td></td></tr>
+      <tr><td>В-каротин · Калій сорбат · Е 475</td><td class="n">0,05 · 0,05 · 0,04</td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="ref" id="data">
+    <div class="hd2"><h2>Які дані в нас є</h2><p class="m">Вивантаження з 1С містять дані підприємства й не публікуються.</p></div>
+    <div class="src">
+      <article><div class="row"><b>Мапа рідин</b><span class="tag ok">сторінка</span></div><p>Стелаж «Рідини»: 12 полиць (A–C × 1–4), 51 позиція з партіями, 12 звірено з артикулом 1С.</p></article>
+      <article><div class="row"><b>Мапа складу №2</b><span class="tag ok">сторінка</span></div><p>План підлоги: 18 місць, 29 позицій з тарою і кодом з етикетки. Артикулів 1С ще немає.</p><a href="../sklad-2/">Відкрити</a></article>
+      <article><div class="row"><b>Презентація задуму</b><span class="tag ok">сторінка</span></div><p>Що автоматизуємо і навіщо, фази 1–3.</p><a href="../">Відкрити</a></article>
+      <article><div class="row"><b>Довідник номенклатури</b><span class="tag">JSON</span></div><p>793 позиції: артикул → назва, одиниця, група. 382 без групи; одиниці записані по-різному.</p></article>
+      <article><div class="row"><b>Норми і правила ліній</b><span class="tag">JSON</span></div><p>Лінія 6: зміни, бригада, заміси, желе й тісто. «Трубочки»: одна накладна, правила узгоджено 19–20.10, перевірено на вимозі 21204.</p></article>
+      <article><div class="row"><b>«Требование» з 1С (CSV)</b><span class="tag">зразок</span></div><p>Номер, дата, підрозділ, зміна, код, номенклатура, кількість. Після проведення є партії (для FIFO).</p></article>
+      <article><div class="row"><b>Завдання на виробництво</b><span class="tag">зразок</span></div><p>Друкована форма за день, усі лінії: бригада, зміна, підрозділ. Програма бере з нього бригаду за датою.</p></article>
+      <article><div class="row"><b>«Общее задание ПФ»</b><span class="tag w">не розібрано</span></div><p>Усі лінії й продукти, норма на 1 порцію, кг ВАЛ. Підходить, щоб рахувати всі лінії.</p></article>
+    </div>
+  </section>
+
+  <section class="ref" id="model">
+    <div class="hd2"><h2>Чернетка моделі даних для мобільного додатку</h2><p class="m">Ключ матеріалу всюди — артикул 1С. Платформа: PWA + Supabase (пропозиція 19.10).</p></div>
+    <div class="scroll"><pre>Material      артикул · назва · одиниця · група
+  └ Pack      тип (мішок/уп./каністра/шт) · нетто · тара   ← таблиця «Тара» вище
+Location      склад · зона/стелаж · місце · полиця         ← рідини A-1…C-4, склад №2 01…18
+  └ Stock     матеріал × місце · партія · кількість місць
+Batch         партія 1С · дата · код з етикетки            ← проведене «Требование» (FIFO)
+Line          лінія · продукт · бригади · заміси по змінах
+  └ Norm      матеріал · кг на заміс | кг на 1 т ВАЛ · желе/тісто
+  └ Rule      ceil | nearest | fixed | keep | drop · крок · значення
+Requisition   дата · зміна · лінія · бригада · желе/тісто
+  └ Item      матеріал · кількість · місць · партія · використано · повернення</pre></div>
+  </section>
+
+  <section class="ref" id="gaps">
+    <div class="hd2"><h2>Чого бракує</h2></div>
+    <ol class="gaps">
+      <li>Позиції на мапах не мають артикулів 1С: 39 рідин і всі 29 позицій складу №2.</li>
+      <li>Вага тари відома лише для 4 позицій. Потрібна таблиця «артикул → тип тари, нетто, тара».</li>
+      <li>Вагу «шт» не знаємо (гліцерин, сіль, сорбат тощо).</li>
+      <li>Одиниці в довіднику не нормалізовані, у 382 позицій немає групи.</li>
+      <li>Немає кількостей на місцях і партій з датами (для FIFO).</li>
+      <li>Правила є для Лінії 6 і «Трубочок». Для ліній 3, 4, 5, 8, 9 — немає. На «Трубочках» відкриті 9 питань (борошно, цукор, рисові кульки, коди в 1С).</li>
+      <li>Переміщення на мапах зберігаються лише в браузері. Потрібне спільне сховище.</li>
+      <li>Запис «Требований» у 1С працює через автозаповнювач (Лінія 6, «Трубочки»). Додаток має передавати йому вимогу, а не замінювати його.</li>
+    </ol>
+  </section>
+</div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Довідка</span><span>Українська</span></div>
+<script>
+const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),q=$("q");
+/* ---------- tare table (snapshot of the shared table, 20.10.2026) ---------- */
+// [name, article, kind, net, tare, location, note]
+const PK=[["Борошно в/г","6096223","мішок",50,null,"№2: 06, 10, 14"],["Меланж яєчний","6096204","уп.",20,null,""],["Крохмаль кукурудзяний","6096208","мішок",30,null,""],
+["Олія соняшникова високоолеїнова","8544435501","уп. = 3 шт × 4,56",13.68,null,""],["Крохмаль картопляний","6096207","мішок",25,null,""],["Глюкоза","6096218","мішок",25,null,""],
+["Молоко сухе знежирене","6096192","мішок",25,null,"№2: 01"],["Емульгатор (Паста Грааль)","8544444571","уп.",10,null,""],["Сіль вуглеамонійна","8544448566","мішок",25,null,""],
+["Сорбіт харчовий (сипучий)","6096199","мішок",25,null,"","рідкий — ?"],["Гліцерин, сіль кухонна, пропіонат, В-каротин, калій сорбат, Е 475","","шт",null,null,"","вага шт невідома"],
+["Жир пальмовий Sania","7000000609","уп.",20,null,"№2: 02, 07","артикул ?"],["Сироватка молочна","","мішок",25,null,"№2: 03"],["Карамельний колер ZHCNTO","","каністра",30,1.5,"№2: 04"],
+["FruitMax Pink 1100 OS","","уп.",15,null,"№2: 04"],["Барвник β-каротин","","уп.",9,0.36,"№2: 04"],["Арахіс смажений (подрібнений)","","уп.",10,null,"№2: 08, 13"],
+["Diamant Біле","","уп.",20,null,"№2: 09","назва ?"],["Ароматизатор Ваніль 5.87235","8544448277","каністра",12,null,"№2: 09, рідини B-3"],["Борошно кукурудзяне","","мішок",45,null,"№2: 11"],
+["Adlec","","бочка",200,null,"№2: 12","назва ?"],["Сік концентрований Апельсин","8544434003","каністра",25,null,"№2: 12","артикул ?"],["Замінник какао-масла","","уп.",20,null,"№2: 15"],
+["Ароматизатор Шоколад","","каністра",10,0.46,"№2: 16"],["Ароматизатори (мілкшейк, ваніль, ван.-вершк., полуниця, апельсин, масло)","","каністра",10,null,"№2: 16"],
+["Ароматизатор Манго","","каністра",25,null,"№2: 16"],["Кунжут","","мішок",25,null,"№2: 17"],["Льон","","мішок",25,null,"№2: 18"],["Сода харчова","8544448569","мішок",25,0.2,""],
+["Цукор білий кристалічний","6096200","мішок",50,null,"","«Трубочки»"],["Барвник карамельний E150C","6096699","каністра",30,null,"","«Трубочки»"]];
+const f3=v=>v==null?"":String(Math.round(v*1000)/1000).replace(".",",");
+PK.forEach(p=>{const tr=document.createElement("tr");
+  [p[0],p[1],p[2],p[3]==null?"?":f3(p[3]),f3(p[4]),p[3]!=null&&p[4]!=null?f3(p[3]+p[4]):"",p[5]].forEach((v,i)=>{const td=document.createElement("td");
+    if(i===1&&v){const c=document.createElement("code");c.textContent=v;td.appendChild(c)}else td.textContent=v;
+    if(i>=3&&i<=5)td.className="n";tr.appendChild(td)});
+  if(p[6]){const t=document.createElement("span");t.className="tag w";t.textContent=p[6];tr.firstChild.append(" ",t)}
+  $("packs").appendChild(tr)});
+const packRows=[...$("packs").children];
+// search: filters the tare table; quick filters (tap again to clear), «/» jumps into it, «Очистити» resets it
+const filter=()=>{const t=norm(q.value);packRows.forEach(r=>r.hidden=!!t&&!norm(r.textContent).includes(t));
+  $("clear").disabled=!q.value;for(const b of $("tabs").children)b.classList.toggle("on",b.textContent===q.value)};
+q.addEventListener("input",filter);
+["борошно","крохмаль","ароматизатор","барвник","мішок","каністра","№2"].forEach(w=>{const b=document.createElement("button");b.type="button";b.textContent=w;
+  b.onclick=()=>{q.value=q.value===w?"":w;filter()};$("tabs").appendChild(b)});
+$("clear").onclick=()=>{q.value="";filter();q.focus()};
+document.addEventListener("keydown",e=>{if(e.key==="/"&&!e.target.closest("input,textarea")){e.preventDefault();q.focus()}if(e.key==="Escape"&&document.activeElement===q){q.value="";filter()}});
+filter();
+</script>
+<script>
+// phone menu: ☰ toggles it, any link closes it
+const burger = document.getElementById('burger');
+burger.onclick = () => burger.setAttribute('aria-expanded', document.body.classList.toggle('menu'));
+document.querySelectorAll('nav a').forEach(a => a.addEventListener('click', () => { document.body.classList.remove('menu'); burger.setAttribute('aria-expanded', false); }));
+</script>
+<script>
+// theme: ☀/☾ toggles light/dark, remembered in this browser for all pages
+const themeBtn = document.getElementById('theme');
+const showTheme = () => { const l = document.documentElement.dataset.theme === 'light'; themeBtn.textContent = l ? '☾' : '☀'; themeBtn.title = l ? 'Темна тема' : 'Світла тема'; };
+themeBtn.onclick = () => {
+  const l = document.documentElement.dataset.theme !== 'light';
+  if (l) document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem('theme', l ? 'light' : 'dark'); } catch (e) {}
+  showTheme();
+};
+showTheme();
+</script>
+</body>
+</html>
