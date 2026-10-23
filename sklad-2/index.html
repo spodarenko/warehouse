@@ -144,28 +144,38 @@ body.dragging{cursor:grabbing;user-select:none}
   .bottom{gap:14px;padding:32px 16px;font-size:12px}
 }
 @media (prefers-reduced-motion:reduce){.cell{transition:none}.cell.pulse{animation:none}.stage{transition:none!important}}
-.burger{display:none;font:inherit;font-size:20px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;cursor:pointer}
+.burger{display:none;padding:0;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;cursor:pointer}
+/* three equal bars drawn in CSS (the ☰ glyph sits off-centre on iPhone) */
+.burger span,.burger span::before,.burger span::after{display:block;width:18px;height:2px;border-radius:1px;background:var(--fg)}
+.burger span{position:relative}
+.burger span::before,.burger span::after{content:"";position:absolute;left:0}
+.burger span::before{top:-6px}
+.burger span::after{top:6px}
+/* no built-in search icon / clear cross (iPhone adds a magnifier to type=search) */
+.prompt input{-webkit-appearance:none;appearance:none}
+.prompt input::-webkit-search-decoration,.prompt input::-webkit-search-cancel-button{-webkit-appearance:none}
 /* phone: ☰ opens the menu under the header */
 @media (max-width:600px){
   .burger{display:grid;place-items:center}
   .mnav{margin-left:auto}
   .hr nav{display:none}
-  body.menu .mnav{display:flex!important;flex-direction:column;align-items:stretch;gap:0;width:100%;order:3;padding-top:8px}
+  body.menu .mnav{display:flex!important;flex-flow:row wrap;align-items:stretch;gap:0 8px;width:100%;order:3;padding-top:8px}
+  body.menu .mnav nav{width:100%}
   body.menu .mnav nav{display:flex!important;flex-direction:column;align-items:stretch;gap:0}
-  body.menu nav a{display:block!important;padding:14px 0;border-top:1px solid var(--line);font-size:16px}
-  body.menu .mnav .btn{margin-top:12px}
+  body.menu nav a{display:block!important;width:100%;padding:14px 0;border-top:1px solid var(--line);font-size:16px}
+  body.menu .mnav .btn{flex:1;min-height:44px;margin-top:12px}
 }
 /* light theme (config/ui-tokens.json → semantic.light): ☀/☾ in the header, remembered in this browser for all pages */
 :root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#6b6565;--faint:#8f8a8a}
 .theme{font:inherit;font-size:16px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:36px;height:36px;cursor:pointer;flex:none}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
-@media (max-width:640px){.theme{width:44px;height:44px}body.menu .mnav .theme{width:100%;margin-top:8px}}
+@media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
 </style>
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
     <div class="hr mnav"><nav><a href="../liquids-map/">Рідини</a><a class="on" href="../sklad-2/">Склад №2</a><a href="../liquids-map/#tare">Довідка</a><a href="../labels/">Стікери</a></nav><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></div>
-    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false">☰</button>
+    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
   <section>
