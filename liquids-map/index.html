@@ -22,8 +22,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:16px;fl
 nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 nav a{color:var(--muted);text-decoration:none}nav a:hover,nav a.on{color:var(--fg)}
 .btn{font:inherit;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
-@media (hover:hover){.btn:hover{background:transparent;color:var(--fg)}}
+@media (hover:hover){.btn:hover:not(:disabled){background:transparent;color:var(--fg)}}
 .btn:active{opacity:.8}
+.btn:disabled{opacity:.3;cursor:default}
 button:focus-visible,.cell:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin:0 0 12px;text-wrap:balance}
 .lead{color:var(--muted);max-width:62ch;margin:0 0 28px;line-height:2}
@@ -377,7 +378,7 @@ function render(pulse){
   $("ptitle").textContent=sel&&!pick.size?"Місце "+loc(sel)+" ("+pad(sel)+")":(pick.size?"Вибрано "+pick.size:(t?"Збіги":"Усі рідини"));
   $("psub").textContent=rows.length+" поз."+(t&&hits.length>1&&!pick.size?" · клікни, щоб вибрати":"");
   $("lPick").textContent="["+pick.size+"]";
-  const dn=dirtyN();$("clear").textContent=dn?"✓ Застосувати ["+dn+"]":"✕ Очистити";
+  const dn=dirtyN();$("clear").textContent=dn?"✓ Застосувати ["+dn+"]":"✕ Очистити";$("clear").disabled=!dn&&!q.value&&!pick.size;
   const pr=[...pick];$("swap").hidden=pr.length!==2;
   if(pr.length===2)$("swap").textContent="⇄ Поміняти: "+pr[0][1]+" ("+loc(pr[0][0])+") ↔ "+pr[1][1]+" ("+loc(pr[1][0])+")";
   const moved=D.filter(changed).length;$("undo").hidden=!moved;$("undo").textContent="↺ Повернути переміщення ["+moved+"]";
