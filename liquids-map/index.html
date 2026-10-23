@@ -492,6 +492,16 @@ const packRows=[...$("packs").children];
 q.addEventListener("input",()=>{const t=norm(q.value);packRows.forEach(r=>r.hidden=!!t&&!norm(r.textContent).includes(t))});
 
 render();fitAll();
+// header: «Довідка» is active once the reference sections (from #tare down) reach the middle of the screen
+const navLinks = document.querySelectorAll('nav a');
+function navActive() {
+  const ref = document.getElementById('tare').getBoundingClientRect().top < innerHeight / 2;
+  navLinks[0].classList.toggle('on', !ref);
+  navLinks[2].classList.toggle('on', ref);
+}
+addEventListener('scroll', navActive, {passive: true});
+addEventListener('hashchange', navActive);
+navActive();
 </script>
 
 </body>
