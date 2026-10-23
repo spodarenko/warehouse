@@ -223,6 +223,7 @@ dialog .fullbtn{width:100%}
     <p class="m" id="dLockMsg"></p>
     <input id="dKey" type="password" autocomplete="off" placeholder="Ключ складу">
     <button class="btn" id="dUnlock" type="button">Відкрити</button>
+    <button class="fullbtn" id="dReset" type="button" hidden>Забули ключ? Скинути цей пристрій</button>
   </div>
   <div id="dPanel" hidden>
     <p class="m" id="dDevice"></p>
@@ -1226,6 +1227,7 @@ function showDevice() {
 function openSettings() {
   $('dLockMsg').textContent = store('labels.key') ? 'Введіть ключ складу, щоб відкрити налаштування.' : 'Новий пристрій. Введіть ключ складу.';
   $('dKey').value = '';
+  $('dReset').hidden = !store('labels.key');
   $('dLock').hidden = false; $('dPanel').hidden = true; $('qr').hidden = $('qrHint').hidden = true;
   dlg.showModal();
   $('dKey').focus();
@@ -1239,6 +1241,14 @@ $('dUnlock').onclick = () => {
   showDevice();
 };
 $('dKey').onkeydown = e => { if (e.key === 'Enter') $('dUnlock').click(); };
+// forgotten key: wipe this device (key, worker name, printer mode, journals), then a new key can be typed
+$('dReset').onclick = async () => {
+  if (!confirm('Скинути цей пристрій? Ключ, режим принтера, журнал друку й «Хто заходив» буде видалено. Телефони доведеться підключити заново.')) return;
+  await setPrinter(false);
+  for (const k of ['labels.key', 'labels.who', 'labels.log', 'labels.visits']) store(k, '');
+  aesKey = null; setupPrint(); showJournal();
+  openSettings();
+};
 $('sPrinter').onclick = async () => { await setPrinter(!source); showDevice(); };
 $('dQr').onclick = () => {
   const who = $('dWho').value.trim();
