@@ -116,6 +116,9 @@ dialog .row input{flex:1;min-width:0}
 dialog .btn{min-height:44px;font-weight:700}
 dialog #dUnlock{width:100%;margin-top:8px}
 dialog .fullbtn{width:100%}
+.devs{list-style:none;margin:0;padding:0}
+.devs li{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);min-height:44px}
+.devs button{font:inherit;background:none;border:0;color:var(--fg);min-height:44px;cursor:pointer}
 .dlg-hd{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px}
 .dlg-hd .x{font:inherit;background:none;border:0;color:var(--fg);font-size:20px;width:44px;height:44px;cursor:pointer}
 .qr{background:#fff;padding:12px;margin-top:12px;width:max-content}
@@ -232,10 +235,12 @@ dialog .fullbtn{width:100%}
     <h4>Підключити телефон працівника</h4>
     <div class="row"><input id="dWho" placeholder="Ім'я працівника" autocomplete="off"><button class="btn" id="dQr" type="button">QR-код</button></div>
     <div class="qr" id="qr" hidden></div>
-    <p class="m" id="qrHint" hidden>Працівник наводить камеру телефона на код і відкриває посилання. Телефон запам'ятає ключ та ім'я, вводити нічого не треба.</p>
+    <p class="m" id="qrHint" hidden>Працівник наводить камеру телефона на код і відкриває посилання. Телефон отримає власний ключ та ім'я, вводити нічого не треба. Код не пересилайте: він лише для цього працівника.</p>
+    <h4>Підключені телефони</h4>
+    <ul class="m devs" id="devs"></ul>
     <h4>Ключ складу</h4>
     <div class="row"><input id="dNewKey" type="password" placeholder="Новий ключ, від 12 символів" autocomplete="off"><button class="btn" id="dSetKey" type="button">Змінити</button></div>
-    <p class="m">Після зміни ключа телефони треба підключити заново.</p>
+    <p class="m">Ключ складу відкриває ці налаштування. Телефони від нього не залежать.</p>
     <h4>Цей пристрій</h4>
     <button class="fullbtn" id="dForget" type="button">Відключити цей пристрій</button>
   </div>
@@ -1064,47 +1069,55 @@ $('print').addEventListener('click', () => {
   fill($('sample'), current, stamp());
 });
 
-// remote printing: a phone sends an encrypted {name, copies, who, t} to an ntfy.sh topic,
-// the tablet in printer mode decrypts it with the same warehouse key and prints; anything else is ignored.
-// The key is typed once per device and kept only there (never in the page source).
+// remote printing: every worker phone gets its own random AES key once, through the admin's QR code.
+// The phone sends "<device id>.<iv>.<ciphertext>" ({name, copies, t} or {visit, t}) to an ntfy.sh topic;
+// the tablet in printer mode finds the device in its list, decrypts with that key and prints.
+// Unknown or removed devices are ignored; the worker's name comes from the tablet's list, not from the phone.
 const TOPIC = 'delicia-labels-8d96bc600576c5a5';
 const RELAY = 'https://ntfy.sh/' + TOPIC;
 const MAX_AGE = 10 * 60 * 1000;  // job time (phone clock) vs ntfy server time; protects from replays together with `seen`
 const seen = new Set();  // IVs of jobs already handled
 const relay = msg => { $('relay').hidden = false; $('relay').textContent = msg; };
 const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (e) { return ''; } };
-
-let aesKey = null;
-async function deriveKey(pass) {
-  const enc = new TextEncoder();
-  const base = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey({name: 'PBKDF2', salt: enc.encode(TOPIC), iterations: 100000, hash: 'SHA-256'},
-    base, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const importKey = k => crypto.subtle.importKey('raw', unb64(k), 'AES-GCM', false, ['encrypt', 'decrypt']);
+const parse = (k, empty) => { try { return JSON.parse(store(k)) || empty; } catch (e) { return empty; } };
+const devices = () => parse('labels.devices', []);  // tablet: [{id, who, k}]
+const myDevice = () => parse('labels.dev', null);   // phone: {id, k}
+async function seal(obj) {
+  const d = myDevice(), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name: 'AES-GCM', iv}, await importKey(d.k), new TextEncoder().encode(JSON.stringify(obj)));
+  return d.id + '.' + b64(iv) + '.' + b64(ct);
 }
-// Access: whoever knows the warehouse key is the admin. Workers never type it: the admin opens
-// ⚙ Налаштування, enters the key and shows a QR code; scanning it stores key + worker name on the phone.
+async function unseal(text) {
+  const [id, iv, ct] = text.split('.');
+  const d = devices().find(x => x.id === id);
+  if (!d) throw 'unknown device';
+  const pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(iv)}, await importKey(d.k), unb64(ct));
+  return {...JSON.parse(new TextDecoder().decode(pt)), who: d.who};
+}
+const send = async obj => fetch(RELAY, {method: 'POST', body: await seal({...obj, t: Date.now()})});
+
+// Access: whoever knows the warehouse key is the admin (opens ⚙ Налаштування). Workers never see it:
+// the admin shows a QR code per worker; scanning it stores that phone's own key + name.
 const PAIR = '#pair=';
 const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64url = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
-function setKey(k) { store('labels.key', k); aesKey = null; }
-async function loadKey() {
-  const k = store('labels.key');
-  if (!k) return false;
-  if (!aesKey) aesKey = await deriveKey(k);
-  return true;
-}
-// a phone opened through the admin's QR link: save key + name, drop them from the address bar
+// phones paired the old way (shared warehouse key) must be paired again
+if (store('labels.who') && !myDevice()) { store('labels.key', ''); store('labels.who', ''); relay('Телефон треба підключити заново: попросіть новий QR-код.'); }
+// a phone opened through the admin's QR link: save its key + name, drop them from the address bar
 if (location.hash.startsWith(PAIR)) {
   try {
     const p = JSON.parse(unb64url(location.hash.slice(PAIR.length)));
-    setKey(p.k); store('labels.who', p.who);
+    store('labels.dev', JSON.stringify({id: p.d, k: p.k})); store('labels.who', p.who);
     relay('✓ Телефон підключено: ' + p.who + '. Стікери друкуватиме планшет-принтер.');
   } catch (e) { relay('✕ Посилання підключення пошкоджене. Попросіть новий QR-код.'); }
   history.replaceState(null, '', location.pathname + location.search);
 }
 // one main «Друкувати»: a paired phone sends to the tablet-printer, any other device prints itself
 function setupPrint() {
-  const paired = !!store('labels.who');
+  const paired = !!myDevice();
   $('remote').hidden = !paired;
   $('print').classList.toggle('alt', paired);
   $('print').textContent = paired ? 'або надрукувати на цьому пристрої' : 'Друкувати';
@@ -1112,31 +1125,17 @@ function setupPrint() {
 }
 setupPrint();
 // a paired phone tells the tablet-printer it opened the page (shown there as «Хто заходив»)
-if (store('labels.who') && !store('labels.printer')) loadKey().then(async ok => {
-  if (ok) fetch(RELAY, {method: 'POST', body: await seal({visit: 1, who: store('labels.who'), t: Date.now()})}).catch(() => {});
-});
-const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
-const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-async function seal(obj) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = await crypto.subtle.encrypt({name: 'AES-GCM', iv}, aesKey, new TextEncoder().encode(JSON.stringify(obj)));
-  return b64(iv) + '.' + b64(ct);
-}
-async function unseal(text) {
-  const [iv, ct] = text.split('.');
-  const pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: unb64(iv)}, aesKey, unb64(ct));
-  return JSON.parse(new TextDecoder().decode(pt));
-}
+if (myDevice() && !store('labels.printer')) send({visit: 1}).catch(() => {});
 
 $('remote').addEventListener('click', async () => {
-  if (!store('labels.who') || !await loadKey()) {
+  if (!myDevice()) {
     relay('Телефон не підключено до планшета. Попросіть адміністратора показати QR-код.');
     return;
   }
   const n = copiesOf($('copies').value), name = current;
   relay('Надсилаю на планшет…');
   try {
-    const r = await fetch(RELAY, {method: 'POST', body: await seal({name, copies: n, who: store('labels.who'), t: Date.now()})});
+    const r = await send({name, copies: n});
     if (!r.ok) throw r.status;
     relay('✓ Надіслано на планшет: ' + name + ' × ' + n);
   } catch (e) { relay('✕ Не вдалося надіслати. Перевірте інтернет.'); }
@@ -1177,7 +1176,7 @@ $('visitBtn').onclick = () => { visitOpen = !visitOpen; showJournal(); };
 let source = null;
 async function setPrinter(on) {
   if (source) { source.close(); source = null; }
-  if (on && !await loadKey()) on = false;
+  if (on && !store('labels.key')) on = false;  // only the admin device can be the printer
   store('labels.printer', on ? '1' : '');
   if (!on) { $('relay').hidden = true; showJournal(); return; }
   source = new EventSource(RELAY + '/sse');
@@ -1189,9 +1188,9 @@ async function setPrinter(on) {
       const m = JSON.parse(e.data);
       if (m.event !== 'message') return;
       job = await unseal(m.message);
-      if (seen.has(m.message.split(".")[0]) || Math.abs(m.time * 1000 - job.t) > MAX_AGE) return;  // replayed or stale
-      seen.add(m.message.split(".")[0]);
-    } catch (err) { relay('⚠ Відхилено завдання з чужим ключем'); return; }
+      if (seen.has(m.message.split('.')[1]) || Math.abs(m.time * 1000 - job.t) > MAX_AGE) return;  // replayed or stale
+      seen.add(m.message.split('.')[1]);
+    } catch (err) { relay('⚠ Відхилено завдання з невідомого або відключеного телефона'); return; }
     if (job.visit) {  // a paired phone opened the page
       const v = visits(); delete v[job.who]; v[job.who] = stamp();  // re-insert so the newest is last
       store('labels.visits', JSON.stringify(v));
@@ -1221,8 +1220,26 @@ document.querySelector('.logo').addEventListener('click', () => {
 function showDevice() {
   const who = store('labels.who');
   $('dDevice').textContent = 'Цей пристрій: ' + (source ? 'принтер, друкує завдання з телефонів'
-    : who ? 'телефон «' + who + '»' : 'ключ є, але це не принтер і не телефон працівника');
+    : who ? 'телефон «' + who + '»' : 'адміністратор, не принтер');
   $('sPrinter').textContent = source ? '🖨 Вимкнути режим принтера' : '🖨 Зробити цей пристрій принтером';
+  showDevices();
+}
+// paired phones (kept on the tablet): each can be removed on its own
+function showDevices() {
+  const list = devices();
+  $('devs').innerHTML = list.length ? '' : '<li>Поки жодного</li>';
+  for (const d of list) {
+    const li = document.createElement('li'), x = document.createElement('button');
+    li.textContent = d.who + (d.at ? ' · ' + d.at : '');
+    x.type = 'button'; x.textContent = '✕ Відключити';
+    x.onclick = () => {
+      if (!confirm('Відключити телефон «' + d.who + '»? Його завдання більше не друкуватимуться.')) return;
+      store('labels.devices', JSON.stringify(devices().filter(e => e.id !== d.id)));
+      showDevices();
+    };
+    li.append(x);
+    $('devs').append(li);
+  }
 }
 function openSettings() {
   $('dLockMsg').textContent = store('labels.key') ? 'Введіть ключ складу, щоб відкрити налаштування.' : 'Новий пристрій. Введіть ключ складу.';
@@ -1236,38 +1253,43 @@ $('dUnlock').onclick = () => {
   const k = $('dKey').value.trim(), cur = store('labels.key');
   if (!k) return;
   if (cur && k !== cur) { $('dLockMsg').textContent = '✕ Невірний ключ.'; return; }
-  if (!cur) setKey(k);
+  if (!cur) store('labels.key', k);
   $('dLock').hidden = true; $('dPanel').hidden = false;
   showDevice();
 };
 $('dKey').onkeydown = e => { if (e.key === 'Enter') $('dUnlock').click(); };
-// forgotten key: wipe this device (key, worker name, printer mode, journals), then a new key can be typed
+// forgotten key: wipe this device (key, phones list, printer mode, journals), then a new key can be typed
 $('dReset').onclick = async () => {
-  if (!confirm('Скинути цей пристрій? Ключ, режим принтера, журнал друку й «Хто заходив» буде видалено. Телефони доведеться підключити заново.')) return;
+  if (!confirm('Скинути цей пристрій? Ключ, список телефонів, режим принтера, журнал друку й «Хто заходив» буде видалено. Телефони доведеться підключити заново.')) return;
   await setPrinter(false);
-  for (const k of ['labels.key', 'labels.who', 'labels.log', 'labels.visits']) store(k, '');
-  aesKey = null; setupPrint(); showJournal();
+  for (const k of ['labels.key', 'labels.who', 'labels.dev', 'labels.devices', 'labels.log', 'labels.visits']) store(k, '');
+  setupPrint(); showJournal();
   openSettings();
 };
 $('sPrinter').onclick = async () => { await setPrinter(!source); showDevice(); };
+// new worker phone: its own random key, added to the list, handed over once in the QR code
 $('dQr').onclick = () => {
   const who = $('dWho').value.trim();
   if (!who) { $('dWho').focus(); return; }
-  const url = location.origin + location.pathname + PAIR + b64url(JSON.stringify({k: store('labels.key'), who}));
+  const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => b.toString(16).padStart(2, '0')).join('');
+  const d = {id: hex(8), who, k: b64(crypto.getRandomValues(new Uint8Array(32))), at: stamp()};
+  store('labels.devices', JSON.stringify([...devices(), d]));
+  const url = location.origin + location.pathname + PAIR + b64url(JSON.stringify({d: d.id, k: d.k, who}));
   $('qr').innerHTML = '';
   new QRCode($('qr'), {text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M});
   $('qr').hidden = $('qrHint').hidden = false;
+  $('dWho').value = '';
+  showDevices();
 };
-$('dSetKey').onclick = async () => {
+$('dSetKey').onclick = () => {
   const k = $('dNewKey').value.trim();
   if (k.length < 12) { $('dNewKey').focus(); return; }
-  setKey(k); $('dNewKey').value = '';
-  if (source) await setPrinter(true);
-  relay('✓ Ключ змінено. Підключіть телефони заново.');
+  store('labels.key', k); $('dNewKey').value = '';
+  relay('✓ Ключ складу змінено. Телефони працюють далі.');
 };
 $('dForget').onclick = async () => {
   await setPrinter(false);
-  setKey(''); store('labels.who', '');
+  store('labels.key', ''); store('labels.who', ''); store('labels.dev', '');
   dlg.close();
   setupPrint();
   relay('Пристрій відключено.');
