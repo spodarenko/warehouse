@@ -101,7 +101,10 @@ body.full .ctl .relay{height:auto;font-size:14px}
 .log{list-style:none;margin:0 0 12px;padding:0}
 /* printer mode (tablet): no list header; the print journal opens from its own button */
 body.printer .sidehd{display:none}
-body.full #logBtn{margin:8px 16px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.tools .fullbtn{margin:0}
+.tools .fullbtn[hidden]{display:none}
+body.full .tools{margin:8px 16px}
 body.full .log{margin:0 16px 8px;max-height:30vh;overflow:auto}
 /* settings dialog */
 dialog{background:var(--panel);color:var(--fg);border:1px solid #6b6565;border-radius:6px;padding:20px;width:min(420px,calc(100% - 32px));font:inherit;font-size:14px}
@@ -180,8 +183,12 @@ dialog .fullbtn{width:100%}
   <section class="intro">
     <h1>Стікери на сировину</h1>
     <p class="lead">Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.</p>
-    <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
-    <button class="fullbtn" id="logBtn" type="button" hidden></button>
+    <div class="tools">
+      <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
+      <button class="fullbtn" id="visitBtn" type="button" hidden></button>
+      <button class="fullbtn" id="logBtn" type="button" hidden></button>
+    </div>
+    <ul class="m log" id="visits" hidden></ul>
     <ul class="m log" id="log" hidden></ul>
     <div class="box">
       <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
@@ -1103,6 +1110,10 @@ function setupPrint() {
   if (paired && $('relay').hidden) relay('Надрукує планшет-принтер');
 }
 setupPrint();
+// a paired phone tells the tablet-printer it opened the page (shown there as «Хто заходив»)
+if (store('labels.who') && !store('labels.printer')) loadKey().then(async ok => {
+  if (ok) fetch(RELAY, {method: 'POST', body: await seal({visit: 1, who: store('labels.who'), t: Date.now()})}).catch(() => {});
+});
 const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 async function seal(obj) {
@@ -1146,7 +1157,21 @@ function showJournal() {
     li.textContent = j.at + ' · ' + j.who + ' · ' + j.name + ' × ' + j.copies;
     $('log').append(li);
   }
+  // who opened the page: worker → last visit, newest first
+  const v = Object.entries(visits()).reverse();
+  $('visitBtn').hidden = !source;
+  $('visitBtn').textContent = (visitOpen ? '▾' : '▸') + ' Хто заходив [' + v.length + ']';
+  $('visits').hidden = !source || !visitOpen || !v.length;
+  $('visits').innerHTML = '';
+  for (const [who, at] of v) {
+    const li = document.createElement('li');
+    li.textContent = at + ' · ' + who;
+    $('visits').append(li);
+  }
 }
+const visits = () => { try { return JSON.parse(store('labels.visits') || '{}'); } catch (e) { return {}; } };
+let visitOpen = false;
+$('visitBtn').onclick = () => { visitOpen = !visitOpen; showJournal(); };
 
 let source = null;
 async function setPrinter(on) {
@@ -1166,6 +1191,12 @@ async function setPrinter(on) {
       if (seen.has(m.message.split(".")[0]) || Math.abs(m.time * 1000 - job.t) > MAX_AGE) return;  // replayed or stale
       seen.add(m.message.split(".")[0]);
     } catch (err) { relay('⚠ Відхилено завдання з чужим ключем'); return; }
+    if (job.visit) {  // a paired phone opened the page
+      const v = visits(); delete v[job.who]; v[job.who] = stamp();  // re-insert so the newest is last
+      store('labels.visits', JSON.stringify(v));
+      showJournal();
+      return;
+    }
     if (!ITEMS[job.name]) return;
     const n = copiesOf(job.copies);
     printLabels(job.name, n);
