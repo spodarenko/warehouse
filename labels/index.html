@@ -29,7 +29,8 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 h3{margin:0;font-size:16px}
 .m{color:var(--muted);font-size:12px}
 .lead{color:var(--muted);max-width:62ch;margin:0 0 28px;line-height:2}
-.box{border:1px solid #6b6565;border-radius:6px;background:var(--panel)}
+/* search box: same tones as liquids-map / sklad-2 (the rest of this page keeps its brighter tokens) */
+.box{--panel:#1b1818;--faint:#4a4545;--muted:#8f8a8a;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
 .box{position:relative}
 .dd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:10;list-style:none;margin:0;padding:4px;background:var(--panel);border:1px solid #6b6565;border-radius:6px;max-height:50vh;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .dd li{padding:10px 12px;border-radius:3px;cursor:pointer}
@@ -39,8 +40,8 @@ h3{margin:0;font-size:16px}
 .prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;outline:none}
 .prompt input::placeholder{color:var(--faint)}
 /* quick filters above the search, as in liquids-map */
-.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid #6b6565;padding:0 12px}
-.tabs button{font:inherit;background:none;border:0;color:var(--nav);padding:12px 10px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);padding:0 12px}
+.tabs button{font:inherit;background:none;border:0;color:var(--muted);padding:12px 10px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
 .tabs button.on,.tabs button:hover{color:var(--fg);border-bottom-color:var(--fg)}
 .prompt kbd{font:inherit;font-size:12px;border:1px solid var(--line);padding:0 6px;border-radius:3px}
 body.full .prompt kbd{display:none}
