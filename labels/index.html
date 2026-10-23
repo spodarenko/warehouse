@@ -20,8 +20,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:16px;fl
 .logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1;user-select:none;-webkit-user-select:none}
 .logo span{color:var(--muted)}
 nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
-nav a{color:var(--fg);text-decoration:none}
-nav a.on{border-bottom:1px solid var(--fg)}
+nav a{color:var(--muted);text-decoration:none}nav a:hover,nav a.on{color:var(--fg)}
 .btn{font:inherit;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
 @media (hover:hover){.btn:hover:not(:disabled){background:transparent;color:var(--fg)}}
 .btn:active{opacity:.8}
@@ -160,7 +159,7 @@ dialog .fullbtn{width:100%}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav><a href="../liquids-map/">Рідини</a><a href="../sklad-2/">Склад №2</a><a href="../liquids-map/#tare">Тарування</a><a class="on" href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button></nav>
+    <nav><a href="../liquids-map/">Рідини</a><a href="../sklad-2/">Склад №2</a><a href="../liquids-map/#tare">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button></nav>
   </header>
 
   <section class="intro">
