@@ -9,7 +9,7 @@
 <style>
 /* Same look as liquids-map: framed column, hairline borders, single dark theme (config/ui-tokens.json).
    Label size: 60x30 mm (Citizen CMP-30IIL via RawBT). */
-:root{--bg:#131010;--panel:#262222;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#ddd7d7;--faint:#b8b2b2;--line:#2f2b2b;
+:root{--bg:#131010;--panel:#262222;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#ddd7d7;--nav:#8f8a8a;--faint:#b8b2b2;--line:#2f2b2b;
 --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -20,7 +20,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:16px;fl
 .logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1;user-select:none;-webkit-user-select:none}
 .logo span{color:var(--muted)}
 nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
-nav a{color:var(--muted);text-decoration:none}nav a:hover,nav a.on{color:var(--fg)}
+nav a{color:var(--nav);text-decoration:none}nav a:hover,nav a.on{color:var(--fg)}
 .btn{font:inherit;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
 @media (hover:hover){.btn:hover:not(:disabled){background:transparent;color:var(--fg)}}
 .btn:active{opacity:.8}
