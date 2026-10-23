@@ -169,13 +169,24 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 .toc{display:flex;gap:8px 20px;flex-wrap:wrap;font-size:13px;margin-top:16px}
 @media (max-width:600px){.src{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.cell{transition:none}.cell.pulse{animation:none}.stage{transition:none!important}}
+.burger{display:none;font:inherit;font-size:20px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;cursor:pointer}
+/* phone: ☰ opens the menu under the header */
+@media (max-width:600px){
+  .burger{display:grid;place-items:center}
+  .mnav{margin-left:auto}
+  body.menu .mnav{display:flex!important;flex-direction:column;align-items:stretch;gap:0;width:100%;order:3;padding-top:8px}
+  body.menu .mnav nav{display:flex!important;flex-direction:column;align-items:stretch;gap:0}
+  body.menu nav a{display:block!important;padding:14px 0;border-top:1px solid var(--line);font-size:16px}
+  body.menu .mnav .btn{margin-top:12px}
+}
 </style>
 </head>
 <body>
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav><a class="on" href="../liquids-map/">Рідини</a><a href="../sklad-2/">Склад №2</a><a href="../liquids-map/#tare">Довідка</a><a href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button></nav>
+    <nav class="mnav"><a class="on" href="../liquids-map/">Рідини</a><a href="../sklad-2/">Склад №2</a><a href="../liquids-map/#tare">Довідка</a><a href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button></nav>
+    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false">☰</button>
   </header>
 
   <section>
@@ -504,5 +515,11 @@ addEventListener('hashchange', navActive);
 navActive();
 </script>
 
+<script>
+// phone menu: ☰ toggles it, any link closes it
+const burger = document.getElementById('burger');
+burger.onclick = () => burger.setAttribute('aria-expanded', document.body.classList.toggle('menu'));
+document.querySelectorAll('nav a').forEach(a => a.addEventListener('click', () => { document.body.classList.remove('menu'); burger.setAttribute('aria-expanded', false); }));
+</script>
 </body>
 </html>
