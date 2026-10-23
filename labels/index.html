@@ -933,6 +933,7 @@ function pick(c) {
   $('print').disabled = false;
   $('remote').disabled = false;
   render();
+  syncClear();
   document.body.classList.add('picked');
   if (full || matchMedia('(max-width:640px)').matches) $('q').blur();  // phone: hide keyboard, bottom bar shows the sticker
   else $('sample').scrollIntoView({behavior:'smooth', block:'center'});
@@ -1009,7 +1010,17 @@ $('exitFull').onclick = e => { e.preventDefault(); setFull(false); };
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && full) setFull(false); });
 
 $('more').onclick = () => { shown += PAGE; render(); };
-$('clear').onclick = () => { $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus(); };
+// «Очистити»: active only when something is typed or picked; resets both
+const syncClear = () => { $('clear').disabled = !$('q').value && !current; };
+$('q').addEventListener('input', syncClear);
+$('clear').onclick = () => {
+  current = null;
+  $('print').disabled = $('remote').disabled = true;
+  $('cur').textContent = 'Так виглядатиме стікер 60×30 мм. Оберіть товар у списку нижче.';
+  $('sample').style.opacity = .5;
+  document.body.classList.remove('picked');
+  $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus();
+};
 
 const copiesOf = v => Math.min(50, Math.max(1, parseInt(v) || 1));
 
@@ -1204,6 +1215,7 @@ $('lNoArt').textContent = '[' + (codes.length - withArt) + ']';
 // sample sticker until an item is picked
 fill($('sample'), ITEMS['Цукор'] ? 'Цукор' : codes[0], stamp());
 $('sample').style.opacity = .5;
+syncClear();
 </script>
 </body>
 </html>
