@@ -60,6 +60,9 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .cell .cnt{display:none}
 .cell .chips i{grid-template-columns:1fr;border:0;background:none;padding:0;color:var(--fg);font-size:13px;font-weight:500;overflow-wrap:anywhere}
 .cell .chips i .h{display:none}
+.rack .cell{cursor:grab}
+/* touch: drag by the ⋮⋮ handle, the rest of the place still pans the map */
+@media (pointer:coarse){.cell .chips i{grid-template-columns:auto 1fr}.cell .chips i .h{display:flex;padding:0 6px 0 0}.cell .chips i small{grid-column:2}}
 .cell .chips i small{grid-column:1/-1;color:var(--muted)}
 .cell .chips i.lit{background:none;color:var(--fg)}
 .cell .chips i.lit small{color:var(--muted)}
@@ -205,7 +208,7 @@ body.dragging{cursor:grabbing;user-select:none}
 
   <section class="work" id="map">
     <div class="cap">
-      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, місця 8–34 — бочки · колесо або −/+ — масштаб, тягни фон — зсунути ·тягни назву на інше місце, щоб перемістити</span>
+      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, місця 8–34 — бочки · колесо або −/+ — масштаб, тягни фон — зсунути ·тягни квадрат на інше місце, щоб поміняти місцями</span>
       <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
@@ -340,20 +343,21 @@ $("swap").onclick=()=>{const [a,b]=[...pick];swapRows(a,b);render(true)};
 let drag=null,suppress=false;
 const hit=e=>document.elementFromPoint(e.clientX,e.clientY);
 const cellAt=e=>{const t=hit(e);return t&&t.closest(".cell")};
-const chipAt=(e,self)=>{const t=hit(e),w=t&&t.closest(".chips i[data-i]");return w&&+w.dataset.i!==self?w:null};
+// one position per place: dropping anywhere on an occupied place swaps with its position
+const chipAt=(e,self)=>{const t=hit(e),c=t&&t.closest(".cell"),w=c&&c.querySelector(".chips i[data-i]");return w&&+w.dataset.i!==self?w:null};
 const clearDrop=()=>document.querySelectorAll(".drop,.swap").forEach(c=>c.classList.remove("drop","swap"));
 const place=p=>loc(p)+" (місце "+pad(p)+")";
 // mouse: grab the whole chip; touch: only the ⋮⋮ handle, so the map still pans
-const grabs=e=>{const t=e.target.closest(".chips i[data-i]");return t&&(e.pointerType==="mouse"||e.target.closest(".h"))?t:null};
+const grabs=e=>{const c=e.target.closest(".cell"),t=c&&c.querySelector(".chips i[data-i]");return t&&(e.pointerType==="mouse"||e.target.closest(".h"))?t:null};
 document.addEventListener("pointerdown",e=>{const t=grabs(e);if(t)drag={i:+t.dataset.i,x:e.clientX,y:e.clientY,g:null,src:t}});
 window.addEventListener("pointermove",e=>{if(!drag)return;const r=D[drag.i];
   if(!drag.g){if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;
     drag.g=document.createElement("div");drag.g.className="ghost";document.body.appendChild(drag.g);document.body.classList.add("dragging");drag.src.classList.add("src")}
   e.preventDefault();drag.g.style.left=e.clientX+"px";drag.g.style.top=e.clientY+"px";
   clearDrop();const c=cellAt(e),w=chipAt(e,drag.i);if(c)c.classList.add("drop");if(w)w.classList.add("swap");
-  drag.g.textContent=r[1]+" · партія "+r[2];const s=document.createElement("small");const o=w&&D[+w.dataset.i];
+  drag.g.textContent=r[1]+" · "+r[2];const s=document.createElement("small");const o=w&&D[+w.dataset.i];
   s.textContent=o?"⇄ поміняти з «"+o[1]+"»"+(o[0]===r[0]?" на полиці "+loc(r[0]):": "+loc(r[0])+" ↔ "+loc(o[0]))
-    :"з "+place(r[0])+"  →  "+(c?"на "+place(+c.id.slice(1)):"наведи на місце або на іншу рідину");drag.g.appendChild(s)});
+    :"з "+place(r[0])+"  →  "+(c?"на "+place(+c.id.slice(1)):"наведи на інше місце");drag.g.appendChild(s)});
 const endDrag=e=>{if(!drag)return;const d=drag;drag=null;if(!d.g)return;
   d.g.remove();d.src.classList.remove("src");document.body.classList.remove("dragging");clearDrop();
   suppress=true;setTimeout(()=>suppress=false,0);if(e.type!=="pointerup")return;
