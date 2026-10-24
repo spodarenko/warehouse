@@ -61,6 +61,10 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .cell .chips i{grid-template-columns:1fr;border:0;background:none;padding:0;color:var(--fg);font-size:13px;font-weight:500;overflow-wrap:anywhere}
 .cell .chips i .h{display:none}
 body.edit .rack .cell{cursor:grab;border-style:dashed;border-color:var(--muted)}
+.del,#add{display:none}
+body.edit #add{display:inline-block}
+body.edit .del{display:block;font:inherit;font-size:12px;line-height:1;background:none;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 7px;cursor:pointer}
+body.edit .del:hover{color:var(--fg);border-color:var(--fg)}
 body.edit #edit{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .cell .chips i small{grid-column:1/-1;color:var(--muted)}
 .cell .chips i.lit{background:none;color:var(--fg)}
@@ -210,7 +214,7 @@ body.dragging{cursor:grabbing;user-select:none}
   <section class="work" id="map">
     <div class="cap">
       <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, місця 8–34 — бочки · колесо або −/+ — масштаб, тягни — зсунути · «✎ Переставити» — тоді квадрат тягнеться на інший і міняється місцями (на телефоні: затисни)</span>
-      <div class="acts"><button class="ubtn" id="edit" type="button">✎ Переставити</button><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
+      <div class="acts"><button class="ubtn" id="edit" type="button">✎ Переставити</button><button class="ubtn" id="add" type="button">+ Додати</button><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
     <div class="vp" id="vp"><div class="stage" id="stage">
@@ -240,9 +244,9 @@ const D=[[1,"Гуміарабік (Фіброгам)","—"],[2,"Е 475 Емул
 [25,"Суміш прянощів для пряника ?","бочка"],[26,"Глюкоза","бочка"],[27,"Лимонна кислота (подрібнена)","бочка"],[28,"? (не підписано)","бочка"],
 [29,"Какао порошок алкалізований","бочка"],[30,"Какао порошок натуральний","бочка"],[31,"Кориця","бочка"],[32,"Крохмаль кукурудзяний","бочка · off"],
 [33,"Коріандр","бочка"],[34,"Калію сорбат","25 кг"]];
-D.forEach(r=>{r[4]="";r[5]=""});
-// floor plan from the sketch: [column, row]; bottom row 1…19 left to right, top row 34…20 above 5…19
-const N=34,GA={};
+D.forEach(r=>{r[4]="";r[5]="";r[6]=r[0]}); // r[6] = place in the notebook (0 = added later)
+// floor plan from the sketch: [column, row]; bottom row 1…19 left to right, top row 34…20 above 5…19; added places go to row 3
+let GA={};
 for(let p=1;p<=19;p++)GA[p]=[p,2];
 for(let p=20;p<=34;p++)GA[p]=[39-p,1];
 const ZONE={};
@@ -250,40 +254,46 @@ const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]
 const loc=p=>"№"+pad(p);
 D.forEach((r,i)=>r[3]=i); // r[3] = order inside a place
 const byPlace=p=>D.filter(r=>r[0]===p).sort((a,b)=>a[3]-b[3]);
-// moves and swaps: kept in this browser only
-const O=D.map(r=>r[0]),MK="warehouse1-moves";
-try{const m=JSON.parse(localStorage.getItem(MK)||"{}");for(const i in m)if(D[i]){const v=[].concat(m[i]);D[i][0]=v[0];if(v.length>1)D[i][3]=v[1]}}catch(e){}
-const changed=(r,i)=>r[0]!==O[i]||r[3]!==i;
-function saveMoves(){try{const m={};D.forEach((r,i)=>{if(changed(r,i))m[i]=[r[0],r[3]]});localStorage.setItem(MK,JSON.stringify(m))}catch(e){}}
-let S=D.map(r=>[r[0],r[3]]);
-const dirtyN=()=>D.filter((r,i)=>r[0]!==S[i][0]||r[3]!==S[i][1]).length;
-const applyMoves=()=>{saveMoves();S=D.map(r=>[r[0],r[3]]);pick.clear();sel=0;cur=-1;render()};
-const commit=()=>{if(matchMedia("(max-width:600px)").matches)applyMoves()};
-const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]];commit()};
+// layout (swaps, added and removed places): the whole plan is kept in this browser only
+const LK="warehouse1-layout";
+try{const s=JSON.parse(localStorage.getItem(LK)||"null");if(s){D.length=0;s.rows.forEach((r,i)=>D.push([r[0],r[1],r[2],i,"","",r[3]]));GA={};s.places.forEach(g=>GA[g[0]]=[g[1],g[2]])}}catch(e){}
+const PL=()=>Object.keys(GA).map(Number).sort((a,b)=>a-b);
+const changed=r=>r[0]!==r[6];
+const customized=()=>{try{return!!localStorage.getItem(LK)}catch(e){return false}};
+function saveMoves(){try{localStorage.setItem(LK,JSON.stringify({rows:D.map(r=>[r[0],r[1],r[2],r[6]]),places:PL().map(p=>[p,GA[p][0],GA[p][1]])}))}catch(e){}}
+const dirtyN=()=>0; // every change is saved at once
+const applyMoves=()=>{saveMoves();pick.clear();sel=0;cur=-1;render()};
+const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]]};
 const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t);
 const sub=r=>r[2];
 const q=$("q"),rack=$("rack"),list=$("list"),vp=$("vp"),stage=$("stage");
 let sel=0,pick=new Set(),cur=-1,showAll=false;const LIMIT=8;
 const toggle=r=>{pick.has(r)?pick.delete(r):pick.add(r)};
 
-$("lN").textContent="["+N+"]";
-$("lTotal").textContent="["+D.length+"]";
-$("lQ").textContent="["+D.filter(r=>r[1].includes("?")||r[2].includes("?")).length+"]";
 ["бочка","25 кг","кислота","молоко","крохмаль","какао","прянощ"].forEach(w=>{const b=document.createElement("button");b.textContent=w;
   b.onclick=()=>{q.value=q.value===w?"":w;sel=0;cur=-1;render(true);focusLit()};$("tabs").appendChild(b)});
 
-for(let p=1;p<=N;p++){const c=document.createElement("div");c.className="cell";c.id="c"+p;c.tabIndex=0;c.setAttribute("role","button");
+function buildCells(){rack.innerHTML="";PL().forEach(p=>{const c=document.createElement("div");c.className="cell";c.id="c"+p;c.tabIndex=0;c.setAttribute("role","button");
   const g=GA[p];c.style.gridColumn=g[0]+" / span "+(g[2]||1);c.style.gridRow=g[1];
-  c.innerHTML='<span class="hd"><b>'+pad(p)+'</b><span class="cnt"></span></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../liquids-map/">мапа рідин ↗</a></span>':'')+'<span class="chips"></span>';
-  c.onclick=e=>{if(e.target.closest("a"))return;const chip=e.target.closest("i[data-i]");
+  c.innerHTML='<span class="hd"><b>'+pad(p)+'</b><span class="cnt"></span><button class="del" type="button" aria-label="Видалити місце">✕</button></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../liquids-map/">мапа рідин ↗</a></span>':'')+'<span class="chips"></span>';
+  c.onclick=e=>{if(e.target.closest("a"))return;if(e.target.closest(".del")){delPlace(p);return}const chip=e.target.closest("i[data-i]");
     if(chip){toggle(D[+chip.dataset.i]);sel=0}else{sel=sel===p?0:p;pick.clear()}render()};
-  rack.appendChild(c)}
+  rack.appendChild(c)})}
+buildCells();
+// «✎ Переставити» mode: ✕ removes a place, «+ Додати» puts a new barrel or bag in row 3
+function delPlace(p){const r=byPlace(p)[0];if(!confirm("Видалити місце "+pad(p)+(r?" — "+r[1]:"")+"?"))return;
+  byPlace(p).forEach(x=>D.splice(D.indexOf(x),1));delete GA[p];buildCells();applyMoves();fitAll(true)}
+$("add").onclick=()=>{const name=(prompt("Назва сировини:")||"").trim();if(!name)return;
+  const tare=confirm("Це бочка?\nOK — бочка, Скасувати — мішок 25 кг")?"бочка":"25 кг";
+  const p=Math.max(0,...PL())+1;let col=1;while(PL().some(x=>GA[x][1]===3&&GA[x][0]===col))col++;
+  GA[p]=[col,3];D.push([p,name,tare,D.length,"","",0]);buildCells();applyMoves();fitAll(true)};
 
 function render(pulse){
   const t=norm(q.value),hits=D.filter(r=>match(r,t));
   const lit=pick.size?[...pick]:(t?hits:[]),places=new Set(lit.map(r=>r[0]));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",norm(b.textContent)===t));
-  for(let p=1;p<=N;p++){const c=$("c"+p),box=c.querySelector(".chips");
+  $("lN").textContent="["+PL().length+"]";$("lTotal").textContent="["+D.length+"]";$("lQ").textContent="["+D.filter(r=>r[1].includes("?")||r[2].includes("?")).length+"]";
+  for(const p of PL()){const c=$("c"+p),box=c.querySelector(".chips");
     c.className="cell"+(lit.length?(places.has(p)?" on":" dim"):"")+(sel===p?" sel":"")+(pulse&&places.has(p)?" pulse":"");
     box.innerHTML="";c.querySelector(".cnt").textContent=byPlace(p).length+" поз.";
     byPlace(p).forEach(r=>{const i=document.createElement("i");i.dataset.i=D.indexOf(r);
@@ -300,12 +310,12 @@ function render(pulse){
   const dn=dirtyN();$("clear").textContent=dn?"✓ Застосувати ["+dn+"]":"✕ Очистити";$("clear").disabled=!dn&&!q.value&&!pick.size;
   const pr=[...pick];$("swap").hidden=pr.length!==2;
   if(pr.length===2)$("swap").textContent="⇄ Поміняти: "+pr[0][1]+" ("+loc(pr[0][0])+") ↔ "+pr[1][1]+" ("+loc(pr[1][0])+")";
-  const moved=D.filter(changed).length;$("undo").hidden=!moved;$("undo").textContent="↺ Повернути переміщення ["+moved+"]";
+  $("undo").hidden=!customized();$("undo").textContent="↺ Повернути як у зошиті";
   list.innerHTML=rows.length?"":'<li class="m">Нічого не знайдено. Спробуй коротший запит.</li>';
   rows.forEach((r,i)=>{const li=document.createElement("li");li.className=(pick.has(r)?"pk":"")+(i===cur?" cur":"");
     li.innerHTML='<span class="p"></span><span></span><code></code>';
     const ix=D.indexOf(r);
-    li.children[0].textContent=loc(r[0]);li.children[1].textContent=r[1];li.children[2].textContent=sub(r)+(r[0]!==O[ix]?" · було "+loc(O[ix]):"");
+    li.children[0].textContent=loc(r[0]);li.children[1].textContent=r[1];li.children[2].textContent=sub(r)+(r[6]&&changed(r)?" · було "+loc(r[6]):(r[6]?"":" · додано"));
     li.onclick=()=>{toggle(r);sel=0;render(true);focusLit()};list.appendChild(li)});
 }
 
@@ -321,7 +331,7 @@ function fitBox(x,y,w,h,max,anim){const W=vp.clientWidth,H=vp.clientHeight,m=32;
   z=clampZ(Math.min((W-2*m)/w,(H-2*m)/h,max));tx=(W-w*z)/2-x*z;ty=(H-h*z)/2-y*z;apply(anim)}
 const fitAll=anim=>fitBox(0,0,rack.offsetWidth,rack.offsetHeight,1.5,anim);
 function focusLit(){const ps=[...new Set([...(pick.size?pick:D.filter(r=>match(r,norm(q.value))))].map(r=>r[0]))];
-  if(!ps.length||ps.length===N||(!pick.size&&!q.value)){fitAll(true);return}
+  if(!ps.length||ps.length===PL().length||(!pick.size&&!q.value)){fitAll(true);return}
   let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
   ps.forEach(p=>{const c=$("c"+p);x1=Math.min(x1,c.offsetLeft);y1=Math.min(y1,c.offsetTop);x2=Math.max(x2,c.offsetLeft+c.offsetWidth);y2=Math.max(y2,c.offsetTop+c.offsetHeight)});
   fitBox(x1,y1,x2-x1,y2-y1,1.6,true)}
@@ -339,7 +349,7 @@ small.addEventListener("change",()=>{if(!small.matches&&full)setFull(false)});
 vp.addEventListener("wheel",e=>{if(!phone.matches)return;e.preventDefault();const r=vp.getBoundingClientRect();
   zoomAt(z*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)),e.clientX-r.left,e.clientY-r.top)},{passive:false});
 /* ---------- Trello-like: lift a place and drop it on another one to swap their positions ---------- */
-$("undo").onclick=()=>{D.forEach((r,i)=>{r[0]=O[i];r[3]=i});saveMoves();S=D.map(r=>[r[0],r[3]]);render()};
+$("undo").onclick=()=>{if(!confirm("Повернути схему як у зошиті? Усі перестановки, додані й видалені місця зникнуть."))return;try{localStorage.removeItem(LK)}catch(e){}location.reload()};
 $("swap").onclick=()=>{const [a,b]=[...pick];swapRows(a,b);applyMoves()};
 let drag=null,suppress=false,press=null;
 const hit=e=>document.elementFromPoint(e.clientX,e.clientY);
