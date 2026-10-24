@@ -49,14 +49,21 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 /* sklad 1: two long rows of places (19 columns), so the desktop map scrolls sideways */
 .vp{overflow-x:auto}
 .rack{display:grid;grid-template-columns:repeat(19,130px);width:max-content;grid-auto-rows:minmax(110px,auto);gap:10px;padding:16px;background:var(--panel2)}
-.cell{padding:12px!important}
+.cell{padding:12px!important;aspect-ratio:1;overflow:hidden}
+.rack{grid-auto-rows:130px!important}
 /* one position per place: no count, the name sits right in the cell instead of a chip */
 .cell .cnt{display:none}
-.cell .chips i{grid-template-columns:1fr;border:0;background:none;padding:0;color:var(--fg);font-size:14px;font-weight:500}
+.cell .chips i{grid-template-columns:1fr;border:0;background:none;padding:0;color:var(--fg);font-size:13px;font-weight:500;overflow-wrap:anywhere}
 .cell .chips i .h{display:none}
 .cell .chips i small{grid-column:1/-1;color:var(--muted)}
 .cell .chips i.lit{background:none;color:var(--fg)}
 .cell .chips i.lit small{color:var(--muted)}
+/* barrels (circled on the sketch: places 8–34) are round, like on the floor */
+.cell.barrel{border-radius:50%;aspect-ratio:1;align-self:center;align-content:center;justify-items:center;text-align:center;gap:4px;padding:14px!important}
+.cell.barrel .hd{justify-content:center}
+.cell.barrel .chips{justify-content:center}
+.cell.barrel .chips i{font-size:12px;line-height:1.3}
+.cell.barrel.sel{outline-offset:-4px}
 .aisle{grid-column:1/6;grid-row:3;border:1px dashed var(--line);border-radius:4px;display:grid;place-items:center;color:var(--faint);font-size:12px;letter-spacing:.08em}
 .cell .zl{font-size:11px;color:var(--muted)}.cell a{color:var(--fg)}
 .cell{color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:20px;cursor:pointer;display:grid;grid-template-rows:auto auto 1fr;gap:10px;transition:opacity .2s,background .2s}
@@ -199,12 +206,12 @@ body.dragging{cursor:grabbing;user-select:none}
 
   <section class="work" id="map">
     <div class="cap">
-      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, місця 8–33 — бочки · гортай план убік · тягни назву на інше місце, щоб перемістити</span>
+      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, кола — бочки · гортай план убік · тягни назву на інше місце, щоб перемістити</span>
       <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
     <div class="vp" id="vp"><div class="stage" id="stage">
-      <div class="rack" id="rack"><div class="aisle">ПОЗА СХЕМОЮ (35–39) →</div></div>
+      <div class="rack" id="rack"></div>
     </div></div>
   </section>
 
@@ -222,20 +229,19 @@ body.dragging{cursor:grabbing;user-select:none}
 <script>
 // [place, name, tare · code]
 const D=[[1,"Гуміарабік (Фіброгам)","—"],[2,"Е 475 Емульгатор","—"],[3,"STS 30","25 кг"],
-[4,"Diamant Біле (Diamond White)","20 кг · 2.14892.455"],[5,"Калію сорбат","25 кг"],[6,"Мускатний горіх","25 кг"],[7,"Хлібопекарський поліпшувач","25 кг"],
+[4,"Diamant Біле","20 кг · 2.14892.455"],[5,"Калію сорбат","25 кг"],[6,"Мускатний горіх","25 кг"],[7,"Хлібопекарський поліпшувач","25 кг"],
 [8,"Коріандр","бочка"],[9,"Крохмаль картопляний","бочка"],[10,"Лимонна кислота","бочка"],[11,"Пірофосфат натрію","бочка"],
 [12,"Молоко сухе знежирене","бочка"],[13,"Діамант біла","бочка"],[14,"Сироватка","бочка"],[15,"Молоко сухе знежирене","бочка"],
 [16,"Пропіонат кальцію","бочка"],[17,"Сироватка","бочка"],[18,"Сода","бочка"],[19,"Сіль","бочка"],[20,"Сіль вуглеамонійна (амоній)","бочка"],
 [21,"Яєчний порошок","бочка"],[22,"Яєчний порошок","бочка"],[23,"Лимонна кислота","бочка"],[24,"Суміш прянощів","бочка"],
 [25,"Суміш прянощів для пряника ?","бочка"],[26,"Глюкоза","бочка"],[27,"Лимонна кислота (подрібнена)","бочка"],[28,"? (не підписано)","бочка"],
 [29,"Какао порошок алкалізований","бочка"],[30,"Какао порошок натуральний","бочка"],[31,"Кориця","бочка"],[32,"Крохмаль кукурудзяний","бочка · off"],
-[33,"Коріандр","бочка"],[34,"Калію сорбат","25 кг"],[35,"Мівероа ?","25 кг"],[36,"Е 475","запас"],[37,"Кориця мелена","—"],[38,"Імбир мелений","—"],[39,"Насіння чіа","—"]];
+[33,"Коріандр","бочка"],[34,"Калію сорбат","25 кг"]];
 D.forEach(r=>{r[4]="";r[5]=""});
-// floor plan from the sketch: [column, row]; bottom row 1…19 left to right, top row 34…20 above 5…19, 35–39 are not on the sketch
-const N=39,GA={};
+// floor plan from the sketch: [column, row]; bottom row 1…19 left to right, top row 34…20 above 5…19
+const N=34,GA={};
 for(let p=1;p<=19;p++)GA[p]=[p,2];
 for(let p=20;p<=34;p++)GA[p]=[39-p,1];
-for(let p=35;p<=39;p++)GA[p]=[p-29,3];
 const ZONE={};
 const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),pad=n=>String(n).padStart(2,"0");
 const loc=p=>"№"+pad(p);
@@ -275,7 +281,7 @@ function render(pulse){
   const lit=pick.size?[...pick]:(t?hits:[]),places=new Set(lit.map(r=>r[0]));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",norm(b.textContent)===t));
   for(let p=1;p<=N;p++){const c=$("c"+p),box=c.querySelector(".chips");
-    c.className="cell"+(lit.length?(places.has(p)?" on":" dim"):"")+(sel===p?" sel":"")+(pulse&&places.has(p)?" pulse":"");
+    c.className="cell"+(p>=8?" barrel":"")+(lit.length?(places.has(p)?" on":" dim"):"")+(sel===p?" sel":"")+(pulse&&places.has(p)?" pulse":"");
     box.innerHTML="";c.querySelector(".cnt").textContent=byPlace(p).length+" поз.";
     byPlace(p).forEach(r=>{const i=document.createElement("i");i.dataset.i=D.indexOf(r);
       const h=document.createElement("span");h.className="h";h.textContent="⋮⋮";i.append(h,r[1]);
