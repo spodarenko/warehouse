@@ -47,7 +47,11 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 /* desktop: plain full-width rack; pan/zoom only on phone (see media query) */
 .zoom,.axis{display:none}
 /* sklad 1: two long rows of places (19 columns), so the desktop map scrolls sideways */
-.vp{overflow-x:auto}
+/* pan/zoom on every screen (19 places in a row don't fit): wheel or −/+ to zoom, drag to move */
+.zoom{display:flex}
+.vp{position:relative;height:300px;overflow:hidden;touch-action:none;cursor:grab;user-select:none;background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px}
+.vp.panning{cursor:grabbing}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 .rack{display:grid;grid-template-columns:repeat(19,130px);width:max-content;grid-auto-rows:minmax(110px,auto);gap:10px;padding:16px;background:var(--panel2)}
 .cell{padding:12px!important;aspect-ratio:1;overflow:hidden}
 .rack .cell{border-radius:24px}
@@ -135,7 +139,6 @@ body.dragging{cursor:grabbing;user-select:none}
     background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px}
   .vp.panning{cursor:grabbing}
   .stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
-  .vp{overflow:hidden}
   .acts{width:100%}
   /* full-screen map with search on top */
   body.full{overflow:hidden}
@@ -202,7 +205,7 @@ body.dragging{cursor:grabbing;user-select:none}
 
   <section class="work" id="map">
     <div class="cap">
-      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, місця 8–34 — бочки · гортай план убік · тягни назву на інше місце, щоб перемістити</span>
+      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, місця 8–34 — бочки · колесо або −/+ — масштаб, тягни фон — зсунути ·тягни назву на інше місце, щоб перемістити</span>
       <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
@@ -303,7 +306,7 @@ function render(pulse){
 }
 
 /* ---------- pan & zoom ---------- */
-const phone=matchMedia("(max-width:600px)");
+const phone=matchMedia("all"),small=matchMedia("(max-width:600px)"); // pan/zoom everywhere; full screen only on phone
 let z=1,tx=0,ty=0;
 const ZMIN=.25,ZMAX=3,clampZ=v=>Math.min(ZMAX,Math.max(ZMIN,v));
 function apply(anim){if(!phone.matches){stage.style.transform="";return}stage.style.transition=anim?"transform .35s ease":"none";
@@ -326,9 +329,9 @@ const box=document.querySelector(".box"),boxHome=box.parentNode,work=$("map");le
 function setFull(on){full=on;document.body.classList.toggle("full",on);
   if(on)work.prepend(box);else boxHome.appendChild(box);
   $("zFit").textContent=on?"✕ Згорнути":"⤢ Весь склад";requestAnimationFrame(()=>fitAll())}
-$("zFit").onclick=()=>phone.matches?setFull(!full):fitAll(true);
+$("zFit").onclick=()=>small.matches?setFull(!full):fitAll(true);
 $("exitFull").onclick=e=>{e.preventDefault();setFull(false)};
-phone.addEventListener("change",()=>{if(!phone.matches&&full)setFull(false)});
+small.addEventListener("change",()=>{if(!small.matches&&full)setFull(false)});
 vp.addEventListener("wheel",e=>{if(!phone.matches)return;e.preventDefault();const r=vp.getBoundingClientRect();
   zoomAt(z*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)),e.clientX-r.left,e.clientY-r.top)},{passive:false});
 /* ---------- drag a liquid: move to a place or swap with another liquid ---------- */
