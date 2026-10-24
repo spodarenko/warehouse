@@ -165,6 +165,17 @@ dialog .fullbtn{width:100%}
   .ctl .btn{grid-column:1/-1;height:44px;font-size:15px}
   .ctl .relay{grid-column:1/-1}
 }
+/* series for a line: product from config/lines.json, tick off what is not needed, adjust counts */
+.series select{font:inherit;font-size:16px;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:8px;max-width:100%}
+.srows{list-style:none;margin:0 0 16px;padding:0}
+.srows li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;min-height:52px;border-bottom:1px solid var(--line)}
+.srows li.off span{color:var(--nav);text-decoration:line-through}
+.srows input[type=checkbox]{width:22px;height:22px}
+.srows input[type=number]{width:64px;font:inherit;font-size:16px;text-align:center;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px}
+.srows code{display:block;color:var(--faint);font-size:12px}
+.series .ctl .btn{width:100%}
+@media (max-width:640px){.series{padding:16px}.srows li{padding:0}}
+body.full .series{display:none}
 @page{size:60mm 30mm;margin:0}
 @media print{
   body{background:#fff;padding:0}
@@ -234,6 +245,16 @@ dialog .fullbtn{width:100%}
       <button class="btn" id="remote" disabled hidden>Друкувати</button>
       <button class="btn" id="print" disabled>Друкувати</button>
       <div class="m relay" id="relay" hidden></div>
+    </div>
+  </section>
+
+  <section class="series">
+    <div class="sidehd"><h3>Серія на лінію</h3><select id="sSel"><option value="">— оберіть виріб —</option></select></div>
+    <ul class="srows" id="sRows"></ul>
+    <div class="ctl" id="sCtl" hidden>
+      <button class="btn" id="sRemote" hidden>Друкувати серію</button>
+      <button class="btn" id="sPrint">Друкувати серію</button>
+      <div class="m" id="sMsg"></div>
     </div>
   </section>
 
@@ -973,11 +994,11 @@ let current = null, hits = codes, shown = PAGE;
 
 const stamp = () => new Date().toLocaleString('uk-UA', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
 
-function fill(el, code, time) {
+function fill(el, code, time, art = ITEMS[code].article) {
   el.innerHTML = '<div class="name"></div><div class="time"></div><div class="art"></div>';
   el.querySelector('.name').textContent = code;
   el.querySelector('.time').textContent = time;
-  el.querySelector('.art').textContent = ITEMS[code].article ? 'Арт. ' + ITEMS[code].article : '';
+  el.querySelector('.art').textContent = art ? 'Арт. ' + art : '';
 }
 
 function pick(c) {
@@ -1088,17 +1109,19 @@ $('clear').onclick = () => {
 
 const copiesOf = v => Math.min(50, Math.max(1, parseInt(v) || 1));
 
-function printLabels(name, n) {
+// rows: [{name, art, n}]; art undefined → taken from ITEMS
+function printRows(rows) {
   const time = stamp();  // date/time = moment of printing
   $('paper').innerHTML = '';
-  for (let i = 0; i < n; i++) {
+  for (const r of rows) for (let i = 0; i < r.n; i++) {
     const el = document.createElement('div');
     el.className = 'label';
-    fill(el, name, time);
+    fill(el, r.name, time, r.art);
     $('paper').append(el);
   }
   window.print();
 }
+const printLabels = (name, n) => printRows([{name, n, art: ITEMS[name].article}]);
 
 $('print').addEventListener('click', () => {
   printLabels(current, copiesOf($('copies').value));
@@ -1233,6 +1256,16 @@ async function setPrinter(on) {
       showJournal();
       return;
     }
+    if (job.series) {  // a series: product + [[row index, count]] into SERIES of this page
+      const rows = (job.rows || []).map(([i, n]) => SERIES[job.series] && SERIES[job.series][i] && {...SERIES[job.series][i], n: copiesOf(n)}).filter(Boolean);
+      if (!rows.length) return;
+      const total = rows.reduce((s, r) => s + r.n, 0);
+      printRows(rows);
+      store('labels.log', JSON.stringify([{at: stamp(), who: job.who, name: 'Серія ' + job.series, copies: total}, ...journal()].slice(0, 30)));
+      relay('● Надруковано: серія ' + job.series + ' × ' + total + ' · ' + job.who);
+      showJournal();
+      return;
+    }
     if (!ITEMS[job.name]) return;
     const n = copiesOf(job.copies);
     printLabels(job.name, n);
@@ -1329,6 +1362,49 @@ $('dForget').onclick = async () => {
   dlg.close();
   setupPrint();
   relay('Пристрій відключено.');
+};
+
+// series on a line: product from config/lines.json (embedded by build-labels.ps1), each row on/off with its own count
+const SERIES = {"Деліція":[{"name":"Сік концентрований Вишня","art":"8544437568","n":1},{"name":"Барвник АНТОЦІАН","art":"6090479","n":1},{"name":"Ароматизатор Вишня","art":"8544444043","n":1},{"name":"Лимонна кислота","art":"8544448568","n":1},{"name":"Сік концентрований Апельсин","art":"8544434003","n":1},{"name":"Ароматизатор апельсин","art":"6099064","n":1},{"name":"Барвник АНАТО порошок","art":"6088289","n":1},{"name":"Борошно в/г","art":"6096223","n":23},{"name":"Меланж яєчний","art":"6096204","n":34},{"name":"Крохмаль кукурудзяний","art":"6096208","n":4},{"name":"Олія соняшникова високоолеїнова","art":"8544435501","n":7},{"name":"Крохмаль картопляний","art":"6096207","n":3},{"name":"Глюкоза","art":"6096218","n":2},{"name":"Молоко сухе знежирене","art":"6096192","n":2},{"name":"Емульгатор (Паста для збивання бісквіту (Грааль)","art":"8544444571","n":2},{"name":"Сіль вуглеамонійна","art":"8544448566","n":1},{"name":"Гліцерин","art":"6096217","n":1},{"name":"Сорбіт харчовий (сорбітол)","art":"6096199","n":1},{"name":"Ароматизатор ваніль 913790 (бісквіт)","art":"8544443392","n":1},{"name":"Сода харчова","art":"8544448569","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Кальцію пропіонат","art":"7000019708","n":1},{"name":"Барвник В-каротин (провітамін А в олії)","art":"6096225","n":1},{"name":"Калій сорбат харчовий","art":"6096171","n":1},{"name":"Емульгатор Е 475 (PG E 55 SG )","art":"6107401","n":1}],"Маргаритка":[{"name":"Сік концентрований Чорна смородина","art":"","n":1},{"name":"Барвник АНТОЦІАН","art":"","n":1},{"name":"Ароматизатор смородина","art":"","n":1},{"name":"Лимонна кислота","art":"","n":1},{"name":"Сік концентрований Малина","art":"","n":1},{"name":"Ароматизатор малина","art":"","n":1},{"name":"Борошно 1 гатунок","art":"","n":39},{"name":"Цукор","art":"","n":10},{"name":"Жир рослинний РВД олія пальмова","art":"","n":1},{"name":"Сода харчова","art":"","n":1},{"name":"Ароматизатор ванільно-вершковий 913790 А","art":"","n":1},{"name":"Сіль кухонна","art":"","n":1},{"name":"Молоко сухе знежирене","art":"","n":1},{"name":"Барвник В-каротин (провітамін А в олії)","art":"","n":1}],"Печиво цукрове для НГ наборів":[{"name":"Борошно 1 гатунок","art":"","n":1},{"name":"Жир рослинний РВД олія пальмова","art":"","n":1},{"name":"Глюкозно-фруктозний сироп ГФС-42","art":"","n":1},{"name":"Суміш прянощів для пряника (BOWIKA PREMIUM)","art":"","n":1},{"name":"Сіль кухонна","art":"","n":1},{"name":"Сода харчова","art":"","n":1},{"name":"Ароматизатор апельсин","art":"6099064","n":1},{"name":"Імбир","art":"","n":1},{"name":"Коріандр","art":"","n":1}],"Європейські":[{"name":"Глюкозно-фруктозний сироп ГФС-42","art":"","n":1},{"name":"Меланж яєчний","art":"","n":1},{"name":"Емульгатор Е 475 (PG E 55 SG )","art":"","n":1},{"name":"Борошно 1 гатунок","art":"","n":1},{"name":"Олія соняшникова високоолеїнова","art":"","n":1},{"name":"Суміш прянощів для пряника (BOWIKA PREMIUM)","art":"","n":1},{"name":"Гліцерин","art":"","n":1},{"name":"Сіль вуглеамонійна","art":"","n":1},{"name":"Сода харчова","art":"","n":1},{"name":"Кальцію пропіонат","art":"","n":1},{"name":"Натрію пірофосфат Е450","art":"","n":1},{"name":"Калій сорбат харчовий","art":"","n":1},{"name":"Сіль кухонна","art":"","n":1},{"name":"Молочна кислота","art":"","n":1},{"name":"Акрілавей 3500BG","art":"","n":1}],"Ля-Мурчики":[{"name":"Повидло яблучне (не термостабільне)","art":"","n":1},{"name":"Жир для глазурі","art":"","n":1},{"name":"Барвник КАРМІН OSL 12 екстракт","art":"","n":1},{"name":"Барвник Паприки екстракт 3550","art":"","n":1},{"name":"Емульгатор PGPR (E476)","art":"","n":1},{"name":"Лимонна кислота","art":"","n":1},{"name":"Ароматизатор абрикос 911008","art":"","n":1},{"name":"Ароматизатор полуниця вершки 910357","art":"","n":1},{"name":"Барвник АНТОЦІАН","art":"","n":1},{"name":"Борошно житнє","art":"","n":1},{"name":"Жир рослинний РВД олія пальмова","art":"","n":1},{"name":"Олія соняшникова високоолеїнова","art":"","n":6},{"name":"Сіль вуглеамонійна","art":"","n":1},{"name":"Суміш прянощів для пряника (BOWIKA PREMIUM)","art":"","n":2},{"name":"Гліцерин","art":"","n":1},{"name":"Сода харчова","art":"","n":1},{"name":"Натрію пірофосфат Е450","art":"","n":1},{"name":"Лецитин соєвий","art":"","n":1},{"name":"Кальцію пропіонат","art":"","n":1},{"name":"Молочна кислота","art":"","n":1},{"name":"Сіль кухонна","art":"","n":1},{"name":"Калій сорбат харчовий","art":"","n":1},{"name":"Хлібопекарський поліпшувач","art":"","n":1},{"name":"Акрілавей 3500BG","art":"","n":1},{"name":"Ароматизатор Ваніль-Молоко (947310)","art":"","n":1},{"name":"Сік концентрований Полуниця","art":"","n":1}],"Трубочки":[{"name":"Борошно в/г","art":"6096223","n":1},{"name":"Цукор","art":"6096200","n":1},{"name":"Барвник карамельний колір Е150С (ТИП-ІІІ)","art":"6096699","n":1},{"name":"Олія соняшникова високоолеїнова","art":"8544435501","n":1},{"name":"Лецитин соєвий","art":"6096206","n":1},{"name":"Яєчний порошок","art":"6096202","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Сироватка молочна суха","art":"6096197","n":1},{"name":"Жир Замінник Молочного Жиру Z102 \"TM Sania\"","art":"8544447116","n":1},{"name":"Жир \"КАПРОМІЛК\"","art":"8544435489","n":1},{"name":"Жир рослинний РВД олія пальмова","art":"6099930","n":1},{"name":"Молоко сухе знежирене","art":"6096192","n":1},{"name":"Кокосова стружка (Fine знежирена)","art":"8544444044","n":1},{"name":"Ароматизатор кокос тип Рафаелло","art":"8544443395","n":1},{"name":"Ароматизатор пряжене молоко 095,4","art":"6100068","n":1},{"name":"Антиоксидант Grindox 552","art":"7000017497","n":1},{"name":"Антиоксидант Guardian Toco50","art":"8544438149","n":1},{"name":"Етилованілін","art":"6096214","n":1}]};
+for (const p of Object.keys(SERIES)) $('sSel').add(new Option(p, p));
+const sPicked = () => [...$('sRows').children].map((li, i) => [i, li.querySelector('[type=checkbox]').checked ? parseInt(li.querySelector('[type=number]').value) || 0 : 0]).filter(([, n]) => n > 0);
+function syncSeries() {
+  const total = sPicked().reduce((s, [, n]) => s + Math.min(50, n), 0), paired = !!myDevice();
+  $('sRemote').hidden = !paired;
+  $('sPrint').classList.toggle('alt', paired);
+  $('sRemote').textContent = 'Друкувати серію: ' + total + ' шт.';
+  $('sPrint').textContent = paired ? 'або надрукувати на цьому пристрої' : 'Друкувати серію: ' + total + ' шт.';
+  $('sRemote').disabled = $('sPrint').disabled = !total;
+}
+$('sSel').onchange = () => {
+  const rows = SERIES[$('sSel').value] || [];
+  $('sRows').innerHTML = '';
+  for (const r of rows) {
+    const li = document.createElement('li');
+    li.innerHTML = '<input type="checkbox" checked><span><b></b><code></code></span><input type="number" min="0" max="50" inputmode="numeric">';
+    li.querySelector('b').textContent = r.name;
+    li.querySelector('code').textContent = r.art ? 'Арт. ' + r.art : 'без артикулу';
+    li.querySelector('[type=number]').value = r.n;
+    li.querySelector('[type=checkbox]').onchange = e => { li.classList.toggle('off', !e.target.checked); syncSeries(); };
+    li.querySelector('[type=number]').oninput = syncSeries;
+    $('sRows').append(li);
+  }
+  $('sCtl').hidden = !rows.length;
+  syncSeries();
+};
+$('sPrint').onclick = () => {
+  const rows = SERIES[$('sSel').value];
+  printRows(sPicked().map(([i, n]) => ({...rows[i], n: Math.min(50, n)})));
+};
+const sMsg = m => { relay(m); $('sMsg').textContent = m; };  // .work with #relay is hidden on a phone
+$('sRemote').onclick = async () => {
+  const series = $('sSel').value, rows = sPicked();
+  sMsg('Надсилаю серію на планшет…');
+  try {
+    const r = await send({series, rows});
+    if (!r.ok) throw r.status;
+    sMsg('✓ Надіслано на планшет: серія ' + series + ' · ' + rows.reduce((s, [, n]) => s + Math.min(50, n), 0) + ' шт.');
+  } catch (e) { sMsg('✕ Не вдалося надіслати. Перевірте інтернет.'); }
 };
 
 render();
