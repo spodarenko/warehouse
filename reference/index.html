@@ -197,14 +197,14 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
 @media (min-width:641px){#clear+.theme{margin-left:-16px}}  /* desktop: ☀ sits close to «Очистити» (8px, not the nav's 24px) */
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
-.ref h3{font-size:15px;margin:36px 0 10px}.ref .scroll+.scroll{margin-top:16px}
+.ref h3{font-size:15px;margin:36px 0 10px}.lang{font-size:12px;margin-left:-16px}@media (max-width:640px){.lang{margin-left:0}}.ref .scroll+.scroll{margin-top:16px}
 </style>
 </head>
 <body>
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button><button class="theme lang" id="lang" type="button" aria-label="Мова / Language" title="English">EN</button></nav>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -440,7 +440,7 @@ document.querySelectorAll('nav a').forEach(a => a.addEventListener('click', () =
 <script>
 // theme: ☀/☾ toggles light/dark, remembered in this browser for all pages
 const themeBtn = document.getElementById('theme');
-const showTheme = () => { const l = document.documentElement.dataset.theme === 'light'; themeBtn.textContent = l ? '☾' : '☀'; themeBtn.title = l ? 'Темна тема' : 'Світла тема'; };
+const showTheme = () => { const l = document.documentElement.dataset.theme === 'light'; themeBtn.textContent = l ? '☾' : '☀'; const en = document.documentElement.lang === 'en'; themeBtn.title = l ? (en ? 'Dark theme' : 'Темна тема') : (en ? 'Light theme' : 'Світла тема'); };
 themeBtn.onclick = () => {
   const l = document.documentElement.dataset.theme !== 'light';
   if (l) document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
@@ -448,6 +448,137 @@ themeBtn.onclick = () => {
   showTheme();
 };
 showTheme();
+</script>
+<script>
+// language: UA / EN, remembered in this browser like the theme. EN swaps text nodes by the dictionary below;
+// the tare table and quick filters stay Ukrainian (1C names — the search works on them).
+const EN={
+"Рідини":"Liquids","Склад №1":"Warehouse 1","Склад №2":"Warehouse 2","Довідка":"Reference","Стікери":"Labels","✕ Очистити":"✕ Clear",
+"Довідка складу":"Warehouse reference",
+"Тара й вага місць, правила округлення, норми. Пошук фільтрує таблицю тари.":"Packaging and unit weights, rounding rules, norms. The search filters the packaging table.",
+"Тара: розмір місця і вага тари":"Packaging: unit size and tare weight",
+"«Місце» — одна одиниця, яку несе комірник (мішок, упаковка, каністра). Кількість місць = кількість ÷ розмір місця, мінімум 1. Брутто = нетто + тара. Пошук угорі фільтрує й цю таблицю. Стан на 20.10.2026.":"A “unit” is one item the storekeeper carries (bag, pack, canister). Units = quantity ÷ unit size, at least 1. Gross = net + tare. The search above filters this table too. As of 20.10.2026.",
+"Тара":"Packaging","Округлення":"Rounding","Норми":"Norms","Лінії":"Lines","Дані":"Data","Модель":"Model","Чого бракує":"What is missing",
+"Матеріал":"Material","Арт. 1С":"1C article","Нетто, кг":"Net, kg","Тара, кг":"Tare, kg","Брутто, кг":"Gross, kg","Де лежить":"Location",
+"Правила округлення видачі":"Issue rounding rules",
+"П'ять типів правил. Тут — Лінія 6 і «Трубочки»; правила ліній 4, 5, 8 і Маргаритки — у розділі «Лінії та продукти» нижче. Лінії 3 і 9 — ще ні.":"Five rule types. Here: Line 6 and Wafer rolls; rules for lines 4, 5, 8 and Marharytka are in “Lines and products” below. Lines 3 and 9 are not done yet.",
+"Правило":"Rule","Що робить":"What it does","Лінія 6 (Деліція)":"Line 6 (Delitsiia)","«Трубочки»":"Wafer rolls","+ крок":"+ step",
+"вгору до кратного кроку (часто = мішок)":"up to a multiple of the step (often = a bag)",
+"Крохмаль кукурудзяний 30; картопляний, глюкоза, молоко 25; сіль вуглеамонійна, пропіонат 0,5; В-каротин, сорбат 0,25":"Corn starch 30; potato starch, glucose, milk powder 25; ammonium bicarbonate, propionate 0.5; beta-carotene, sorbate 0.25",
+"Цукор 50; олія 13,68 (уп.); сироватка, молоко сухе 25; кокосова стружка, ароматизатор кокос 0,25; Grindox, Toco50, етилванілін 0,1":"Sugar 50; oil 13.68 (pack); whey, milk powder 25; coconut flakes, coconut flavouring 0.25; Grindox, Toco50, ethyl vanillin 0.1",
+"до найближчого кратного":"to the nearest multiple",
+"Олія 13,68 (уп.); соки й ароматизатори 0,1; антоціан, гліцерин, сода, сіль 1":"Oil 13.68 (pack); juices and flavourings 0.1; anthocyanin, glycerol, soda, salt 1",
+"Барвник карамельний Е150С 30 (мінімум одна каністра); яєчний порошок 1; ароматизатор пряжене молоко 0,1":"Caramel colour E150c 30 (at least one canister); egg powder 1; baked-milk flavouring 0.1",
+"завжди одне значення":"always one value",
+"Лимонна кислота (желе) 25; Паста Грааль 20":"Citric acid (jelly) 25; Graal paste 20","Сіль кухонна 3":"Salt 3",
+"як у 1С, без округлення":"as in 1C, no rounding",
+"Борошно в/г, меланж, Е 475, АНАТО":"Premium wheat flour, liquid egg, E475, annatto",
+"Борошно в/г; лецитин; жири Z102 Sania, «Капромілк», РВД":"Premium wheat flour; lecithin; fats Z102 Sania, Kapromilk, palm (RVD)",
+"не видаємо, рядок видаляється":"not issued, the row is removed",
+"Рисові кульки; цукрова пудра (власний н/ф)":"Rice balls; powdered sugar (own semi-finished)",
+"Норми Лінії 6":"Line 6 norms",
+"Тісто рахується на заміси (1 зміна 35, 2 зміна 37), желе — на кг ВАЛ. «Трубочки» не перераховуються: кількості беруться як у 1С.":"Dough is calculated per batch (shift 1: 35, shift 2: 37), jelly per kg of gross output (VAL). Wafer rolls are not rescaled: quantities are taken as in 1C.",
+"Тісто Деліції, на 1 заміс":"Delitsiia dough, per batch","кг":"kg","Желе, на 1 т ВАЛ":"Jelly, per 1 t VAL",
+"Борошно в/г":"Premium wheat flour","Сік концентрований":"Juice concentrate","Меланж":"Liquid egg","Ароматизатор":"Flavouring",
+"Крохмаль кукурудзяний":"Corn starch","Антоціан (вишня)":"Anthocyanin (cherry)","Олія":"Oil","АНАТО (апельсин)":"Annatto (orange)",
+"Крохмаль картопляний":"Potato starch","Лимонна кислота":"Citric acid","Глюкоза · Молоко":"Glucose · Milk powder",
+"Грааль · Сіль вуглеамонійна":"Graal · Ammonium bicarbonate","Гліцерин · Сорбіт · Ваніль":"Glycerol · Sorbitol · Vanilla",
+"Сода · Сіль · Пропіонат · Лимонна к-та":"Soda · Salt · Propionate · Citric acid","В-каротин · Калій сорбат · Е 475":"Beta-carotene · Potassium sorbate · E475",
+"Лінії та продукти":"Lines and products",
+"Як 1С рахує «Требование» і як склад його округлює. 1С: матеріал = норма специфікації на 1 порцію × порції; власні напівфабрикати (стаття «Напівфабрикати власні») склад не видає. Програма розпізнає продукт за підрозділом і матеріалами. Стан на 24.10.2026.":"How 1C calculates the requisition and how the warehouse rounds it. 1C: material = specification norm per portion × portions; own semi-finished products (cost item “Own semi-finished”) are not issued. The program recognises the product by department and materials. As of 24.10.2026.",
+"Лінія · продукт":"Line · product","Накладні":"Requisitions","Як рахується":"How it is calculated","Не видаємо":"Not issued",
+"6 · Деліція":"6 · Delitsiia","2: желе + тісто":"2: jelly + dough",
+"тісто перераховується на 35 (1 зм.) / 37 (2 зм.) замісів; желе — від кг ВАЛ":"dough rescaled to 35 (shift 1) / 37 (shift 2) batches; jelly from kg VAL",
+"цукрова пудра, сироп інвертний":"powdered sugar, invert syrup","6 · Маргаритка":"6 · Marharytka",
+"тісто перераховується на 21 заміс; желе — від кг ВАЛ, як є в 1С":"dough rescaled to 21 batches; jelly from kg VAL, as in 1C",
+"сироп інвертний, крихта печива":"invert syrup, cookie crumbs","4 · Ля-Мурчики + Полуничні":"4 · La-Murchyky + Strawberry",
+"2: начинка/глазур + тісто":"2: filling/glaze + dough",
+"як у 1С; повидло ділиться: тісто = 4,5 × порції, решта — начинка":"as in 1C; jam is split: dough = 4.5 × portions, the rest is filling",
+"заварний н/ф (темний), цукрова пудра":"brewed semi-finished (dark), powdered sugar","5 · Європейські":"5 · European",
+"як у 1С; дві фази: 1-а = 0,338 × порцій 2-ї":"as in 1C; two phases: phase 1 = 0.338 × phase 2 portions",
+"заварний н/ф (світлий), 1-а фаза":"brewed semi-finished (light), phase 1","8 · Ялинкові прикраси":"8 · Christmas ornaments",
+"як у 1С (борошно, жир, ГФС не перераховуються)":"as in 1C (flour, fat, HFCS are not rescaled)","цукрова пудра, крихта печива":"powdered sugar, cookie crumbs",
+"13 · Трубочки":"13 · Wafer rolls",
+"як у 1С; склад спершу підганяє порції вафель і начинки в «Задании»":"as in 1C; the warehouse first adjusts wafer and filling portions in the production task",
+"цукрова пудра":"powdered sugar","Лінія 6 · Маргаритка":"Line 6 · Marharytka","На 1 порц.":"Per portion","Приклад":"Example",
+"Борошно 1 гатунок":"Wheat flour, 1st grade","× заміси, без округлення":"× batches, no rounding","Цукор · Жир РВД пальмова":"Sugar · Palm fat (RVD)",
+"до найближчих 50":"to the nearest 50","Молоко сухе · Сода · Сіль · Ароматизатор ван.-верш. 913790 А":"Milk powder · Soda · Salt · Vanilla-cream flavouring 913790 A",
+"× заміси":"× batches","В-каротин":"Beta-carotene","вгору до 0,25":"up to 0.25","Желе: сік чорна смородина":"Jelly: blackcurrant juice concentrate",
+"від ВАЛ":"from VAL","як у 1С":"as in 1C","Желе: антоціан, ароматизатор смородина, сік і ароматизатор малина":"Jelly: anthocyanin, currant flavouring, raspberry juice and flavouring",
+"вгору до 0,5":"up to 0.5","Желе: лимонна кислота":"Jelly: citric acid","завжди 25":"always 25",
+"Лінія 4 · Ля-Мурчики і Ля-Мурчики Полуничні":"Line 4 · La-Murchyky and La-Murchyky Strawberry","Тісто":"Dough","Ля-Мурчики":"La-Murchyky","Полуничні":"Strawberry",
+"Борошно житнє":"Rye flour","Жир РВД пальмова":"Palm fat (RVD)","Олія соняшникова":"Sunflower oil","до найближчої уп. 13,68":"to the nearest 13.68 pack",
+"Повидло яблучне (частина тіста)":"Apple jam (dough part)","вгору до 10 (68,13 → 70)":"up to 10 (68.13 → 70)","Сіль вуглеамонійна · Гліцерин":"Ammonium bicarbonate · Glycerol",
+"до цілого":"to a whole number","вгору до мішка 25":"up to a 25 kg bag","Сода · Пропіонат":"Soda · Propionate","вгору до цілого":"up to a whole number",
+"Натрію пірофосфат":"Sodium pyrophosphate","вгору до 5 (22,71 → 25)":"up to 5 (22.71 → 25)","Лецитин соєвий":"Soy lecithin",
+"Поліпшувач · Молочна к-та · Сіль · Сорбат · Акрілавей":"Bread improver · Lactic acid · Salt · Sorbate · Acrylaway","вгору до 0,1":"up to 0.1",
+"Ароматизатор Ваніль-Молоко 947310 · Сік полуниця":"Vanilla-milk flavouring 947310 · Strawberry juice concentrate","Начинка / глазур (від кг ВАЛ)":"Filling / glaze (from kg VAL)",
+"Повидло яблучне (решта: рядок 1С − 4,5 × порції)":"Apple jam (the rest: 1C row − 4.5 × portions)","до найближчих 10":"to the nearest 10",
+"Жир для глазурі · Барвник паприки":"Glaze fat · Paprika colour","Барвник кармін · Емульгатор PGPR":"Carmine colour · PGPR emulsifier","до 0,1":"to 0.1",
+"Лимонна к-та · Ароматизатори абрикос і полуниця вершки · Антоціан":"Citric acid · Apricot and strawberry-cream flavourings · Anthocyanin",
+"Лінія 5 · Європейські":"Line 5 · European","Фаза":"Phase","2-а":"2nd","вгору до уп. 13,68":"up to a 13.68 pack","ГФС-42 · Меланж · Е475":"HFCS-42 · Liquid egg · E475",
+"1-а":"1st","мішок 25 (напрямок вирішують)":"25 kg bag (direction not decided)","Гліцерин":"Glycerol","Сіль вуглеамонійна · Сіль кухонна":"Ammonium bicarbonate · Salt",
+"Сода · Пропіонат · Молочна к-та":"Soda · Propionate · Lactic acid","Пірофосфат · Калій сорбат · Акрілавей":"Pyrophosphate · Potassium sorbate · Acrylaway",
+"Лінія 8 · Ялинкові прикраси («Печиво цукрове для НГ наборів»)":"Line 8 · Christmas ornaments (sugar cookies for New Year sets)",
+"Борошно 1 гатунок · Жир РВД · ГФС-42":"Wheat flour 1st grade · Palm fat · HFCS-42","Сода · Сіль кухонна":"Soda · Salt",
+"«Апельсинове селище»: ароматизатор апельсин · імбир · коріандр":"“Orange village”: orange flavouring · ginger · coriander",
+"до 0,1 · як у 1С (не підтверджено)":"to 0.1 · as in 1C (not confirmed)","Трубочки · пряжене молоко":"Wafer rolls · baked milk",
+"Вафлі, на 1 порц.":"Wafers, per portion","Начинка, на 1 порц.":"Filling, per portion","Борошно в/г · Цукор":"Premium wheat flour · Sugar",
+"як у 1С · вгору до мішка 50":"as in 1C · up to a 50 kg bag","4,56 (1 пляшка)":"4.56 (1 bottle)","Яєчний порошок · Сіль кухонна":"Egg powder · Salt",
+"до цілого · завжди 3":"to a whole number · always 3","Сироватка · Молоко сухе":"Whey powder · Milk powder","Ароматизатор пряжене молоко":"Baked-milk flavouring",
+"Grindox 552 · Toco50 · Етилованілін":"Grindox 552 · Toco50 · Ethyl vanillin",
+"Які дані в нас є":"What data we have","Вивантаження з 1С містять дані підприємства й не публікуються.":"1C exports contain company data and are not published.",
+"Мапа рідин":"Liquids map","сторінка":"page",
+"Стелаж «Рідини»: 12 полиць (A–C × 1–4), 51 позиція з партіями, 12 звірено з артикулом 1С.":"Liquids rack: 12 shelves (A–C × 1–4), 51 items with batches, 12 matched to a 1C article.",
+"Мапа складу №2":"Warehouse 2 map","План підлоги: 18 місць, 29 позицій з тарою і кодом з етикетки. Артикулів 1С ще немає.":"Floor plan: 18 places, 29 items with packaging and label code. No 1C articles yet.",
+"Відкрити":"Open","Презентація задуму":"Project presentation","Що автоматизуємо і навіщо, фази 1–3.":"What we automate and why, phases 1–3.",
+"Довідник номенклатури":"Nomenclature directory","793 позиції: артикул → назва, одиниця, група. 382 без групи; одиниці записані по-різному.":"793 items: article → name, unit, group. 382 without a group; units are written inconsistently.",
+"Норми і правила ліній":"Line norms and rules",
+"Лінії 4, 5, 6 (Деліція, Маргаритка), 8 і «Трубочки»: накладні, норми, правила округлення — перевірено тестами на реальних вимогах.":"Lines 4, 5, 6 (Delitsiia, Marharytka), 8 and Wafer rolls: requisitions, norms, rounding rules — checked by tests on real requisitions.",
+"«Требование» з 1С (CSV)":"1C requisition (CSV)","зразок":"sample",
+"Номер, дата, підрозділ, зміна, код, номенклатура, кількість. Після проведення є партії (для FIFO).":"Number, date, department, shift, code, item, quantity. After posting it has batches (for FIFO).",
+"Завдання на виробництво":"Production task","Друкована форма за день, усі лінії: бригада, зміна, підрозділ. Програма бере з нього бригаду за датою.":"Daily printout for all lines: brigade, shift, department. The program takes the brigade from it by date.",
+"«Общее задание ПФ»":"“General semi-finished task”","не розібрано":"not parsed","Усі лінії й продукти, норма на 1 порцію, кг ВАЛ. Підходить, щоб рахувати всі лінії.":"All lines and products, norm per portion, kg VAL. Suitable for calculating all lines.",
+"Чернетка моделі даних для мобільного додатку":"Draft data model for the mobile app","Ключ матеріалу всюди — артикул 1С. Платформа: PWA + Supabase (пропозиція 19.10).":"The material key everywhere is the 1C article. Platform: PWA + Supabase (proposal of 19.10).",
+"Позиції на мапах не мають артикулів 1С: 39 рідин і всі 29 позицій складу №2.":"Map items have no 1C articles: 39 liquids and all 29 items of warehouse 2.",
+"Вага тари відома лише для 4 позицій. Потрібна таблиця «артикул → тип тари, нетто, тара».":"Tare weight is known for only 4 items. We need an “article → packaging type, net, tare” table.",
+"Вагу «шт» не знаємо (гліцерин, сіль, сорбат тощо).":"We do not know the weight of a “piece” (glycerol, salt, sorbate, etc.).",
+"Одиниці в довіднику не нормалізовані, у 382 позицій немає групи.":"Units in the directory are not normalised; 382 items have no group.",
+"Немає кількостей на місцях і партій з датами (для FIFO).":"No quantities per place and no dated batches (for FIFO).",
+"Правила є для ліній 4, 5, 6 (Деліція, Маргаритка), 8 і «Трубочок» — кожна з одного-двох зразків, частину треба підтвердити. Для ліній 3 і 9 — немає.":"Rules exist for lines 4, 5, 6 (Delitsiia, Marharytka), 8 and Wafer rolls — each from one or two samples, some still to confirm. None for lines 3 and 9.",
+"Переміщення на мапах зберігаються лише в браузері. Потрібне спільне сховище.":"Moves on the maps are saved only in the browser. Shared storage is needed.",
+"Запис «Требований» у 1С працює через автозаповнювач (Лінія 6, «Трубочки»). Додаток має передавати йому вимогу, а не замінювати його.":"Requisitions are written to 1C by the autofill tool (Line 6, Wafer rolls). The app should hand it the requisition, not replace it.",
+"Склад сировини":"Raw materials warehouse","Українська":"English"
+};
+const PRE_EN=`Material      1C article · name · unit · group
+  └ Pack      type (bag/pack/canister/pc) · net · tare      ← “Packaging” table above
+Location      warehouse · zone/rack · place · shelf         ← liquids A-1…C-4, warehouse 2 01…18
+  └ Stock     material × place · batch · number of units
+Batch         1C batch · date · label code                  ← posted requisition (FIFO)
+Line          line · product · brigades · batches per shift
+  └ Norm      material · kg per batch | kg per 1 t VAL · jelly/dough
+  └ Rule      ceil | nearest | fixed | keep | drop · step · value
+Requisition   date · shift · line · brigade · jelly/dough
+  └ Item      material · quantity · units · batch · used · returned`;
+const langBtn=document.getElementById("lang"),orig=new Map(),pre=document.querySelector("#model pre");
+const setLang=l=>{
+  const en=l==="en";document.documentElement.lang=en?"en":"uk";
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+  while((n=w.nextNode())){
+    if(n.parentNode.closest("script,style,#packs,#tabs"))continue;
+    if(!orig.has(n))orig.set(n,n.nodeValue);
+    const o=orig.get(n),k=o.trim(),t=n.parentNode===pre?PRE_EN:EN[k];
+    n.nodeValue=en&&t!==undefined&&k?o.replace(k,t):o;
+  }
+  document.title=en?"Warehouse reference":"Довідка складу";
+  q.placeholder=en?"e.g. борошно (flour), 6096223, мішок (bag)…":"борошно, 6096223, мішок…";
+  langBtn.textContent=en?"UA":"EN";langBtn.title=en?"Українська":"English";
+  try{localStorage.setItem("lang",l)}catch(e){}
+  showTheme();
+};
+langBtn.onclick=()=>setLang(document.documentElement.lang==="en"?"uk":"en");
+let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}
+if(saved==="en")setLang("en");
 </script>
 </body>
 </html>
