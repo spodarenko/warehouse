@@ -207,7 +207,7 @@ body.dragging{cursor:grabbing;user-select:none}
 
   <section class="work" id="map">
     <div class="cap">
-      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, кола — бочки · гортай план убік · тягни назву на інше місце, щоб перемістити</span>
+      <span class="hint">План складу №1 · верхній ряд 20→34, нижній 19→1, кола — бочки · гортай план убік · тягни назву на інше місце, щоб перемістити</span>
       <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
@@ -239,10 +239,10 @@ const D=[[1,"Гуміарабік (Фіброгам)","—"],[2,"Е 475 Емул
 [29,"Какао порошок алкалізований","бочка"],[30,"Какао порошок натуральний","бочка"],[31,"Кориця","бочка"],[32,"Крохмаль кукурудзяний","бочка · off"],
 [33,"Коріандр","бочка"],[34,"Калію сорбат","25 кг"]];
 D.forEach(r=>{r[4]="";r[5]=""});
-// floor plan from the sketch: [column, row]; bottom row 1…19 left to right, top row 34…20 above 5…19
+// floor plan, the sketch mirrored: [column, row]; bottom row 19…1 left to right, top row 20…34 above 19…5
 const N=34,GA={};
-for(let p=1;p<=19;p++)GA[p]=[p,2];
-for(let p=20;p<=34;p++)GA[p]=[39-p,1];
+for(let p=1;p<=19;p++)GA[p]=[20-p,2];
+for(let p=20;p<=34;p++)GA[p]=[p-19,1];
 const ZONE={};
 const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),pad=n=>String(n).padStart(2,"0");
 const loc=p=>"№"+pad(p);
