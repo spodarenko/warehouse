@@ -58,8 +58,8 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .cell .chips i small{grid-column:1/-1;color:var(--muted)}
 .cell .chips i.lit{background:none;color:var(--fg)}
 .cell .chips i.lit small{color:var(--muted)}
-/* barrels (circled on the sketch: places 8–34) are round, like on the floor */
-.cell.barrel{border-radius:50%;aspect-ratio:1;align-self:center;align-content:center;justify-items:center;text-align:center;gap:4px;padding:14px!important}
+/* barrels (circled on the sketch: places 8–34): rounded squares */
+.cell.barrel{border-radius:24px;aspect-ratio:1;align-self:center;align-content:center;justify-items:center;text-align:center;gap:4px;padding:14px!important}
 .cell.barrel .hd{justify-content:center}
 .cell.barrel .chips{justify-content:center}
 .cell.barrel .chips i{font-size:12px;line-height:1.3}
@@ -207,7 +207,7 @@ body.dragging{cursor:grabbing;user-select:none}
 
   <section class="work" id="map">
     <div class="cap">
-      <span class="hint">План складу №1 · верхній ряд 20→34, нижній 19→1, кола — бочки · гортай план убік · тягни назву на інше місце, щоб перемістити</span>
+      <span class="hint">План складу №1 · верхній ряд 20→34, нижній 19→1, заокруглені — бочки · гортай план убік · тягни назву на інше місце, щоб перемістити</span>
       <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
