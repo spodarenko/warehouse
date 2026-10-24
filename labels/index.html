@@ -197,6 +197,7 @@ dialog .fullbtn{width:100%}
 :root[data-theme="light"] .box{--panel:#ffffff;--faint:#8f8a8a;--muted:#6b6565}
 .theme{font:inherit;font-size:16px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:36px;height:36px;cursor:pointer;flex:none}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
+@media (min-width:641px){#clear+.theme{margin-left:-16px}}  /* desktop: ☀ sits close to «Очистити» (8px, not the nav's 24px) */
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
 </style>
 </head>
