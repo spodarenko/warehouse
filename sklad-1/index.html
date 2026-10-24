@@ -1,5 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.bulk h2{font-size:clamp(20px,3vw,28px);margin:0 0 12px}.bscroll{overflow-x:auto;margin-bottom:24px}.bplan{display:grid;grid-template-columns:repeat(12,96px);grid-template-rows:repeat(10,minmax(78px,auto));gap:8px;width:max-content;padding:16px;background:var(--panel2);border:1px solid var(--line);border-radius:6px}.bc{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:8px;font-size:12px;line-height:1.35;overflow-wrap:break-word;hyphens:auto;display:flex;flex-direction:column;gap:2px}.bc b{color:var(--muted);font-weight:500}.bc small{color:var(--muted);font-size:11px}.bc.q{border-style:dashed}.bl{display:flex;align-items:center;justify-content:center;border:1px dashed var(--faint);border-radius:12px;color:var(--muted);font-size:12px;text-align:center}.btab{border-collapse:collapse;width:100%;font-size:13px}.btab th,.btab td{border-bottom:1px solid var(--line);padding:6px 10px;text-align:left}.btab th{color:var(--muted);font-weight:400}.btab .n{color:var(--muted);width:3em}
-</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Мапа складу №1</title>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
@@ -57,6 +56,9 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .cell{padding:12px!important;aspect-ratio:1;overflow:hidden}
 .rack .cell{border-radius:16px}
 .rack{grid-auto-rows:130px!important}
+body:not(.full) .vp{height:min(72vh,640px)}  /* barrels + bulk zone fit without scrolling */
+.zlbl{display:flex;align-items:center;justify-content:center;border:1px dashed var(--faint);border-radius:16px;color:var(--muted);font-size:13px;text-align:center}
+.zlbl.zt{justify-content:flex-start;border:0;border-top:1px solid var(--line);border-radius:0;font-size:15px;color:var(--fg);padding-left:4px}
 /* one position per place: no count, the name sits right in the cell instead of a chip */
 .cell .cnt{display:none}
 .cell .chips i{grid-template-columns:1fr;border:0;background:none;padding:0;color:var(--fg);font-size:13px;font-weight:500;overflow-wrap:anywhere}
@@ -214,7 +216,7 @@ body.dragging{cursor:grabbing;user-select:none}
 
   <section class="work" id="map">
     <div class="cap">
-      <span class="hint">План складу №1 · верхній ряд 34→20, нижній 1→19, місця 8–34 — бочки · колесо або −/+ — масштаб, тягни — зсунути · «✎ Переставити» — тоді квадрат тягнеться на інший і міняється місцями (на телефоні: затисни)</span>
+      <span class="hint">План складу №1 · угорі бочки (верхній ряд 34→20, нижній 1→19, місця 8–34), нижче — сипучка С1–С37 за зошитом · колесо або −/+ — масштаб, тягни — зсунути · «✎ Переставити» — тоді квадрат тягнеться на інший і міняється місцями (на телефоні: затисни)</span>
       <div class="acts"><button class="ubtn" id="edit" type="button">✎ Переставити</button><button class="ubtn" id="add" type="button">+ Додати</button><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
@@ -229,94 +231,6 @@ body.dragging{cursor:grabbing;user-select:none}
     <button class="more" id="more" hidden></button>
   </section>
 
-  <section class="bulk" id="bulk" lang="uk">
-    <h2>Сипучка</h2>
-    <p class="lead">Зона мішків і каністр складу №1 — за рукописним планом із зошита (24.10.2026). Розміщення приблизне; «?» — прочитано неточно. Пошук угорі цю зону ще не охоплює.</p>
-    <div class="bscroll"><div class="bplan">
-      <div class="bc" style="grid-area:1/1/span 1/span 3"><b>27</b>Крохмаль кукурудзяний<small>30 кг</small></div>
-      <div class="bc" style="grid-area:2/1/span 1/span 1"><b>28</b>Крохмаль картопляний<small>25 кг</small></div>
-      <div class="bc" style="grid-area:2/2/span 1/span 1"><b>29</b>Амоній</div>
-      <div class="bc q" style="grid-area:3/1/span 1/span 1"><b>30</b>Запилки ?</div>
-      <div class="bc" style="grid-area:3/2/span 1/span 1"><b>31</b>Кориця мелена<small>25 кг</small></div>
-      <div class="bc q" style="grid-area:4/1/span 1/span 1"><b>32</b>Посипка ? мелена<small>25 кг</small></div>
-      <div class="bc" style="grid-area:4/2/span 1/span 1"><b>33</b>Пектин<small>25 кг</small></div>
-      <div class="bc" style="grid-area:5/1/span 1/span 2"><b>34</b>Різне</div>
-      <div class="bc" style="grid-area:6/1/span 1/span 2"><b>35</b>Гліцерин<small>25 кг</small></div>
-      <div class="bc" style="grid-area:7/1/span 1/span 1"><b>36</b>Какао алкалізоване<small>25 кг</small></div>
-      <div class="bc" style="grid-area:7/2/span 1/span 1"><b>37</b>Какао натуральне<small>25 кг</small></div>
-      <div class="bc" style="grid-area:1/8/span 1/span 1"><b>26</b>Сорбітол 70%<small>каністра</small></div>
-      <div class="bc" style="grid-area:1/9/span 1/span 2"><b>25</b>Пластівці вівсяні<small>25 кг</small></div>
-      <div class="bc" style="grid-area:2/8/span 1/span 1"><b>23</b>Гліцерин<small>каністра</small></div>
-      <div class="bc q" style="grid-area:2/9/span 1/span 2"><b>24</b>Пластівці житні ?</div>
-      <div class="bc" style="grid-area:3/6/span 1/span 2"><b>22</b>Суміш прянощів</div>
-      <div class="bc" style="grid-area:4/5/span 1/span 1"><b>17</b>Пластівці житні<small>20 кг</small></div>
-      <div class="bc" style="grid-area:4/6/span 1/span 1"><b>18</b>Grinsted PGE 55 SG (Е475)<small>25 кг</small></div>
-      <div class="bc" style="grid-area:4/7/span 1/span 1"><b>19</b>Grinsted PGE 30 STS<small>25 кг</small></div>
-      <div class="bc" style="grid-area:4/8/span 1/span 1"><b>20</b>Пектин<small>25 кг</small></div>
-      <div class="bc" style="grid-area:4/9/span 1/span 1"><b>21</b>Рисові кульки<small>25 кг</small></div>
-      <div class="bc" style="grid-area:5/4/span 2/span 2"><b>16</b>Амоній (сіль вуглеамонійна)</div>
-      <div class="bc" style="grid-area:5/6/span 1/span 4"><b>15</b>Цукор</div>
-      <div class="bc" style="grid-area:6/7/span 1/span 1"><b>14</b>Пірофосфат натрію<small>25 кг мішок</small></div>
-      <div class="bc" style="grid-area:7/7/span 1/span 6"><b>13</b>Олія<small>шт 4,56 &#183; уп. 13,68</small></div>
-      <div class="bc" style="grid-area:8/7/span 1/span 1"><b>12</b>Етилванілін<small>25 кг</small></div>
-      <div class="bc" style="grid-area:8/8/span 1/span 1"><b>11</b>Хлібопекарський поліпшувач<small>25 кг</small></div>
-      <div class="bc" style="grid-area:8/9/span 1/span 1"><b>10</b>Сорбіт харчовий<small>25 кг</small></div>
-      <div class="bc" style="grid-area:8/10/span 1/span 1"><b>9</b>Кокосова стружка fine</div>
-      <div class="bc" style="grid-area:8/11/span 1/span 1"><b>8</b>Кокосова стружка medium<small>25 кг</small></div>
-      <div class="bc" style="grid-area:8/12/span 1/span 1"><b>7</b>Пропіонат кальцію<small>25 кг</small></div>
-      <div class="bc" style="grid-area:9/7/span 1/span 1"><b>6</b>Амоній<small>25 кг</small></div>
-      <div class="bc q" style="grid-area:9/8/span 1/span 1"><b>5</b>Запилки ?</div>
-      <div class="bc" style="grid-area:9/9/span 1/span 1"><b>4</b>Пірофосфат натрію (Tempa)<small>25,2 кг</small></div>
-      <div class="bc" style="grid-area:9/10/span 1/span 1"><b>3</b>Сода<small>25 кг</small></div>
-      <div class="bc" style="grid-area:9/11/span 1/span 1"><b>2</b>Сіль<small>25 кг</small></div>
-      <div class="bc" style="grid-area:9/12/span 1/span 1"><b>1</b>Лимонна кислота<small>25 кг</small></div>
-      <div class="bl" style="grid-area:10/1/span 1/span 3">Вхід</div>
-      <div class="bl" style="grid-area:10/4/span 1/span 3">Бочки ↑</div>
-      <div class="bl" style="grid-area:10/7/span 1/span 6">Стелажі з митим посудом</div>
-    </div></div>
-    <div class="bscroll"><table class="btab">
-      <thead><tr><th>№</th><th>Сировина</th><th>Тара</th></tr></thead>
-      <tbody>
-        <tr><td class="n">1</td><td>Лимонна кислота</td><td>25 кг</td></tr>
-        <tr><td class="n">2</td><td>Сіль</td><td>25 кг</td></tr>
-        <tr><td class="n">3</td><td>Сода</td><td>25 кг</td></tr>
-        <tr><td class="n">4</td><td>Пірофосфат натрію (Tempa)</td><td>25,2 кг</td></tr>
-        <tr><td class="n">5</td><td>Запилки ?</td><td></td></tr>
-        <tr><td class="n">6</td><td>Амоній</td><td>25 кг</td></tr>
-        <tr><td class="n">7</td><td>Пропіонат кальцію</td><td>25 кг</td></tr>
-        <tr><td class="n">8</td><td>Кокосова стружка medium</td><td>25 кг</td></tr>
-        <tr><td class="n">9</td><td>Кокосова стружка fine</td><td></td></tr>
-        <tr><td class="n">10</td><td>Сорбіт харчовий</td><td>25 кг</td></tr>
-        <tr><td class="n">11</td><td>Хлібопекарський поліпшувач</td><td>25 кг</td></tr>
-        <tr><td class="n">12</td><td>Етилванілін</td><td>25 кг</td></tr>
-        <tr><td class="n">13</td><td>Олія</td><td>шт 4,56 &#183; уп. 13,68</td></tr>
-        <tr><td class="n">14</td><td>Пірофосфат натрію</td><td>25 кг мішок</td></tr>
-        <tr><td class="n">15</td><td>Цукор</td><td></td></tr>
-        <tr><td class="n">16</td><td>Амоній (сіль вуглеамонійна)</td><td></td></tr>
-        <tr><td class="n">17</td><td>Пластівці житні</td><td>20 кг</td></tr>
-        <tr><td class="n">18</td><td>Grinsted PGE 55 SG (Е475)</td><td>25 кг</td></tr>
-        <tr><td class="n">19</td><td>Grinsted PGE 30 STS</td><td>25 кг</td></tr>
-        <tr><td class="n">20</td><td>Пектин</td><td>25 кг</td></tr>
-        <tr><td class="n">21</td><td>Рисові кульки</td><td>25 кг</td></tr>
-        <tr><td class="n">22</td><td>Суміш прянощів</td><td></td></tr>
-        <tr><td class="n">23</td><td>Гліцерин</td><td>каністра</td></tr>
-        <tr><td class="n">24</td><td>Пластівці житні ?</td><td></td></tr>
-        <tr><td class="n">25</td><td>Пластівці вівсяні</td><td>25 кг</td></tr>
-        <tr><td class="n">26</td><td>Сорбітол 70%</td><td>каністра</td></tr>
-        <tr><td class="n">27</td><td>Крохмаль кукурудзяний</td><td>30 кг</td></tr>
-        <tr><td class="n">28</td><td>Крохмаль картопляний</td><td>25 кг</td></tr>
-        <tr><td class="n">29</td><td>Амоній</td><td></td></tr>
-        <tr><td class="n">30</td><td>Запилки ?</td><td></td></tr>
-        <tr><td class="n">31</td><td>Кориця мелена</td><td>25 кг</td></tr>
-        <tr><td class="n">32</td><td>Посипка ? мелена</td><td>25 кг</td></tr>
-        <tr><td class="n">33</td><td>Пектин</td><td>25 кг</td></tr>
-        <tr><td class="n">34</td><td>Різне</td><td></td></tr>
-        <tr><td class="n">35</td><td>Гліцерин</td><td>25 кг</td></tr>
-        <tr><td class="n">36</td><td>Какао алкалізоване</td><td>25 кг</td></tr>
-        <tr><td class="n">37</td><td>Какао натуральне</td><td>25 кг</td></tr>
-      </tbody>
-    </table></div>
-  </section>
   <section class="links">
     <div>Місць <span id="lN"></span></div><div>Позицій <span id="lTotal"></span></div><div>Вибрано <span id="lPick">[0]</span></div><div>Неточних <span id="lQ"></span></div><div>Склад №1</div>
   </section>
@@ -333,23 +247,39 @@ const D=[[1,"Гуміарабік (Фіброгам)","—"],[2,"Е 475 Емул
 [25,"Суміш прянощів для пряника ?","бочка"],[26,"Глюкоза","бочка"],[27,"Лимонна кислота (подрібнена)","бочка"],[28,"? (не підписано)","бочка"],
 [29,"Какао порошок алкалізований","бочка"],[30,"Какао порошок натуральний","бочка"],[31,"Кориця","бочка"],[32,"Крохмаль кукурудзяний","бочка · off"],
 [33,"Коріандр","бочка"],[34,"Калію сорбат","25 кг"]];
+// bulk zone («Сипучка», notebook plan of 24.10.2026): place 100+n is shown as С n
+const B=[[1,"Лимонна кислота","25 кг"],[2,"Сіль","25 кг"],[3,"Сода","25 кг"],[4,"Пірофосфат натрію (Tempa)","25,2 кг"],[5,"Запилки ?","—"],
+[6,"Амоній","25 кг"],[7,"Пропіонат кальцію","25 кг"],[8,"Кокосова стружка medium","25 кг"],[9,"Кокосова стружка fine","—"],[10,"Сорбіт харчовий","25 кг"],
+[11,"Хлібопекарський поліпшувач","25 кг"],[12,"Етилванілін","25 кг"],[13,"Олія","шт 4,56 · уп. 13,68"],[14,"Пірофосфат натрію","25 кг мішок"],[15,"Цукор","—"],
+[16,"Амоній (сіль вуглеамонійна)","—"],[17,"Пластівці житні","20 кг"],[18,"Grinsted PGE 55 SG (Е475)","25 кг"],[19,"Grinsted PGE 30 STS","25 кг"],[20,"Пектин","25 кг"],
+[21,"Рисові кульки","25 кг"],[22,"Суміш прянощів","—"],[23,"Гліцерин","каністра"],[24,"Пластівці житні ?","—"],[25,"Пластівці вівсяні","25 кг"],
+[26,"Сорбітол 70%","каністра"],[27,"Крохмаль кукурудзяний","30 кг"],[28,"Крохмаль картопляний","25 кг"],[29,"Амоній","—"],[30,"Запилки ?","—"],
+[31,"Кориця мелена","25 кг"],[32,"Посипка ? мелена","25 кг"],[33,"Пектин","25 кг"],[34,"Різне","—"],[35,"Гліцерин","25 кг"],[36,"Какао алкалізоване","25 кг"],[37,"Какао натуральне","25 кг"]];
+// [n, column, row, column span, row span] on the bulk plan; rows go under the barrels (+4)
+const BG=[[27,1,1,3,1],[28,1,2],[29,2,2],[30,1,3],[31,2,3],[32,1,4],[33,2,4],[34,1,5,2,1],[35,1,6,2,1],[36,1,7],[37,2,7],
+[26,8,1],[25,9,1,2,1],[23,8,2],[24,9,2,2,1],[22,6,3,2,1],[17,5,4],[18,6,4],[19,7,4],[20,8,4],[21,9,4],[16,4,5,2,2],[15,6,5,4,1],[14,7,6],[13,7,7,6,1],
+[12,7,8],[11,8,8],[10,9,8],[9,10,8],[8,11,8],[7,12,8],[6,7,9],[5,8,9],[4,9,9],[3,10,9],[2,11,9],[1,12,9]];
+B.forEach(b=>D.push([100+b[0],b[1],b[2]]));
 D.forEach(r=>{r[4]="";r[5]="";r[6]=r[0]}); // r[6] = place in the notebook (0 = added later)
 // floor plan from the sketch: [column, row]; bottom row 1…19 left to right, top row 34…20 above 5…19; added places go to row 3
 let GA={};
 for(let p=1;p<=19;p++)GA[p]=[p,2];
 for(let p=20;p<=34;p++)GA[p]=[39-p,1];
+BG.forEach(g=>GA[100+g[0]]=[g[1],g[2]+4,g[3]||1,g[4]||1]);
 const ZONE={};
 const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),pad=n=>String(n).padStart(2,"0");
-const loc=p=>"№"+pad(p);
+const lbl=p=>p>100?"С"+(p-100):pad(p),loc=p=>"№"+lbl(p);
 D.forEach((r,i)=>r[3]=i); // r[3] = order inside a place
 const byPlace=p=>D.filter(r=>r[0]===p).sort((a,b)=>a[3]-b[3]);
 // layout (swaps, added and removed places): the whole plan is kept in this browser only
 const LK="warehouse1-layout";
-try{const s=JSON.parse(localStorage.getItem(LK)||"null");if(s){D.length=0;s.rows.forEach((r,i)=>D.push([r[0],r[1],r[2],i,"","",r[3]]));GA={};s.places.forEach(g=>GA[g[0]]=[g[1],g[2]])}}catch(e){}
+try{const s=JSON.parse(localStorage.getItem(LK)||"null");if(s){const bulk=D.filter(r=>r[0]>100),bga=Object.keys(GA).filter(p=>p>100).map(p=>[+p,GA[p]]);D.length=0;s.rows.forEach((r,i)=>D.push([r[0],r[1],r[2],i,"","",r[3]]));GA={};s.places.forEach(g=>GA[g[0]]=[g[1],g[2],g[3]||1,g[4]||1]);
+  // a layout saved before the bulk zone existed: add the zone as in the notebook
+  if(!s.places.some(g=>g[0]>100)){bulk.forEach(r=>D.push(r));bga.forEach(([p,g])=>GA[p]=g)}}}catch(e){}
 const PL=()=>Object.keys(GA).map(Number).sort((a,b)=>a-b);
 const changed=r=>r[0]!==r[6];
 const customized=()=>{try{return!!localStorage.getItem(LK)}catch(e){return false}};
-function saveMoves(){try{localStorage.setItem(LK,JSON.stringify({rows:D.map(r=>[r[0],r[1],r[2],r[6]]),places:PL().map(p=>[p,GA[p][0],GA[p][1]])}))}catch(e){}}
+function saveMoves(){try{localStorage.setItem(LK,JSON.stringify({rows:D.map(r=>[r[0],r[1],r[2],r[6]]),places:PL().map(p=>[p,GA[p][0],GA[p][1],GA[p][2]||1,GA[p][3]||1])}))}catch(e){}}
 const dirtyN=()=>0; // every change is saved at once
 const applyMoves=()=>{saveMoves();pick.clear();sel=0;cur=-1;render()};
 const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]]};
@@ -363,18 +293,21 @@ const toggle=r=>{pick.has(r)?pick.delete(r):pick.add(r)};
   b.onclick=()=>{q.value=q.value===w?"":w;sel=0;cur=-1;render(true);focusLit()};$("tabs").appendChild(b)});
 
 function buildCells(){rack.innerHTML="";PL().forEach(p=>{const c=document.createElement("div");c.className="cell";c.id="c"+p;c.tabIndex=0;c.setAttribute("role","button");
-  const g=GA[p];c.style.gridColumn=g[0]+" / span "+(g[2]||1);c.style.gridRow=g[1];
-  c.innerHTML='<span class="hd"><b>'+pad(p)+'</b><span class="cnt"></span><button class="del" type="button" aria-label="Видалити місце">✕</button></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../liquids-map/">мапа рідин ↗</a></span>':'')+'<span class="chips"></span>';
+  const g=GA[p];c.style.gridColumn=g[0]+" / span "+(g[2]||1);c.style.gridRow=g[1]+" / span "+(g[3]||1);if((g[2]||1)>1||(g[3]||1)>1)c.style.aspectRatio="auto";
+  c.innerHTML='<span class="hd"><b>'+lbl(p)+'</b><span class="cnt"></span><button class="del" type="button" aria-label="Видалити місце">✕</button></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../liquids-map/">мапа рідин ↗</a></span>':'')+'<span class="chips"></span>';
   c.onclick=e=>{if(e.target.closest("a"))return;if(e.target.closest(".del")){delPlace(p);return}const chip=e.target.closest("i[data-i]");
     if(chip){toggle(D[+chip.dataset.i]);sel=0}else{sel=sel===p?0:p;pick.clear()}render()};
-  rack.appendChild(c)})}
+  rack.appendChild(c)});
+  // bulk zone captions (not places): title above it, entrance / barrels / racks below it
+  [["Сипучка · за зошитом",1,4,12,"zt"],["Вхід",1,14,3],["Бочки",4,14,3],["Стелажі з митим посудом",7,14,6]].forEach(([s,col,row,span,k])=>{
+    const e=document.createElement("div");e.className="zlbl "+(k||"");e.textContent=s;e.style.gridColumn=col+" / span "+span;e.style.gridRow=row;rack.appendChild(e)})}
 buildCells();
 // «✎ Переставити» mode: ✕ removes a place, «+ Додати» puts a new barrel or bag in row 3
-function delPlace(p){const r=byPlace(p)[0];if(!confirm("Видалити місце "+pad(p)+(r?" — "+r[1]:"")+"?"))return;
+function delPlace(p){const r=byPlace(p)[0];if(!confirm("Видалити місце "+lbl(p)+(r?" — "+r[1]:"")+"?"))return;
   byPlace(p).forEach(x=>D.splice(D.indexOf(x),1));delete GA[p];buildCells();applyMoves();fitAll(true)}
 $("add").onclick=()=>{const name=(prompt("Назва сировини:")||"").trim();if(!name)return;
   const tare=confirm("Це бочка?\nOK — бочка, Скасувати — мішок 25 кг")?"бочка":"25 кг";
-  const p=Math.max(0,...PL())+1;let col=1;while(PL().some(x=>GA[x][1]===3&&GA[x][0]===col))col++;
+  const p=Math.max(0,...PL().filter(x=>x<100))+1;let col=1;while(PL().some(x=>GA[x][1]===3&&GA[x][0]===col))col++;
   GA[p]=[col,3];D.push([p,name,tare,D.length,"","",0]);buildCells();applyMoves();fitAll(true)};
 
 function render(pulse){
