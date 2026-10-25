@@ -107,11 +107,9 @@ body.dragging{cursor:grabbing;user-select:none}
 .links div:last-child{border-right:0}
 .links div:hover{background:var(--panel)}
 .links div span{color:var(--muted)}
-.bottom{max-width:1080px;margin:0 auto 56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));color:var(--muted);border:1px solid var(--line);border-top:0}  /* footer: same cell strip as .links */
-.bottom>*{padding:24px 12px;text-align:center;border-right:1px solid var(--line)}
-.bottom>:last-child{border-right:0}
-.bottom button{font:inherit;color:var(--fg);background:none;border:0;border-radius:0;cursor:pointer;transition:background .15s}
-@media (hover:hover){.bottom button:hover{background:var(--panel)}}
+.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.bottom button{font:inherit;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}  /* language switch */
+@media (hover:hover){.bottom button:hover{color:var(--fg)}}
 
 @media (max-width:600px){
   body{padding-left:0;padding-right:0;font-size:13px}
@@ -149,9 +147,7 @@ body.dragging{cursor:grabbing;user-select:none}
   .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
   .links div:nth-child(2n){border-right:0}
   .list li{padding:9px 6px}
-  .bottom{grid-template-columns:repeat(2,minmax(0,1fr));border:0;margin-bottom:32px;font-size:12px}
-  .bottom>*{padding:18px 8px;border-bottom:1px solid var(--line)}
-  .bottom>:nth-child(2n){border-right:0}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
 }
 /* tare & data reference (moved from the «Тарування» page) */
 .ref h2{font-size:18px;margin:0 0 6px;text-wrap:balance}

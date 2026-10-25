@@ -76,11 +76,9 @@ body.full .prompt kbd{display:none}
 .links div{padding:32px 12px;text-align:center;border-right:1px solid var(--line)}
 .links div:last-child{border-right:0}
 .links div span{color:var(--muted)}
-.bottom{max-width:1080px;margin:0 auto 56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));color:var(--muted);border:1px solid var(--line);border-top:0}  /* footer: same cell strip as .links */
-.bottom>*{padding:24px 12px;text-align:center;border-right:1px solid var(--line)}
-.bottom>:last-child{border-right:0}
-.bottom button{font:inherit;color:var(--fg);background:none;border:0;border-radius:0;cursor:pointer;transition:background .15s}
-@media (hover:hover){.bottom button:hover{background:var(--panel)}}
+.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.bottom button{font:inherit;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}  /* language switch */
+@media (hover:hover){.bottom button:hover{color:var(--fg)}}
 body.full .links{display:none}
 /* full screen (as in liquids-map, on any device): search box is the header with an exit button,
    list fills the screen, print bar at the bottom after a pick */
@@ -139,9 +137,7 @@ dialog .fullbtn{width:100%}
   .links{grid-template-columns:repeat(2,minmax(0,1fr))}
   .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
   .links div:nth-child(2n){border-right:0}
-  .bottom{grid-template-columns:repeat(2,minmax(0,1fr));border:0;margin-bottom:32px;font-size:12px}
-  .bottom>*{padding:18px 8px;border-bottom:1px solid var(--line)}
-  .bottom>:nth-child(2n){border-right:0}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
   body{padding:0;font-size:16px;line-height:1.4}
   .frame{border:0}
   header{position:static;min-height:0;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;border:0}
@@ -279,7 +275,7 @@ body.full .series{display:none}
     <div>Сировини <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом <span id="lArt"></span></div><div>Без артикулу <span id="lNoArt"></span></div><div>Стікер 60×30</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><button id="lang" type="button" aria-label="Мова / Language">English</button></div>
 <dialog id="dlg">
   <form method="dialog" class="dlg-hd"><b>⚙ Налаштування</b><button class="x" aria-label="Закрити">✕</button></form>
   <div id="dLock">
@@ -1468,6 +1464,30 @@ themeBtn.onclick = () => {
   showTheme();
 };
 showTheme();
+</script>
+<script>
+// language: UA / EN, remembered in this browser for all pages (like the theme). EN swaps text nodes and labels by the dictionary;
+// raw-material names stay Ukrainian (1C names — the search works on them). Text drawn later by the page is translated as it appears.
+(()=>{
+const EN={"Рідини": "Liquids", "Склад №1": "Warehouse 1", "Склад №2": "Warehouse 2", "Довідка": "Reference", "Стікери": "Labels", "Бочки": "Barrels", "✕ Очистити": "✕ Clear", "✕ Вийти": "✕ Exit", "✕ Згорнути": "✕ Collapse", "⤢ Весь склад": "⤢ Whole warehouse", "⤢ Весь стелаж": "⤢ Whole rack", "Уся сировина": "All raw materials", "Збіги": "Matches", "Згорнути список": "Collapse list", "Нічого не знайдено. Спробуй коротший запит.": "Nothing found. Try a shorter query.", "Місць": "Places", "Позицій": "Items", "Вибрано": "Selected", "Неточних": "Uncertain", "Склад сировини": "Raw materials warehouse", "Українська": "English", "Джерело: рукописна схема складу · «?» = прочитано неточно": "Source: handwritten warehouse sketch · “?” = read uncertainly", "Світла або темна тема": "Light or dark theme", "Світла тема": "Light theme", "Темна тема": "Dark theme", "Меню": "Menu", "Вийти з повного екрана": "Exit full screen", "Віддалити": "Zoom out", "Наблизити": "Zoom in", "мапа рідин ↗": "liquids map ↗", "Рідини · аромати": "Liquids · flavourings", "Рідини · аромати ·": "Liquids · flavourings ·", "ПРОХІД": "AISLE", "Стікери на сировину": "Raw material labels", "Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.": "Type a name or article and pick an item. Label 60×30 mm: item name, print date and time, article.", "⤢ На весь екран": "⤢ Full screen", "Так виглядатиме стікер 60×30 мм. Оберіть товар у списку нижче.": "This is how the 60×30 mm label will look. Pick an item in the list below.", "Копій": "Copies", "Друкувати": "Print", "Серія на лінію": "Series for a line", "Друкувати серію": "Print series", "Знайдено": "Found", "Сировини": "Raw materials", "З артикулом": "With article", "Без артикулу": "No article", "Стікер 60×30": "Label 60×30", "Нічого не знайдено": "Nothing found", "без артикулу": "no article", "або надрукувати на цьому пристрої": "or print on this device", "Надрукує планшет-принтер": "The printer tablet will print it", "Надсилаю на планшет…": "Sending to the tablet…", "Надсилаю серію на планшет…": "Sending the series to the tablet…", "✕ Не вдалося надіслати. Перевірте інтернет.": "✕ Could not send. Check the internet connection.", "Телефон не підключено до планшета. Попросіть адміністратора показати QR-код.": "This phone is not paired with the tablet. Ask the administrator to show the QR code.", "Телефон треба підключити заново: попросіть новий QR-код.": "The phone needs to be paired again: ask for a new QR code.", "✕ Посилання підключення пошкоджене. Попросіть новий QR-код.": "✕ The pairing link is broken. Ask for a new QR code.", "● Принтер на зв'язку, чекаю завдань з телефонів": "● Printer online, waiting for jobs from phones", "○ Немає зв'язку, перепідключаюсь…": "○ Offline, reconnecting…", "⚠ Відхилено завдання з невідомого або відключеного телефона": "⚠ Rejected a job from an unknown or unpaired phone", "🖨 Вимкнути режим принтера": "🖨 Turn off printer mode", "🖨 Зробити цей пристрій принтером": "🖨 Make this device the printer", "Поки жодного": "None yet", "✕ Відключити": "✕ Unpair", "Введіть ключ складу, щоб відкрити налаштування.": "Enter the warehouse key to open settings.", "Новий пристрій. Введіть ключ складу.": "New device. Enter the warehouse key.", "✕ Невірний ключ.": "✕ Wrong key.", "✓ Ключ складу змінено. Телефони працюють далі.": "✓ Warehouse key changed. Phones keep working.", "Пристрій відключено.": "Device unpaired.", "⚙ Налаштування": "⚙ Settings", "Закрити": "Close", "Ключ складу": "Warehouse key", "Відкрити": "Open", "Забули ключ? Скинути цей пристрій": "Forgot the key? Reset this device", "Друк з телефонів": "Printing from phones", "Підключити телефон працівника": "Pair a worker’s phone", "Ім'я працівника": "Worker’s name", "QR-код": "QR code", "Працівник наводить камеру телефона на код і відкриває посилання. Телефон отримає власний ключ та ім'я, вводити нічого не треба. Код не пересилайте: він лише для цього працівника.": "The worker points the phone camera at the code and opens the link. The phone gets its own key and name, nothing to type. Don’t forward the code: it is for this worker only.", "Підключені телефони": "Paired phones", "Новий ключ, від 12 символів": "New key, 12+ characters", "Змінити": "Change", "Ключ складу відкриває ці налаштування. Телефони від нього не залежать.": "The warehouse key opens these settings. Phones don’t depend on it.", "Цей пристрій": "This device", "Відключити цей пристрій": "Unpair this device", "Оберіть товар": "Pick an item", "ваніль, 6096200, борошно…": "ваніль, 6096200, борошно…"},RX=[["^✓ Надіслано на планшет: серія (.*)$", "✓ Sent to the tablet: series $1"], ["^✓ Надіслано на планшет: (.*)$", "✓ Sent to the tablet: $1"], ["^● Надруковано: серія (.*)$", "● Printed: series $1"], ["^● Надруковано: (.*)$", "● Printed: $1"], ["^✓ Телефон підключено: (.*)\\. Стікери друкуватиме планшет-принтер\\.$", "✓ Phone paired: $1. The printer tablet will print labels."], ["^Журнал друку \\[(\\d+)\\]$", "Print log [$1]"], ["^Хто заходив \\[(\\d+)\\]$", "Who visited [$1]"], ["^Цей пристрій: принтер, друкує завдання з телефонів$", "This device: printer, prints jobs from phones"], ["^Цей пристрій: телефон «(.*)»$", "This device: phone “$1”"], ["^Цей пристрій: адміністратор, не принтер$", "This device: administrator, not a printer"], ["^Друкувати серію: (.*?) шт\\.$", "Print series: $1 pcs"], ["^(\\d+) поз\\.$", "$1 items"], ["^(\\d+) поз\\. · клікни, щоб вибрати$", "$1 items · click to select"], ["^(\\d+) шт$", "$1 pcs"], ["^Подивитися всі \\((\\d+)\\)$", "Show all ($1)"], ["^Показати ще \\((\\d+)\\)$", "Show more ($1)"], ["^Вибрано (\\d+)$", "Selected $1"], ["^Місце (.+)$", "Place $1"], ["^✓ Застосувати \\[(\\d+)\\]$", "✓ Apply [$1]"], ["^↺ Повернути переміщення \\[(\\d+)\\]$", "↺ Undo moves [$1]"], ["^⇄ Поміняти: (.*)$", "⇄ Swap: $1"], ["^Секція ([ABC]) · полиця (\\d)$", "Section $1 · shelf $2"], ["^СЕКЦІЯ ([ABC])$", "SECTION $1"], ["^(\\d+) з (\\d+)$", "$1 of $2"]].map(([r,v])=>[new RegExp(r),v]),SKIP="script,style,#tabs,#sLine,#sSel,#sample,#paper,#sRows,#list li span:first-child",ATTR=["placeholder","aria-label","title"];
+const btn=document.getElementById("lang"),seen=new Map();let en=false;
+const tr=s=>{const k=s.trim();if(!k)return null;let t=EN[k];if(t===undefined)for(const [r,v] of RX)if(r.test(k)){t=k.replace(r,v);break}return t===undefined||t===k?null:s.replace(k,t)};
+function text(n){if(n.parentNode&&n.parentNode.closest&&n.parentNode.closest(SKIP))return;const t=tr(n.nodeValue);if(t!==null){seen.set(n,[n.nodeValue,t]);n.nodeValue=t}}
+function el(e){if(e.closest(SKIP))return;ATTR.forEach(a=>{const v=e.getAttribute(a);if(!v)return;const t=tr(v);if(t!==null){e.dataset["uk"+a.replace("-","")]=v;e.setAttribute(a,t)}})}
+function run(root){if(root.nodeType===3){text(root);return}if(root.nodeType!==1)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))text(n);
+  [root,...root.querySelectorAll("*")].forEach(el)}
+const mo=new MutationObserver(ms=>{if(!en)return;ms.forEach(m=>{if(m.type==="characterData")text(m.target);else if(m.type==="attributes")el(m.target);else m.addedNodes.forEach(run)})});
+function setLang(l){en=l==="en";document.documentElement.lang=en?"en":"uk";
+  if(en){run(document.body);mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR})}
+  else{mo.disconnect();seen.forEach(([uk,t],n)=>{if(n.nodeValue===t)n.nodeValue=uk});seen.clear();
+    document.querySelectorAll("*").forEach(e=>ATTR.forEach(a=>{const k="uk"+a.replace("-",""),v=e.dataset[k];if(v!==undefined){e.setAttribute(a,v);delete e.dataset[k]}}))}
+  document.title=en?"Labels":"Стікери";btn.textContent=en?"Українська":"English";
+  try{localStorage.setItem("lang",l)}catch(e){}}
+btn.onclick=()=>setLang(en?"uk":"en");
+let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}
+if(saved==="en")setLang("en");
+})();
 </script>
 </body>
 </html>

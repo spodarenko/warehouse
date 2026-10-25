@@ -107,11 +107,9 @@ body.dragging{cursor:grabbing;user-select:none}
 .links div:last-child{border-right:0}
 .links div:hover{background:var(--panel)}
 .links div span{color:var(--muted)}
-.bottom{max-width:1080px;margin:0 auto 56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));color:var(--muted);border:1px solid var(--line);border-top:0}  /* footer: same cell strip as .links */
-.bottom>*{padding:24px 12px;text-align:center;border-right:1px solid var(--line)}
-.bottom>:last-child{border-right:0}
-.bottom button{font:inherit;color:var(--fg);background:none;border:0;border-radius:0;cursor:pointer;transition:background .15s}
-@media (hover:hover){.bottom button:hover{background:var(--panel)}}
+.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.bottom button{font:inherit;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}  /* language switch */
+@media (hover:hover){.bottom button:hover{color:var(--fg)}}
 
 @media (max-width:600px){
   body{padding-left:0;padding-right:0;font-size:13px}
@@ -149,9 +147,7 @@ body.dragging{cursor:grabbing;user-select:none}
   .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
   .links div:nth-child(2n){border-right:0}
   .list li{padding:9px 6px}
-  .bottom{grid-template-columns:repeat(2,minmax(0,1fr));border:0;margin-bottom:32px;font-size:12px}
-  .bottom>*{padding:18px 8px;border-bottom:1px solid var(--line)}
-  .bottom>:nth-child(2n){border-right:0}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
 }
 @media (prefers-reduced-motion:reduce){.cell{transition:none}.cell.pulse{animation:none}.stage{transition:none!important}}
 .burger{display:none;padding:0;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;cursor:pointer}
@@ -221,7 +217,7 @@ body.dragging{cursor:grabbing;user-select:none}
     <div>Місць <span>[12]</span></div><div>Рідин <span id="lTotal"></span></div><div>Вибрано <span id="lPick">[0]</span></div><div>Неточних <span id="lQ"></span></div><div>Лінія 6</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Рідини</span><span>Українська</span></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Рідини</span><button id="lang" type="button" aria-label="Мова / Language">English</button></div>
 <script>
 const D=[[1,"Молоко пряжене","095,4"],[1,"Смородина чорна","116,7"],[1,"Рідкий мед","090,13"],[1,"Ром","582650,42"],[1,"Ром натуральний","913.505"],
 [2,"Ваніль-вершки","913790A"],[2,"Шоколад молочний","735,1 ?"],[2,"Кокос Рафаелло","931101"],[2,"Ваніль","913790"],
@@ -416,6 +412,30 @@ themeBtn.onclick = () => {
   showTheme();
 };
 showTheme();
+</script>
+<script>
+// language: UA / EN, remembered in this browser for all pages (like the theme). EN swaps text nodes and labels by the dictionary;
+// raw-material names stay Ukrainian (1C names — the search works on them). Text drawn later by the page is translated as it appears.
+(()=>{
+const EN={"Рідини": "Liquids", "Склад №1": "Warehouse 1", "Склад №2": "Warehouse 2", "Довідка": "Reference", "Стікери": "Labels", "Бочки": "Barrels", "✕ Очистити": "✕ Clear", "✕ Вийти": "✕ Exit", "✕ Згорнути": "✕ Collapse", "⤢ Весь склад": "⤢ Whole warehouse", "⤢ Весь стелаж": "⤢ Whole rack", "Уся сировина": "All raw materials", "Збіги": "Matches", "Згорнути список": "Collapse list", "Нічого не знайдено. Спробуй коротший запит.": "Nothing found. Try a shorter query.", "Місць": "Places", "Позицій": "Items", "Вибрано": "Selected", "Неточних": "Uncertain", "Склад сировини": "Raw materials warehouse", "Українська": "English", "Джерело: рукописна схема складу · «?» = прочитано неточно": "Source: handwritten warehouse sketch · “?” = read uncertainly", "Світла або темна тема": "Light or dark theme", "Світла тема": "Light theme", "Темна тема": "Dark theme", "Меню": "Menu", "Вийти з повного екрана": "Exit full screen", "Віддалити": "Zoom out", "Наблизити": "Zoom in", "мапа рідин ↗": "liquids map ↗", "Рідини · аромати": "Liquids · flavourings", "Рідини · аромати ·": "Liquids · flavourings ·", "ПРОХІД": "AISLE", "Мапа рідин": "Liquids map", "Де стоїть рідина на складі": "Where each liquid is stored", "Введи назву або номер партії. Клікни по рідині, щоб виділити її і наблизити її місце. Можна вибрати кілька.": "Type a name or batch number. Click a liquid to highlight it and zoom to its place. You can pick several.", "Стелаж «Рідини» · тягни назву на інше місце або на іншу рідину, щоб поміняти": "“Liquids” rack · drag a name to another place or onto another liquid to swap", "Усі рідини": "All liquids", "Рідин": "Liquids", "Лінія 6": "Line 6", "Джерело: рукописний перелік · 16.10.2026 · «?» = прочитано неточно": "Source: handwritten list · 16.10.2026 · “?” = read uncertainly", "наведи на місце або на іншу рідину": "hover a place or another liquid", "ваніль, 913790, кармін…": "ваніль, 913790, кармін…"},RX=[["^(\\d+) поз\\.$", "$1 items"], ["^(\\d+) поз\\. · клікни, щоб вибрати$", "$1 items · click to select"], ["^(\\d+) шт$", "$1 pcs"], ["^Подивитися всі \\((\\d+)\\)$", "Show all ($1)"], ["^Показати ще \\((\\d+)\\)$", "Show more ($1)"], ["^Вибрано (\\d+)$", "Selected $1"], ["^Місце (.+)$", "Place $1"], ["^✓ Застосувати \\[(\\d+)\\]$", "✓ Apply [$1]"], ["^↺ Повернути переміщення \\[(\\d+)\\]$", "↺ Undo moves [$1]"], ["^⇄ Поміняти: (.*)$", "⇄ Swap: $1"], ["^Секція ([ABC]) · полиця (\\d)$", "Section $1 · shelf $2"], ["^СЕКЦІЯ ([ABC])$", "SECTION $1"], ["^(\\d+) з (\\d+)$", "$1 of $2"]].map(([r,v])=>[new RegExp(r),v]),SKIP="script,style,#tabs,.chips i",ATTR=["placeholder","aria-label","title"];
+const btn=document.getElementById("lang"),seen=new Map();let en=false;
+const tr=s=>{const k=s.trim();if(!k)return null;let t=EN[k];if(t===undefined)for(const [r,v] of RX)if(r.test(k)){t=k.replace(r,v);break}return t===undefined||t===k?null:s.replace(k,t)};
+function text(n){if(n.parentNode&&n.parentNode.closest&&n.parentNode.closest(SKIP))return;const t=tr(n.nodeValue);if(t!==null){seen.set(n,[n.nodeValue,t]);n.nodeValue=t}}
+function el(e){if(e.closest(SKIP))return;ATTR.forEach(a=>{const v=e.getAttribute(a);if(!v)return;const t=tr(v);if(t!==null){e.dataset["uk"+a.replace("-","")]=v;e.setAttribute(a,t)}})}
+function run(root){if(root.nodeType===3){text(root);return}if(root.nodeType!==1)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))text(n);
+  [root,...root.querySelectorAll("*")].forEach(el)}
+const mo=new MutationObserver(ms=>{if(!en)return;ms.forEach(m=>{if(m.type==="characterData")text(m.target);else if(m.type==="attributes")el(m.target);else m.addedNodes.forEach(run)})});
+function setLang(l){en=l==="en";document.documentElement.lang=en?"en":"uk";
+  if(en){run(document.body);mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR})}
+  else{mo.disconnect();seen.forEach(([uk,t],n)=>{if(n.nodeValue===t)n.nodeValue=uk});seen.clear();
+    document.querySelectorAll("*").forEach(e=>ATTR.forEach(a=>{const k="uk"+a.replace("-",""),v=e.dataset[k];if(v!==undefined){e.setAttribute(a,v);delete e.dataset[k]}}))}
+  document.title=en?"Liquids map":"Мапа рідин";btn.textContent=en?"Українська":"English";
+  try{localStorage.setItem("lang",l)}catch(e){}}
+btn.onclick=()=>setLang(en?"uk":"en");
+let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}
+if(saved==="en")setLang("en");
+})();
 </script>
 </body>
 </html>
