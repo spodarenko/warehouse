@@ -202,15 +202,13 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 .ref h3{font-size:15px;margin:36px 0 10px}.lang{font-size:12px;margin-left:-16px}@media (max-width:640px){.lang{margin-left:0}}.ref .scroll+.scroll{margin-top:16px}
 .prompt .clr{flex:none;font-size:12px;padding:4px 10px}  /* «Очистити» lives in the search box */
 .prompt .clr:disabled{display:none}  /* shown only when there is something to clear, so it never squeezes the search field */
-.theme.lang{font-size:12px}
-@media (min-width:641px){.theme+.theme{margin-left:-16px}}
 </style>
 </head>
 <body>
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button><button class="theme lang" id="lang" type="button" aria-label="Мова / Language" title="English">EN</button></nav>
+    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -407,7 +405,7 @@ Requisition   дата · зміна · лінія · бригада · желе
     <div>Тара <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом 1С <span id="lArt"></span></div><div>Типів правил <span>[5]</span></div><div>Довідка</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Довідка</span><span>Українська</span></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Довідка</span><button id="lang" type="button" aria-label="Мова / Language">English</button></div>
 <script>
 const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),q=$("q");
 /* ---------- tare table (snapshot of the shared table, 20.10.2026) ---------- */
@@ -584,7 +582,7 @@ const setLang=l=>{
   }
   document.title=en?"Warehouse reference":"Довідка складу";
   q.placeholder=en?"e.g. борошно (flour), 6096223, мішок (bag)…":"борошно, 6096223, мішок…";
-  langBtn.textContent=en?"UA":"EN";langBtn.title=en?"Українська":"English";
+  langBtn.textContent=en?"Українська":"English";langBtn.title=en?"Українська":"English";
   try{localStorage.setItem("lang",l)}catch(e){}
   showTheme();
 };
