@@ -1416,7 +1416,7 @@ function showSeries() {
     li.innerHTML = '<input type="checkbox" checked><span><b></b><code></code></span><input type="number" min="0" max="50" inputmode="numeric">';
     li.querySelector('b').textContent = r.name;
     li.querySelector('code').textContent = r.art ? 'Арт. ' + r.art : 'без артикулу';
-    li.querySelector('[type=number]').value = r.n;
+    li.querySelector('[type=number]').value = 1;  // rule: one label per material by default; change the count or untick by hand
     li.querySelector('[type=checkbox]').onchange = e => { li.classList.toggle('off', !e.target.checked); syncSeries(); };
     li.querySelector('[type=number]').oninput = syncSeries;
     $('sRows').append(li);
