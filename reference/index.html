@@ -201,6 +201,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
 .ref h3{font-size:15px;margin:36px 0 10px}.lang{font-size:12px;margin-left:-16px}@media (max-width:640px){.lang{margin-left:0}}.ref .scroll+.scroll{margin-top:16px}
 .prompt .clr{flex:none;font-size:12px;padding:4px 10px}  /* «Очистити» lives in the search box */
+.prompt .clr:disabled{display:none}  /* shown only when there is something to clear, so it never squeezes the search field */
 .theme.lang{font-size:12px}
 @media (min-width:641px){.theme+.theme{margin-left:-16px}}
 </style>

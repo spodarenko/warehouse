@@ -177,6 +177,7 @@ body.dragging{cursor:grabbing;user-select:none}
 @media (min-width:641px){#clear+.theme{margin-left:-16px}}  /* desktop: ☀ sits close to «Очистити» (8px, not the nav's 24px) */
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
 .prompt .clr{flex:none;font-size:12px;padding:4px 10px}  /* «Очистити» lives in the search box */
+.prompt .clr:disabled{display:none}  /* shown only when there is something to clear, so it never squeezes the search field */
 .theme.lang{font-size:12px}
 @media (min-width:641px){.theme+.theme{margin-left:-16px}}
 </style>
