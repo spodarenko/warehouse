@@ -60,15 +60,12 @@ body:not(.full) .vp{height:min(72vh,640px)}  /* bulk zone fits without scrolling
 body.zb:not(.full) .vp{height:420px}  /* barrels: two rows */
 body:not(.zb) .rack{grid-template-columns:repeat(12,130px)}  /* bulk plan is 12 columns wide */
 /* bulk plan as an architectural drawing over the dot grid: thick walls with square columns, door gap with a swing arc,
-   places as thin outlines with a dashed pallet inside, hatched zones where nothing is stored */
+   places as the usual cards, hatched zones where nothing is stored */
 body:not(.zb) .rack{position:relative;background:transparent}
-body:not(.zb) .rack .cell{position:relative;background:transparent;border-radius:2px;border-color:var(--muted)}
-body:not(.zb) .rack .cell::after{content:"";position:absolute;inset:8px;border:1px dashed var(--faint);border-radius:2px;pointer-events:none}
-body:not(.zb) .rack .cell:hover,body:not(.zb) .rack .cell.on{background:var(--panel)}
-body:not(.zb) .zlbl{border-radius:2px;border:1px solid var(--muted);background:repeating-linear-gradient(45deg,transparent 0 7px,var(--line) 7px 8px);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+body:not(.zb) .zlbl{border:1px solid var(--line);background:repeating-linear-gradient(45deg,transparent 0 7px,var(--line) 7px 8px);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
 body:not(.zb) .zlbl.door{border:0;background:none;align-items:flex-end;padding-bottom:14px;font-weight:700}
 .wall,.colm{position:absolute;background:var(--fg);pointer-events:none}
-.colm{width:26px;height:26px}
+.colm{width:20px;height:20px}
 .swing{position:absolute;pointer-events:none;border-top:1px dashed var(--muted);border-right:1px dashed var(--muted);border-top-right-radius:100%}
 .leaf{position:absolute;width:3px;background:var(--fg);pointer-events:none}
 .zlbl{display:flex;align-items:center;justify-content:center;border:1px dashed var(--faint);border-radius:16px;color:var(--muted);font-size:13px;text-align:center}
@@ -327,10 +324,10 @@ function buildCells(){rack.innerHTML="";PL().forEach(p=>{const c=document.create
   [["Вхід",1,10,3,"door"],["Бочки",4,10,3],["Стелажі з митим посудом",7,10,6]].forEach(([s,col,row,span,k])=>{
     const e=document.createElement("div");e.className="zlbl "+(k||"");e.textContent=s;e.style.gridColumn=col+" / span "+span;e.style.gridRow=row;rack.appendChild(e)});
   // walls around the 12×10 plan (130 px squares, 10 px gaps, 16 px padding); the entrance (columns 1–3) is a gap with a door
-  const W=12*140-10,H=10*140-10,T=14,o=0,door=3*140-10,add=(c,x,y,w,h)=>{const e=document.createElement("div");e.className=c;
+  const W=12*140-10,H=10*140-10,T=10,o=2,door=3*140-10,add=(c,x,y,w,h)=>{const e=document.createElement("div");e.className=c;
     Object.assign(e.style,{left:x+"px",top:y+"px",width:w+"px",height:h+"px"});rack.appendChild(e);return e};
   add("wall",o,o,W+24,T);add("wall",o,o,T,H+24);add("wall",o+W+24-T,o,T,H+24);add("wall",16+door,o+H+24-T,W-door+12,T);
-  [[-6,-6],[W+6,-6],[-6,H+6],[W+6,H+6],[10+door,H+6]].forEach(([x,y])=>add("colm",x,y,26,26));
+  [[-2,-2],[W+8,-2],[-2,H+8],[W+8,H+8],[14+door,H+8]].forEach(([x,y])=>add("colm",x,y,20,20));
   // double door: two leaves hinged at the jambs, swinging into the room
   const r=door/2;add("swing",16,16+H-r,r,r);add("leaf",16,16+H-r,3,r);const b=add("swing",16+r,16+H-r,r,r);b.style.transform="scaleX(-1)";add("leaf",13+door,16+H-r,3,r)}
 buildCells();
