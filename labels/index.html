@@ -76,7 +76,11 @@ body.full .prompt kbd{display:none}
 .links div{padding:32px 12px;text-align:center;border-right:1px solid var(--line)}
 .links div:last-child{border-right:0}
 .links div span{color:var(--muted)}
-.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.bottom{max-width:1080px;margin:0 auto 56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));color:var(--muted);border:1px solid var(--line);border-top:0}  /* footer: same cell strip as .links */
+.bottom>*{padding:24px 12px;text-align:center;border-right:1px solid var(--line)}
+.bottom>:last-child{border-right:0}
+.bottom button{font:inherit;color:var(--fg);background:none;border:0;border-radius:0;cursor:pointer;transition:background .15s}
+@media (hover:hover){.bottom button:hover{background:var(--panel)}}
 body.full .links{display:none}
 /* full screen (as in liquids-map, on any device): search box is the header with an exit button,
    list fills the screen, print bar at the bottom after a pick */
@@ -135,7 +139,9 @@ dialog .fullbtn{width:100%}
   .links{grid-template-columns:repeat(2,minmax(0,1fr))}
   .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
   .links div:nth-child(2n){border-right:0}
-  .bottom{gap:14px;padding:32px 16px;font-size:12px}
+  .bottom{grid-template-columns:repeat(2,minmax(0,1fr));border:0;margin-bottom:32px;font-size:12px}
+  .bottom>*{padding:18px 8px;border-bottom:1px solid var(--line)}
+  .bottom>:nth-child(2n){border-right:0}
   body{padding:0;font-size:16px;line-height:1.4}
   .frame{border:0}
   header{position:static;min-height:0;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;border:0}
