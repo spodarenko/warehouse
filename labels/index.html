@@ -216,13 +216,16 @@ body.full .series{display:none}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
 @media (min-width:641px){#clear+.theme{margin-left:-16px}}  /* desktop: ☀ sits close to «Очистити» (8px, not the nav's 24px) */
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
+.prompt .clr{flex:none;font-size:12px;padding:4px 10px}  /* «Очистити» lives in the search box */
+.theme.lang{font-size:12px}
+@media (min-width:641px){.theme+.theme{margin-left:-16px}}
 </style>
 </head>
 <body>
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button><button class="theme lang" id="lang" type="button" aria-label="Мова / Language" title="English">EN</button></nav>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -238,7 +241,7 @@ body.full .series{display:none}
     <ul class="m log" id="log" hidden></ul>
     <div class="box">
       <div class="tabs" id="tabs"></div>
-      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="btn clr" id="clear" type="button">✕ Очистити</button><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
       <ul class="dd" id="dd" hidden></ul>
     </div>
   </section>
@@ -275,7 +278,7 @@ body.full .series{display:none}
     <div>Сировини <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом <span id="lArt"></span></div><div>Без артикулу <span id="lNoArt"></span></div><div>Стікер 60×30</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><button id="lang" type="button" aria-label="Мова / Language">English</button></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span></div>
 <dialog id="dlg">
   <form method="dialog" class="dlg-hd"><b>⚙ Налаштування</b><button class="x" aria-label="Закрити">✕</button></form>
   <div id="dLock">
@@ -1482,7 +1485,7 @@ function setLang(l){en=l==="en";document.documentElement.lang=en?"en":"uk";
   if(en){run(document.body);mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR})}
   else{mo.disconnect();seen.forEach(([uk,t],n)=>{if(n.nodeValue===t)n.nodeValue=uk});seen.clear();
     document.querySelectorAll("*").forEach(e=>ATTR.forEach(a=>{const k="uk"+a.replace("-",""),v=e.dataset[k];if(v!==undefined){e.setAttribute(a,v);delete e.dataset[k]}}))}
-  document.title=en?"Labels":"Стікери";btn.textContent=en?"Українська":"English";
+  document.title=en?"Labels":"Стікери";btn.textContent=en?"UA":"EN";btn.title=en?"Українська":"English";
   try{localStorage.setItem("lang",l)}catch(e){}}
 btn.onclick=()=>setLang(en?"uk":"en");
 let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}

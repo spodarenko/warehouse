@@ -1,4 +1,7 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.prompt .clr{flex:none;font-size:12px;padding:4px 10px}  /* «Очистити» lives in the search box */
+.theme.lang{font-size:12px}
+@media (min-width:641px){.theme+.theme{margin-left:-16px}}
+</style></head><body>
 <title>Мапа складу №1</title>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
@@ -59,6 +62,16 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 body:not(.full) .vp{height:min(72vh,640px)}  /* bulk zone fits without scrolling */
 body.zb:not(.full) .vp{height:420px}  /* barrels: two rows */
 body:not(.zb) .rack{grid-template-columns:repeat(12,130px)}  /* bulk plan is 12 columns wide */
+/* desktop: the plan is a plain full-width grid, as on warehouse 2 (no pan/zoom); the barrel rows scroll sideways */
+@media (min-width:601px){
+  .zoom{display:none}
+  .vp,body:not(.full) .vp,body.zb:not(.full) .vp{height:auto;overflow-x:auto;overflow-y:visible;cursor:default;touch-action:auto;user-select:auto;background:none}
+  .stage{position:static;transform:none!important}
+  .rack{width:auto;min-width:max-content;grid-template-columns:repeat(19,minmax(110px,1fr));grid-auto-rows:minmax(130px,auto)!important}
+  body:not(.zb) .rack{min-width:0;grid-template-columns:repeat(12,minmax(0,1fr))}
+  .rack .cell{aspect-ratio:auto}
+  body.full .vp{overflow:auto}
+}
 .zlbl{display:flex;align-items:center;justify-content:center;border:1px dashed var(--faint);border-radius:16px;color:var(--muted);font-size:13px;text-align:center}
 .zlbl.door{border:0;border-bottom:4px solid var(--fg);border-radius:0;color:var(--fg);font-weight:700;letter-spacing:.12em;align-items:flex-end;padding-bottom:6px}  /* entrance: a doorway line, not a box */
 .zsw button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
@@ -209,7 +222,7 @@ body.dragging{cursor:grabbing;user-select:none}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <div class="hr mnav"><nav><a href="../liquids-map/">Рідини</a><a class="on" href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a></nav><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></div>
+    <div class="hr mnav"><nav><a href="../liquids-map/">Рідини</a><a class="on" href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a></nav><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button><button class="theme lang" id="lang" type="button" aria-label="Мова / Language" title="English">EN</button></div>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -219,13 +232,13 @@ body.dragging{cursor:grabbing;user-select:none}
     <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
     <div class="box">
       <div class="tabs" id="tabs"></div>
-      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="кислота, сироватка, бочка…" autocomplete="off"><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="кислота, сироватка, бочка…" autocomplete="off"><button class="btn clr" id="clear" type="button">✕ Очистити</button><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
     </div>
   </section>
 
   <section class="work" id="map">
     <div class="cap">
-      <span class="hint">План складу №1 · дві карти: бочки (верхній ряд 34→20, нижній 1→19) і сипучка С1–С37 за зошитом · колесо або −/+ — масштаб, тягни — зсунути · «✎ Переставити» — тоді квадрат тягнеться на інший (міняються місцями) або на вільну клітинку сітки (на телефоні: затисни)</span>
+      <span class="hint">План складу №1 · дві карти: бочки (верхній ряд 34→20, нижній 1→19) і сипучка С1–С37 за зошитом · «✎ Переставити» — тоді квадрат тягнеться на інший (міняються місцями) або на вільну клітинку сітки (на телефоні: затисни)</span>
       <div class="acts zsw"><button class="ubtn on" id="zB" type="button">Бочки</button><button class="ubtn" id="zS" type="button">Сипучка</button></div>
       <div class="acts"><button class="ubtn" id="edit" type="button">✎ Переставити</button><button class="ubtn" id="add" type="button">+ Додати</button><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
@@ -245,7 +258,7 @@ body.dragging{cursor:grabbing;user-select:none}
     <div>Місць <span id="lN"></span></div><div>Позицій <span id="lTotal"></span></div><div>Вибрано <span id="lPick">[0]</span></div><div>Неточних <span id="lQ"></span></div><div>Склад №1</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Склад №1</span><button id="lang" type="button" aria-label="Мова / Language">English</button></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Склад №1</span><span>Українська</span></div>
 <script>
 // [place, name, tare · code]
 const D=[[1,"Гуміарабік (Фіброгам)","—"],[2,"Е 475 Емульгатор","—"],[3,"STS 30","25 кг"],
@@ -356,7 +369,7 @@ function render(pulse){
 }
 
 /* ---------- pan & zoom ---------- */
-const phone=matchMedia("all"),small=matchMedia("(max-width:600px)"); // pan/zoom everywhere; full screen only on phone
+const phone=matchMedia("(max-width:600px)"),small=phone; // desktop: plain grid as on warehouse 2; phone: pan & zoom
 let z=1,tx=0,ty=0;
 const ZMIN=.25,ZMAX=3,clampZ=v=>Math.min(ZMAX,Math.max(ZMIN,v));
 function apply(anim){if(!phone.matches){stage.style.transform="";return}stage.style.transition=anim?"transform .35s ease":"none";
@@ -401,7 +414,7 @@ $("edit").onclick=()=>{const on=document.body.classList.toggle("edit");$("edit")
 function startDrag(cell,e){const r=cell.getBoundingClientRect(),ch=cell.querySelector(".chips i[data-i]");if(!ch)return;
   drag={cell,i:+ch.dataset.i,x:e.clientX,y:e.clientY,dx:e.clientX-r.left,dy:e.clientY-r.top,g:null}}
 function lift(){const c=drag.cell,g=c.cloneNode(true);g.removeAttribute("id");g.className="cell lift";
-  g.style.width=c.offsetWidth+"px";g.style.height=c.offsetHeight+"px";g.style.transform="scale("+z+") rotate(3deg)";
+  g.style.width=c.offsetWidth+"px";g.style.height=c.offsetHeight+"px";g.style.transform="scale("+(phone.matches?z:1)+") rotate(3deg)";
   document.body.appendChild(g);drag.g=g;c.classList.add("src");document.body.classList.add("dragging")}
 document.addEventListener("pointerdown",e=>{const c=grabs(e);if(c)startDrag(c,e)});
 window.addEventListener("pointermove",e=>{if(!drag)return;
@@ -410,9 +423,11 @@ window.addEventListener("pointermove",e=>{if(!drag)return;
   clearDrop();const c=cellAt(e);if(c)c.classList.add("drop");else{const sl=slotAt(e,+drag.cell.id.slice(1));if(sl)showSlot(sl)}},{passive:false});
 const clearDrop=()=>{document.querySelectorAll(".drop").forEach(c=>c.classList.remove("drop"));const sl=$("slot");if(sl)sl.remove()};
 // empty spot: the place snaps to the grid square under the pointer, keeps its size, never overlaps others
-const STEP=140,PAD=16,row=p=>p>100?GA[p][1]-4:GA[p][1];
-function slotAt(e,self){const r=vp.getBoundingClientRect(),x=(e.clientX-r.left-tx)/z-PAD,y=(e.clientY-r.top-ty)/z-PAD;if(x<0||y<0)return null;
-  const g=GA[self],w=g[2]||1,h=g[3]||1,c=Math.floor(x/STEP)+1,rw=Math.floor(y/STEP)+1;if(c+w-1>(zn==="s"?12:19))return null;
+const PAD=16,row=p=>p>100?GA[p][1]-4:GA[p][1];
+const track=(v,list)=>{let i=0;for(;i<list.length;i++){if(v<list[i])return i+1;v-=list[i]+10}return i+Math.floor(v/(list[list.length-1]+10))+1};
+function slotAt(e,self){const rr=rack.getBoundingClientRect(),k=rr.width/rack.offsetWidth,x=(e.clientX-rr.left)/k-PAD,y=(e.clientY-rr.top)/k-PAD;if(x<0||y<0)return null;
+  const cs=getComputedStyle(rack),cols=cs.gridTemplateColumns.split(" ").map(parseFloat),rows=cs.gridTemplateRows.split(" ").map(parseFloat);
+  const g=GA[self],w=g[2]||1,h=g[3]||1,c=track(x,cols),rw=track(y,rows);if(c+w-1>(zn==="s"?12:19))return null;
   const hit=(c2,r2,w2,h2)=>c<c2+w2&&c2<c+w&&rw<r2+h2&&r2<rw+h;
   if(PL().some(p=>p!==self&&hit(GA[p][0],row(p),GA[p][2]||1,GA[p][3]||1))||(zn==="s"&&hit(1,10,12,1)))return null;
   return[c,rw,w,h]}
@@ -488,7 +503,7 @@ showTheme();
 // language: UA / EN, remembered in this browser for all pages (like the theme). EN swaps text nodes and labels by the dictionary;
 // raw-material names stay Ukrainian (1C names — the search works on them). Text drawn later by the page is translated as it appears.
 (()=>{
-const EN={"Рідини": "Liquids", "Склад №1": "Warehouse 1", "Склад №2": "Warehouse 2", "Довідка": "Reference", "Стікери": "Labels", "Бочки": "Barrels", "✕ Очистити": "✕ Clear", "✕ Вийти": "✕ Exit", "✕ Згорнути": "✕ Collapse", "⤢ Весь склад": "⤢ Whole warehouse", "⤢ Весь стелаж": "⤢ Whole rack", "Уся сировина": "All raw materials", "Збіги": "Matches", "Згорнути список": "Collapse list", "Нічого не знайдено. Спробуй коротший запит.": "Nothing found. Try a shorter query.", "Місць": "Places", "Позицій": "Items", "Вибрано": "Selected", "Неточних": "Uncertain", "Склад сировини": "Raw materials warehouse", "Українська": "English", "Джерело: рукописна схема складу · «?» = прочитано неточно": "Source: handwritten warehouse sketch · “?” = read uncertainly", "Світла або темна тема": "Light or dark theme", "Світла тема": "Light theme", "Темна тема": "Dark theme", "Меню": "Menu", "Вийти з повного екрана": "Exit full screen", "Віддалити": "Zoom out", "Наблизити": "Zoom in", "мапа рідин ↗": "liquids map ↗", "Рідини · аромати": "Liquids · flavourings", "Рідини · аромати ·": "Liquids · flavourings ·", "ПРОХІД": "AISLE", "Мапа складу №1": "Warehouse 1 map", "Де лежить сировина на складі №1": "Where raw materials are in warehouse 1", "Введи назву, код або тару. Клікни по позиції, щоб виділити її і наблизити її місце. Можна вибрати кілька.": "Type a name, code or packaging. Click an item to highlight it and zoom to its place. You can pick several.", "Сипучка": "Dry goods", "⤢ На весь екран": "⤢ Full screen", "✎ Переставити": "✎ Rearrange", "✓ Готово": "✓ Done", "+ Додати": "+ Add", "↺ Повернути": "↺ Reset", "↓ ВХІД": "↓ ENTRANCE", "Стелажі з митим посудом": "Racks with washed containers", "Видалити місце": "Remove place", "План складу №1 · дві карти: бочки (верхній ряд 34→20, нижній 1→19) і сипучка С1–С37 за зошитом · колесо або −/+ — масштаб, тягни — зсунути · «✎ Переставити» — тоді квадрат тягнеться на інший (міняються місцями) або на вільну клітинку сітки (на телефоні: затисни)": "Warehouse 1 plan · two maps: barrels (top row 34→20, bottom 1→19) and dry goods С1–С37 from the notebook · wheel or −/+ to zoom, drag to pan · in “✎ Rearrange” drag a square onto another (they swap) or onto a free grid square (on a phone: press and hold)", "кислота, сироватка, бочка…": "кислота, сироватка, бочка…"},RX=[["^С(\\d+)$", "С$1"], ["^(\\d+) поз\\.$", "$1 items"], ["^(\\d+) поз\\. · клікни, щоб вибрати$", "$1 items · click to select"], ["^(\\d+) шт$", "$1 pcs"], ["^Подивитися всі \\((\\d+)\\)$", "Show all ($1)"], ["^Показати ще \\((\\d+)\\)$", "Show more ($1)"], ["^Вибрано (\\d+)$", "Selected $1"], ["^Місце (.+)$", "Place $1"], ["^✓ Застосувати \\[(\\d+)\\]$", "✓ Apply [$1]"], ["^↺ Повернути переміщення \\[(\\d+)\\]$", "↺ Undo moves [$1]"], ["^⇄ Поміняти: (.*)$", "⇄ Swap: $1"], ["^Секція ([ABC]) · полиця (\\d)$", "Section $1 · shelf $2"], ["^СЕКЦІЯ ([ABC])$", "SECTION $1"], ["^(\\d+) з (\\d+)$", "$1 of $2"]].map(([r,v])=>[new RegExp(r),v]),SKIP="script,style,#tabs,.chips i",ATTR=["placeholder","aria-label","title"];
+const EN={"Рідини": "Liquids", "Склад №1": "Warehouse 1", "Склад №2": "Warehouse 2", "Довідка": "Reference", "Стікери": "Labels", "Бочки": "Barrels", "✕ Очистити": "✕ Clear", "✕ Вийти": "✕ Exit", "✕ Згорнути": "✕ Collapse", "⤢ Весь склад": "⤢ Whole warehouse", "⤢ Весь стелаж": "⤢ Whole rack", "Уся сировина": "All raw materials", "Збіги": "Matches", "Згорнути список": "Collapse list", "Нічого не знайдено. Спробуй коротший запит.": "Nothing found. Try a shorter query.", "Місць": "Places", "Позицій": "Items", "Вибрано": "Selected", "Неточних": "Uncertain", "Склад сировини": "Raw materials warehouse", "Українська": "English", "Джерело: рукописна схема складу · «?» = прочитано неточно": "Source: handwritten warehouse sketch · “?” = read uncertainly", "Світла або темна тема": "Light or dark theme", "Світла тема": "Light theme", "Темна тема": "Dark theme", "Меню": "Menu", "Вийти з повного екрана": "Exit full screen", "Віддалити": "Zoom out", "Наблизити": "Zoom in", "мапа рідин ↗": "liquids map ↗", "Рідини · аромати": "Liquids · flavourings", "Рідини · аромати ·": "Liquids · flavourings ·", "ПРОХІД": "AISLE", "Мапа складу №1": "Warehouse 1 map", "Де лежить сировина на складі №1": "Where raw materials are in warehouse 1", "Введи назву, код або тару. Клікни по позиції, щоб виділити її і наблизити її місце. Можна вибрати кілька.": "Type a name, code or packaging. Click an item to highlight it and zoom to its place. You can pick several.", "Сипучка": "Dry goods", "⤢ На весь екран": "⤢ Full screen", "✎ Переставити": "✎ Rearrange", "✓ Готово": "✓ Done", "+ Додати": "+ Add", "↺ Повернути": "↺ Reset", "↓ ВХІД": "↓ ENTRANCE", "Стелажі з митим посудом": "Racks with washed containers", "Видалити місце": "Remove place", "План складу №1 · дві карти: бочки (верхній ряд 34→20, нижній 1→19) і сипучка С1–С37 за зошитом · «✎ Переставити» — тоді квадрат тягнеться на інший (міняються місцями) або на вільну клітинку сітки (на телефоні: затисни)": "Warehouse 1 plan · two maps: barrels (top row 34→20, bottom 1→19) and dry goods С1–С37 from the notebook · in “✎ Rearrange” drag a square onto another (they swap) or onto a free grid square (on a phone: press and hold)", "кислота, сироватка, бочка…": "кислота, сироватка, бочка…"},RX=[["^С(\\d+)$", "С$1"], ["^(\\d+) поз\\.$", "$1 items"], ["^(\\d+) поз\\. · клікни, щоб вибрати$", "$1 items · click to select"], ["^(\\d+) шт$", "$1 pcs"], ["^Подивитися всі \\((\\d+)\\)$", "Show all ($1)"], ["^Показати ще \\((\\d+)\\)$", "Show more ($1)"], ["^Вибрано (\\d+)$", "Selected $1"], ["^Місце (.+)$", "Place $1"], ["^✓ Застосувати \\[(\\d+)\\]$", "✓ Apply [$1]"], ["^↺ Повернути переміщення \\[(\\d+)\\]$", "↺ Undo moves [$1]"], ["^⇄ Поміняти: (.*)$", "⇄ Swap: $1"], ["^Секція ([ABC]) · полиця (\\d)$", "Section $1 · shelf $2"], ["^СЕКЦІЯ ([ABC])$", "SECTION $1"], ["^(\\d+) з (\\d+)$", "$1 of $2"]].map(([r,v])=>[new RegExp(r),v]),SKIP="script,style,#tabs,.chips i",ATTR=["placeholder","aria-label","title"];
 const btn=document.getElementById("lang"),seen=new Map();let en=false;
 const tr=s=>{const k=s.trim();if(!k)return null;let t=EN[k];if(t===undefined)for(const [r,v] of RX)if(r.test(k)){t=k.replace(r,v);break}return t===undefined||t===k?null:s.replace(k,t)};
 function text(n){if(n.parentNode&&n.parentNode.closest&&n.parentNode.closest(SKIP))return;const t=tr(n.nodeValue);if(t!==null){seen.set(n,[n.nodeValue,t]);n.nodeValue=t}}
@@ -501,7 +516,7 @@ function setLang(l){en=l==="en";document.documentElement.lang=en?"en":"uk";
   if(en){run(document.body);mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR})}
   else{mo.disconnect();seen.forEach(([uk,t],n)=>{if(n.nodeValue===t)n.nodeValue=uk});seen.clear();
     document.querySelectorAll("*").forEach(e=>ATTR.forEach(a=>{const k="uk"+a.replace("-",""),v=e.dataset[k];if(v!==undefined){e.setAttribute(a,v);delete e.dataset[k]}}))}
-  document.title=en?"Warehouse 1 map":"Мапа складу №1";btn.textContent=en?"Українська":"English";
+  document.title=en?"Warehouse 1 map":"Мапа складу №1";btn.textContent=en?"UA":"EN";btn.title=en?"Українська":"English";
   try{localStorage.setItem("lang",l)}catch(e){}}
 btn.onclick=()=>setLang(en?"uk":"en");
 let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}
