@@ -398,6 +398,10 @@ Requisition   дата · зміна · лінія · бригада · желе
       <li>Запис «Требований» у 1С працює через автозаповнювач (Лінія 6, «Трубочки»). Додаток має передавати йому вимогу, а не замінювати його.</li>
     </ol>
   </section>
+
+  <section class="links">
+    <div>Тара <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом 1С <span id="lArt"></span></div><div>Типів правил <span>[5]</span></div><div>Довідка</div>
+  </section>
 </div>
 <div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Довідка</span><button id="lang" type="button" aria-label="Мова / Language">English</button></div>
 <script>
@@ -424,9 +428,11 @@ PK.forEach(p=>{const tr=document.createElement("tr");
   $("packs").appendChild(tr)});
 const packRows=[...$("packs").children];
 // search: filters the tare table; quick filters (tap again to clear), «/» jumps into it, «Очистити» resets it
+$("lTotal").textContent="["+PK.length+"]";$("lArt").textContent="["+PK.filter(p=>p[1]).length+"]";
 const filter=()=>{const t=norm(q.value);packRows.forEach(r=>r.hidden=!!t&&!norm(r.textContent).includes(t));
+  $("lFound").textContent="["+packRows.filter(r=>!r.hidden).length+"]";
   $("clear").disabled=!q.value;for(const b of $("tabs").children)b.classList.toggle("on",b.textContent===q.value)};
-q.addEventListener("input",filter);
+q.addEventListener("input",filter);filter();
 ["борошно","крохмаль","ароматизатор","барвник","мішок","каністра","№2"].forEach(w=>{const b=document.createElement("button");b.type="button";b.textContent=w;
   b.onclick=()=>{q.value=q.value===w?"":w;filter()};$("tabs").appendChild(b)});
 $("clear").onclick=()=>{q.value="";filter();q.focus()};
@@ -456,7 +462,7 @@ showTheme();
 // the tare table and quick filters stay Ukrainian (1C names — the search works on them).
 const EN={
 "Рідини":"Liquids","Склад №1":"Warehouse 1","Склад №2":"Warehouse 2","Довідка":"Reference","Стікери":"Labels","✕ Очистити":"✕ Clear",
-"Довідка складу":"Warehouse reference",
+"Довідка складу":"Warehouse reference","Знайдено":"Found","З артикулом 1С":"With 1C article","Типів правил":"Rule types",
 "Тара й вага місць, правила округлення, норми. Пошук фільтрує таблицю тари.":"Packaging and unit weights, rounding rules, norms. The search filters the packaging table.",
 "Тара: розмір місця і вага тари":"Packaging: unit size and tare weight",
 "«Місце» — одна одиниця, яку несе комірник (мішок, упаковка, каністра). Кількість місць = кількість ÷ розмір місця, мінімум 1. Брутто = нетто + тара. Пошук угорі фільтрує й цю таблицю. Стан на 20.10.2026.":"A “unit” is one item the storekeeper carries (bag, pack, canister). Units = quantity ÷ unit size, at least 1. Gross = net + tare. The search above filters this table too. As of 20.10.2026.",
