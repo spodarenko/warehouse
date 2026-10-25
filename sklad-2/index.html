@@ -118,7 +118,8 @@ body.dragging{cursor:grabbing;user-select:none}
   .logo{font-size:20px}
   h1{font-size:22px}
   .lead{margin-bottom:16px}
-  .prompt{padding:12px 14px}
+  .prompt{padding:0 16px;height:56px}
+  .prompt input{font-size:18px}
   .prompt kbd,.cap .hint{display:none}
   .cap{padding:10px 16px}
   .zoom{display:flex}
@@ -129,7 +130,13 @@ body.dragging{cursor:grabbing;user-select:none}
   .stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
   .rack{grid-template-columns:repeat(2,200px) repeat(2,240px) 280px;width:max-content}
   .acts{width:100%}
-  /* full-screen map with search on top */
+  .links{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
+  .links div:nth-child(2n){border-right:0}
+  .list li{padding:9px 6px}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
+}
+/* full screen (any device, as on the labels page): map fills the screen, search box on top */
   body.full{overflow:hidden}
   body.full .work{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);border:0}
   body.full .work .box{margin:8px 12px;flex:none}
@@ -141,12 +148,8 @@ body.dragging{cursor:grabbing;user-select:none}
   body.full .work .tabs{border-bottom:0;border-top:1px solid var(--line)}
   body.full .exit{display:block}
   body.full #zFit{display:none}
-  .links{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
-  .links div:nth-child(2n){border-right:0}
-  .list li{padding:9px 6px}
-  .bottom{gap:14px;padding:32px 16px;font-size:12px}
-}
+body.full .vp{overflow:auto}
+.fullbtn{display:block;margin:0 0 16px;min-height:44px;font:inherit;font-size:14px;background:none;color:var(--fg);border:1px solid #6b6565;border-radius:4px;padding:6px 12px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.cell{transition:none}.cell.pulse{animation:none}.stage{transition:none!important}}
 .burger{display:none;padding:0;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;cursor:pointer}
 /* three equal bars drawn in CSS (the ☰ glyph sits off-centre on iPhone) */
@@ -186,6 +189,7 @@ body.dragging{cursor:grabbing;user-select:none}
   <section>
     <h1>Де лежить сировина на складі №2</h1>
     <p class="lead">Введи назву, код або вагу тари. Клікни по позиції, щоб виділити її і наблизити її місце. Можна вибрати кілька.</p>
+    <button class="fullbtn" id="full" type="button">⤢ На весь екран</button>
     <div class="box">
       <div class="tabs" id="tabs"></div>
       <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="борошно, жир, 5.87116…" autocomplete="off"><button class="btn clr" id="clear" type="button">✕ Очистити</button><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
@@ -319,6 +323,7 @@ function setFull(on){full=on;document.body.classList.toggle("full",on);
   if(on)work.prepend(box);else boxHome.appendChild(box);
   $("zFit").textContent=on?"✕ Згорнути":"⤢ Весь склад";requestAnimationFrame(()=>fitAll())}
 $("zFit").onclick=()=>phone.matches?setFull(!full):fitAll(true);
+$("full").onclick=()=>{setFull(true);q.focus()};
 $("exitFull").onclick=e=>{e.preventDefault();setFull(false)};
 phone.addEventListener("change",()=>{if(!phone.matches&&full)setFull(false)});
 vp.addEventListener("wheel",e=>{if(!phone.matches)return;e.preventDefault();const r=vp.getBoundingClientRect();
@@ -409,7 +414,7 @@ showTheme();
 // language: UA / EN, remembered in this browser for all pages (like the theme). EN swaps text nodes and labels by the dictionary;
 // raw-material names stay Ukrainian (1C names — the search works on them). Text drawn later by the page is translated as it appears.
 (()=>{
-const EN={"Рідини": "Liquids", "Склад №1": "Warehouse 1", "Склад №2": "Warehouse 2", "Довідка": "Reference", "Стікери": "Labels", "Бочки": "Barrels", "✕ Очистити": "✕ Clear", "✕ Вийти": "✕ Exit", "✕ Згорнути": "✕ Collapse", "⤢ Весь склад": "⤢ Whole warehouse", "⤢ Весь стелаж": "⤢ Whole rack", "Уся сировина": "All raw materials", "Збіги": "Matches", "Згорнути список": "Collapse list", "Нічого не знайдено. Спробуй коротший запит.": "Nothing found. Try a shorter query.", "Місць": "Places", "Позицій": "Items", "Вибрано": "Selected", "Неточних": "Uncertain", "Склад сировини": "Raw materials warehouse", "Українська": "English", "Джерело: рукописна схема складу · «?» = прочитано неточно": "Source: handwritten warehouse sketch · “?” = read uncertainly", "Світла або темна тема": "Light or dark theme", "Світла тема": "Light theme", "Темна тема": "Dark theme", "Меню": "Menu", "Вийти з повного екрана": "Exit full screen", "Віддалити": "Zoom out", "Наблизити": "Zoom in", "мапа рідин ↗": "liquids map ↗", "Рідини · аромати": "Liquids · flavourings", "Рідини · аромати ·": "Liquids · flavourings ·", "ПРОХІД": "AISLE", "Мапа складу №2": "Warehouse 2 map", "Де лежить сировина на складі №2": "Where raw materials are in warehouse 2", "Введи назву, код або вагу тари. Клікни по позиції, щоб виділити її і наблизити її місце. Можна вибрати кілька.": "Type a name, code or tare weight. Click an item to highlight it and zoom to its place. You can pick several.", "План складу №2 · на місцях 01 і 04 лежить багато різного, однакові матеріали не плутати · тягни назву на інше місце, щоб перемістити": "Warehouse 2 plan · places 01 and 04 hold many different items, don’t mix up similar materials · drag a name to another place to move it", "Окремо в записах: льон 2 (закреслено) · житні пл. – · вівсянка 1 · кунжут 2": "Separately in the notes: льон 2 (crossed out) · житні пл. – · вівсянка 1 · кунжут 2", "наведи на місце або на іншу рідину": "hover a place or another item", "борошно, жир, 5.87116…": "борошно, жир, 5.87116…"},RX=[["^(\\d+) поз\\.$", "$1 items"], ["^(\\d+) поз\\. · клікни, щоб вибрати$", "$1 items · click to select"], ["^(\\d+) шт$", "$1 pcs"], ["^Подивитися всі \\((\\d+)\\)$", "Show all ($1)"], ["^Показати ще \\((\\d+)\\)$", "Show more ($1)"], ["^Вибрано (\\d+)$", "Selected $1"], ["^Місце (.+)$", "Place $1"], ["^✓ Застосувати \\[(\\d+)\\]$", "✓ Apply [$1]"], ["^↺ Повернути переміщення \\[(\\d+)\\]$", "↺ Undo moves [$1]"], ["^⇄ Поміняти: (.*)$", "⇄ Swap: $1"], ["^Секція ([ABC]) · полиця (\\d)$", "Section $1 · shelf $2"], ["^СЕКЦІЯ ([ABC])$", "SECTION $1"], ["^(\\d+) з (\\d+)$", "$1 of $2"]].map(([r,v])=>[new RegExp(r),v]),SKIP="script,style,#tabs,.chips i",ATTR=["placeholder","aria-label","title"];
+const EN={"Рідини": "Liquids", "Склад №1": "Warehouse 1", "Склад №2": "Warehouse 2", "Довідка": "Reference", "Стікери": "Labels", "Бочки": "Barrels", "✕ Очистити": "✕ Clear", "✕ Вийти": "✕ Exit", "⤢ На весь екран": "⤢ Full screen", "✕ Згорнути": "✕ Collapse", "⤢ Весь склад": "⤢ Whole warehouse", "⤢ Весь стелаж": "⤢ Whole rack", "Уся сировина": "All raw materials", "Збіги": "Matches", "Згорнути список": "Collapse list", "Нічого не знайдено. Спробуй коротший запит.": "Nothing found. Try a shorter query.", "Місць": "Places", "Позицій": "Items", "Вибрано": "Selected", "Неточних": "Uncertain", "Склад сировини": "Raw materials warehouse", "Українська": "English", "Джерело: рукописна схема складу · «?» = прочитано неточно": "Source: handwritten warehouse sketch · “?” = read uncertainly", "Світла або темна тема": "Light or dark theme", "Світла тема": "Light theme", "Темна тема": "Dark theme", "Меню": "Menu", "Вийти з повного екрана": "Exit full screen", "Віддалити": "Zoom out", "Наблизити": "Zoom in", "мапа рідин ↗": "liquids map ↗", "Рідини · аромати": "Liquids · flavourings", "Рідини · аромати ·": "Liquids · flavourings ·", "ПРОХІД": "AISLE", "Мапа складу №2": "Warehouse 2 map", "Де лежить сировина на складі №2": "Where raw materials are in warehouse 2", "Введи назву, код або вагу тари. Клікни по позиції, щоб виділити її і наблизити її місце. Можна вибрати кілька.": "Type a name, code or tare weight. Click an item to highlight it and zoom to its place. You can pick several.", "План складу №2 · на місцях 01 і 04 лежить багато різного, однакові матеріали не плутати · тягни назву на інше місце, щоб перемістити": "Warehouse 2 plan · places 01 and 04 hold many different items, don’t mix up similar materials · drag a name to another place to move it", "Окремо в записах: льон 2 (закреслено) · житні пл. – · вівсянка 1 · кунжут 2": "Separately in the notes: льон 2 (crossed out) · житні пл. – · вівсянка 1 · кунжут 2", "наведи на місце або на іншу рідину": "hover a place or another item", "борошно, жир, 5.87116…": "борошно, жир, 5.87116…"},RX=[["^(\\d+) поз\\.$", "$1 items"], ["^(\\d+) поз\\. · клікни, щоб вибрати$", "$1 items · click to select"], ["^(\\d+) шт$", "$1 pcs"], ["^Подивитися всі \\((\\d+)\\)$", "Show all ($1)"], ["^Показати ще \\((\\d+)\\)$", "Show more ($1)"], ["^Вибрано (\\d+)$", "Selected $1"], ["^Місце (.+)$", "Place $1"], ["^✓ Застосувати \\[(\\d+)\\]$", "✓ Apply [$1]"], ["^↺ Повернути переміщення \\[(\\d+)\\]$", "↺ Undo moves [$1]"], ["^⇄ Поміняти: (.*)$", "⇄ Swap: $1"], ["^Секція ([ABC]) · полиця (\\d)$", "Section $1 · shelf $2"], ["^СЕКЦІЯ ([ABC])$", "SECTION $1"], ["^(\\d+) з (\\d+)$", "$1 of $2"]].map(([r,v])=>[new RegExp(r),v]),SKIP="script,style,#tabs,.chips i",ATTR=["placeholder","aria-label","title"];
 const btn=document.getElementById("lang"),seen=new Map();let en=false;
 const tr=s=>{const k=s.trim();if(!k)return null;let t=EN[k];if(t===undefined)for(const [r,v] of RX)if(r.test(k)){t=k.replace(r,v);break}return t===undefined||t===k?null:s.replace(k,t)};
 function text(n){if(n.parentNode&&n.parentNode.closest&&n.parentNode.closest(SKIP))return;const t=tr(n.nodeValue);if(t!==null){seen.set(n,[n.nodeValue,t]);n.nodeValue=t}}
