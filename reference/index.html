@@ -272,6 +272,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
       <tr><td>6 · Деліція</td><td>2: желе + тісто</td><td>тісто перераховується на 35 (1 зм.) / 37 (2 зм.) замісів; желе — від кг ВАЛ</td><td>цукрова пудра, сироп інвертний</td></tr>
       <tr><td>6 · Маргаритка</td><td>2: желе + тісто</td><td>тісто перераховується на 21 заміс; желе — від кг ВАЛ, як є в 1С</td><td>сироп інвертний, крихта печива</td></tr>
       <tr><td>4 · Ля-Мурчики + Полуничні</td><td>2: начинка/глазур + тісто</td><td>як у 1С; повидло ділиться: тісто = 4,5 × порції, решта — начинка</td><td>заварний н/ф (темний), цукрова пудра</td></tr>
+      <tr><td>4 · Райські яблучка (+ з желе, Желейна ягідка)</td><td>2: желе/посипка + тісто</td><td>як у 1С; порції склад округлює в «Задании» вгору до цілих</td><td>сироп інвертний, крихта печива</td></tr>
       <tr><td>5 · Європейські</td><td>1</td><td>як у 1С; дві фази: 1-а = 0,338 × порцій 2-ї</td><td>заварний н/ф (світлий), 1-а фаза</td></tr>
       <tr><td>8 · Ялинкові прикраси</td><td>1</td><td>як у 1С (борошно, жир, ГФС не перераховуються)</td><td>цукрова пудра, крихта печива</td></tr>
       <tr><td>13 · Трубочки</td><td>1</td><td>як у 1С; склад спершу підганяє порції вафель і начинки в «Задании»</td><td>цукрова пудра</td></tr>
@@ -319,6 +320,19 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
       </tbody>
     </table></div>
 
+    <h3>Лінія 4 · Райські яблучка, Райські з желе, Желейна ягідка</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Тісто, на 1 порц.</th><th>кг</th><th>Округлення (не підтверджено)</th></tr></thead>
+      <tbody>
+      <tr><td>Борошно 1 гатунок (1 порц. = 2 мішки)</td><td class="n">100</td><td>як у 1С</td></tr>
+      <tr><td>Цукор · Жир РВД · Лецитин</td><td class="n">24 · 24 · 0,8</td><td>як у 1С</td></tr>
+      <tr><td>Сода · Сіль · Пірофосфат</td><td class="n">0,6 · 0,2 · 0,2</td><td>вгору до цілого · до 0,1 · до 0,1</td></tr>
+      <tr><td>В-каротин</td><td class="n">0,02</td><td>вгору до 0,25</td></tr>
+      <tr><td>Лише Райські: молоко сухе · ароматизатор ван.-верш.</td><td class="n">1 · 0,3</td><td>як у 1С · вгору до 0,1</td></tr>
+      <tr><td>Лише Желейна ягідка: крохмаль кукурудзяний</td><td class="n">5</td><td>вгору до мішка 30</td></tr>
+      <tr><td>Желе/посипка (від ВАЛ): цукор на посипку, антоціан, вишня, лимонна к-та; полуниця, шоколад, кунжут</td><td>від ВАЛ</td><td>до 0,1; посипка й кунжут — як у 1С</td></tr>
+      </tbody>
+    </table></div>
     <h3>Лінія 5 · Європейські</h3>
     <div class="scroll"><table>
       <thead><tr><th>Матеріал</th><th>На 1 порц.</th><th>Фаза</th><th>Округлення</th></tr></thead>
@@ -559,7 +573,7 @@ const EN={
 "Правила є для ліній 4, 5, 6 (Деліція, Маргаритка), 8 і «Трубочок» — кожна з одного-двох зразків, частину треба підтвердити. Для ліній 3 і 9 — немає.":"Rules exist for lines 4, 5, 6 (Delitsiia, Marharytka), 8 and Wafer rolls — each from one or two samples, some still to confirm. None for lines 3 and 9.",
 "Переміщення на мапах зберігаються лише в браузері. Потрібне спільне сховище.":"Moves on the maps are saved only in the browser. Shared storage is needed.",
 "Запис «Требований» у 1С працює через автозаповнювач (Лінія 6, «Трубочки»). Додаток має передавати йому вимогу, а не замінювати його.":"Requisitions are written to 1C by the autofill tool (Line 6, Wafer rolls). The app should hand it the requisition, not replace it.",
-"Склад сировини":"Raw materials warehouse","Українська":"English"
+"4 · Райські яблучка (+ з желе, Желейна ягідка)":"4 · Paradise apples (+ with jelly, Jelly berry)","2: желе/посипка + тісто":"2: jelly/topping + dough","як у 1С; порції склад округлює в «Задании» вгору до цілих":"as in 1C; the warehouse rounds portions up to whole in the production task","Лінія 4 · Райські яблучка, Райські з желе, Желейна ягідка":"Line 4 · Paradise apples, with jelly, Jelly berry","Тісто, на 1 порц.":"Dough, per portion","Округлення (не підтверджено)":"Rounding (not confirmed)","Борошно 1 гатунок (1 порц. = 2 мішки)":"Wheat flour 1st grade (1 portion = 2 bags)","Цукор · Жир РВД · Лецитин":"Sugar · Palm fat · Lecithin","Сода · Сіль · Пірофосфат":"Soda · Salt · Pyrophosphate","вгору до цілого · до 0,1 · до 0,1":"up to whole · to 0.1 · to 0.1","Лише Райські: молоко сухе · ароматизатор ван.-верш.":"Paradise apples only: milk powder · vanilla-cream flavouring","як у 1С · вгору до 0,1":"as in 1C · up to 0.1","Лише Желейна ягідка: крохмаль кукурудзяний":"Jelly berry only: corn starch","вгору до мішка 30":"up to a 30 kg bag","Желе/посипка (від ВАЛ): цукор на посипку, антоціан, вишня, лимонна к-та; полуниця, шоколад, кунжут":"Jelly/topping (from VAL): topping sugar, anthocyanin, cherry, citric acid; strawberry, chocolate, sesame","до 0,1; посипка й кунжут — як у 1С":"to 0.1; topping sugar and sesame as in 1C","Склад сировини":"Raw materials warehouse","Українська":"English"
 };
 const PRE_EN=`Material      1C article · name · unit · group
   └ Pack      type (bag/pack/canister/pc) · net · tare      ← “Packaging” table above
