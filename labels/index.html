@@ -178,7 +178,7 @@ dialog .fullbtn{width:100%}
 #sSel .grp b{font-size:14px}
 #sPick{font:inherit;font-size:15px;min-height:44px;width:100%;margin:0 0 12px;padding:8px 12px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px}
 @media (min-width:641px){#sPick,#sSub{display:none}}
-@media (max-width:640px){#sSel{display:none}}
+@media (max-width:640px){#sSel:not(.one){display:none}}  /* phone: a single product keeps its tab; several go to the select */
 .srows{list-style:none;margin:0 0 16px;padding:0}
 .srows li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;min-height:52px;border-bottom:1px solid var(--line)}
 .srows li.off span{color:var(--nav);text-decoration:line-through}
@@ -1406,7 +1406,8 @@ function pickLine(l) {
   $('series').hidden = !ps.length;
   $('sTitle').textContent = 'Серія: ' + l;
   if (ps.length) $('series').scrollIntoView({behavior: 'smooth', block: 'start'});
-  $('sSel').hidden = $('sPick').hidden = ps.length < 2;
+  $('sSel').hidden = !ps.length; $('sPick').hidden = ps.length < 2;  // a single product still gets its tab, as on line 6
+  $('sSel').classList.toggle('one', ps.length === 1);
   $('sPick').innerHTML = '';
   $('sPick').add(new Option('Оберіть виріб', ''));
   for (const x of ps) $('sPick').add(new Option(x, x));
@@ -1432,14 +1433,14 @@ function pickProd(p, ps) {
   $('sSub').hidden = !sub;
   if (sub) return pickSub(sub, Object.keys(sub)[0], ps, p);
   sProd = p;
-  if (ps.length > 1) renderSel(ps);
+  renderSel(ps);
   showSeries();
 }
 function pickSub(sub, k, ps, p) {
   $('sPick').value = p; $('sSub').hidden = false;
   sProd = sub[k];
   chips($('sSub'), Object.keys(sub).map(subLabel), subLabel(k), x => pickSub(sub, Object.keys(sub).find(y => subLabel(y) === x), ps, p));
-  if (ps.length > 1) renderSel(ps);
+  renderSel(ps);
   showSeries();
 }
 const sPicked = () => [...$('sRows').children].map((li, i) => [i, li.querySelector('[type=checkbox]').checked ? parseInt(li.querySelector('[type=number]').value) || 0 : 0]).filter(([, n]) => n > 0);
