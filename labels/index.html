@@ -171,8 +171,14 @@ dialog .fullbtn{width:100%}
 @media (hover:hover){.chips button:hover{border-color:var(--fg)}}
 .chips button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 #sSel button{font-size:14px;min-height:40px}
-#sSub button{font-size:14px;min-height:40px;border-style:dashed}
-#sSub button.on{border-style:solid}
+#sSub button,#sSel .grp button{font-size:14px;min-height:40px}
+/* wide screen: one row, a product's choices grouped after its name; phone: product in a select, its choices below */
+#sSel .grp{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#sSel .grp+.grp{border-left:1px solid var(--line);padding-left:12px}
+#sSel .grp b{font-size:14px}
+#sPick{font:inherit;font-size:15px;min-height:44px;width:100%;margin:0 0 12px;padding:8px 12px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px}
+@media (min-width:641px){#sPick,#sSub{display:none}}
+@media (max-width:640px){#sSel{display:none}}
 .srows{list-style:none;margin:0 0 16px;padding:0}
 .srows li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;min-height:52px;border-bottom:1px solid var(--line)}
 .srows li.off span{color:var(--nav);text-decoration:line-through}
@@ -257,6 +263,7 @@ body.full .series{display:none}
   <section class="series" id="series" hidden>
     <div class="sidehd"><h3 id="sTitle">Серія на лінію</h3></div>
     <div class="chips" id="sSel" hidden></div>
+    <select id="sPick" hidden></select>
     <div class="chips" id="sSub" hidden></div>
     <ul class="srows" id="sRows"></ul>
     <div class="ctl" id="sCtl" hidden>
@@ -1399,20 +1406,40 @@ function pickLine(l) {
   $('series').hidden = !ps.length;
   $('sTitle').textContent = 'Серія: ' + l;
   if (ps.length) $('series').scrollIntoView({behavior: 'smooth', block: 'start'});
-  $('sSel').hidden = ps.length < 2;
+  $('sSel').hidden = $('sPick').hidden = ps.length < 2;
+  $('sPick').innerHTML = '';
+  $('sPick').add(new Option('Оберіть виріб', ''));
+  for (const x of ps) $('sPick').add(new Option(x, x));
+  $('sPick').onchange = () => pickProd($('sPick').value, ps);
   pickProd(ps.length === 1 ? ps[0] : '', ps);
 }
+const subLabel = k => k.replace(/^желе /, '');  // the product name already stands next to it
+// wide row: plain products as chips, a product with choices as «name: choice choice»
+function renderSel(ps) {
+  $('sSel').innerHTML = '';
+  for (const p of ps) {
+    if (!SUBS[p]) { const b = document.createElement('div'); chips(b, [p], sProd, () => pickProd(p, ps)); $('sSel').append(...b.children); continue; }
+    const g = document.createElement('div'), t = document.createElement('b');
+    g.className = 'grp'; t.textContent = p + ':';
+    chips(g, Object.keys(SUBS[p]).map(subLabel), subLabel(Object.keys(SUBS[p]).find(k => SUBS[p][k] === sProd) || ''), x => pickSub(SUBS[p], Object.keys(SUBS[p]).find(y => subLabel(y) === x), ps, p));
+    g.prepend(t);
+    $('sSel').append(g);
+  }
+}
 function pickProd(p, ps) {
-  if (ps.length > 1) chips($('sSel'), ps, p, x => pickProd(x, ps));
-  const sub = SUBS[p];  // third row: what of this product to print (first choice picked at once)
+  $('sPick').value = p;
+  const sub = SUBS[p];  // phone: second row with what of this product to print (first choice picked at once)
   $('sSub').hidden = !sub;
-  if (sub) return pickSub(sub, Object.keys(sub)[0]);
+  if (sub) return pickSub(sub, Object.keys(sub)[0], ps, p);
   sProd = p;
+  if (ps.length > 1) renderSel(ps);
   showSeries();
 }
-function pickSub(sub, k) {
-  chips($('sSub'), Object.keys(sub), k, x => pickSub(sub, x));
+function pickSub(sub, k, ps, p) {
+  $('sPick').value = p; $('sSub').hidden = false;
   sProd = sub[k];
+  chips($('sSub'), Object.keys(sub).map(subLabel), subLabel(k), x => pickSub(sub, Object.keys(sub).find(y => subLabel(y) === x), ps, p));
+  if (ps.length > 1) renderSel(ps);
   showSeries();
 }
 const sPicked = () => [...$('sRows').children].map((li, i) => [i, li.querySelector('[type=checkbox]').checked ? parseInt(li.querySelector('[type=number]').value) || 0 : 0]).filter(([, n]) => n > 0);
