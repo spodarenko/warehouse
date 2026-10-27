@@ -277,7 +277,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
       <tr><td>8 · Ялинкові прикраси</td><td>1</td><td>як у 1С (борошно, жир, ГФС не перераховуються)</td><td>цукрова пудра, крихта печива</td></tr>
       <tr><td>13 · Трубочки</td><td>1</td><td>як у 1С; склад спершу підганяє порції вафель і начинки в «Задании»</td><td>цукрова пудра</td></tr>
       <tr><td>10 · Вафлі (Артек-Деліція)</td><td>1</td><td>як у 1С; олія вгору до уп., сіль вгору до 0,5</td><td>—</td></tr>
-      <tr><td>9 · До чаю + Джулія</td><td>1</td><td>як у 1С; правила не підтверджені</td><td>цукрова пудра, сироп інвертний, крихта печива</td></tr>
+      <tr><td>9 · До чаю + Джулія</td><td>1</td><td>як у 1С; порції склад округлює в «Задании» вгору до цілих</td><td>цукрова пудра, сироп інвертний, крихта печива</td></tr>
       </tbody>
     </table></div>
 
@@ -358,6 +358,24 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
       <tr><td>BOWIKA</td><td class="n">4,5</td><td>вгору до мішка 25</td><td>55,62 → 75</td></tr>
       <tr><td>Сода · Сіль кухонна</td><td class="n">2,8 · 0,4</td><td>до цілого</td><td>34,608 → 35</td></tr>
       <tr><td>«Апельсинове селище»: ароматизатор апельсин · імбир · коріандр</td><td class="n">2 · 0,48 · 0,48</td><td>до 0,1 · як у 1С (не підтверджено)</td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Лінія 9 · До чаю і Джулія зі смаком пряженого молока</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Матеріал</th><th>До чаю, на 1 порц.</th><th>Джулія, на 1 порц.</th><th>Округлення</th></tr></thead>
+      <tbody>
+      <tr><td>Борошно 1 гатунок</td><td class="n">200</td><td class="n">200</td><td>як у 1С</td></tr>
+      <tr><td>Жир РВД пальмова</td><td class="n">44</td><td class="n">32</td><td>як у 1С</td></tr>
+      <tr><td>Крохмаль кукурудзяний</td><td class="n">8</td><td class="n">8</td><td>вгору до 25 (216 → 225)</td></tr>
+      <tr><td>Молоко сухе</td><td class="n">4</td><td class="n">2</td><td>вгору до мішка 25 (82 → 100)</td></tr>
+      <tr><td>Лецитин соєвий</td><td class="n">2</td><td class="n">1,5</td><td>як у 1С</td></tr>
+      <tr><td>Сода · Сіль кухонна</td><td class="n">1,6 · 0,9</td><td class="n">1,5 · 1,2</td><td>вгору до цілого · до найближчого мішка 25 (26,3 → 25)</td></tr>
+      <tr><td>Ароматизатор пряжене молоко 675995 · Сіль вуглеамонійна · В-каротин · Акрілавей</td><td class="n">0,6 · 0,2 · 0,1 · 0,06</td><td class="n">—</td><td>вгору до 0,1</td></tr>
+      <tr><td>Сироватка суха</td><td class="n">—</td><td class="n">2</td><td>до найближчого мішка 25, мінімум 1 (26 → 25)</td></tr>
+      <tr><td>Ароматизатор пряжене молоко 095,4 · Пірофосфат</td><td class="n">—</td><td class="n">0,6 · 0,6</td><td>вгору до 0,5</td></tr>
+      <tr><td>Яєчний порошок</td><td class="n">—</td><td class="n">0,1</td><td>вгору до 0,1</td></tr>
+      <tr><td>Не видаємо: цукрова пудра · сироп інвертний · крихта печива</td><td class="n">48 · 20 · —</td><td class="n">32 · 40 · 18</td><td>—</td></tr>
       </tbody>
     </table></div>
 
@@ -550,7 +568,14 @@ const EN={
 "Борошно 1 гатунок · Жир РВД · ГФС-42":"Wheat flour 1st grade · Palm fat · HFCS-42","Сода · Сіль кухонна":"Soda · Salt",
 "«Апельсинове селище»: ароматизатор апельсин · імбир · коріандр":"“Orange village”: orange flavouring · ginger · coriander",
 "до 0,1 · як у 1С (не підтверджено)":"to 0.1 · as in 1C (not confirmed)","Трубочки · пряжене молоко":"Wafer rolls · baked milk",
-"Вафлі, на 1 порц.":"Wafers, per portion","Начинка, на 1 порц.":"Filling, per portion","Борошно в/г · Цукор":"Premium wheat flour · Sugar",
+"Вафлі, на 1 порц.":"Wafers, per portion",
+"Лінія 9 · До чаю і Джулія зі смаком пряженого молока":"Line 9 · Do chaiu and Juliia baked-milk flavour","До чаю, на 1 порц.":"Do chaiu, per portion","Джулія, на 1 порц.":"Juliia, per portion",
+"вгору до 25 (216 → 225)":"up to 25 (216 → 225)","Молоко сухе":"Skimmed milk powder","вгору до мішка 25 (82 → 100)":"up to a 25 kg bag (82 → 100)",
+"Сода · Сіль кухонна":"Baking soda · Table salt","вгору до цілого · до найближчого мішка 25 (26,3 → 25)":"up to whole · to the nearest 25 kg bag (26.3 → 25)",
+"Ароматизатор пряжене молоко 675995 · Сіль вуглеамонійна · В-каротин · Акрілавей":"Baked milk flavouring 675995 · Ammonium bicarbonate · Beta-carotene · Acrylaway",
+"Сироватка суха":"Whey powder","до найближчого мішка 25, мінімум 1 (26 → 25)":"to the nearest 25 kg bag, at least 1 (26 → 25)",
+"Ароматизатор пряжене молоко 095,4 · Пірофосфат":"Baked milk flavouring 095.4 · Pyrophosphate","Яєчний порошок":"Egg powder",
+"Не видаємо: цукрова пудра · сироп інвертний · крихта печива":"Not issued: powdered sugar · invert syrup · cookie crumbs","Начинка, на 1 порц.":"Filling, per portion","Борошно в/г · Цукор":"Premium wheat flour · Sugar",
 "як у 1С · вгору до мішка 50":"as in 1C · up to a 50 kg bag","4,56 (1 пляшка)":"4.56 (1 bottle)","Яєчний порошок · Сіль кухонна":"Egg powder · Salt",
 "до цілого · завжди 3":"to a whole number · always 3","Сироватка · Молоко сухе":"Whey powder · Milk powder","Ароматизатор пряжене молоко":"Baked-milk flavouring",
 "Grindox 552 · Toco50 · Етилованілін":"Grindox 552 · Toco50 · Ethyl vanillin",
