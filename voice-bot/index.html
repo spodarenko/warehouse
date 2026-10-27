@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="uk" translate="no">
+<head><meta name="google" content="notranslate">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Голосовий журнал видачі</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+<style>
+/* Layout: framed column with hairline borders, same as «Довідка»; colors from config/ui-tokens.json (dark by default, ☀/☾ for light). */
+:root{--bg:#131010;--panel:#262222;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#ddd7d7;--nav:#8f8a8a;--faint:#b8b2b2;--line:#2f2b2b;
+--ok:#7fc79a;--ok-bg:#14261b;--warn:#f5c04a;--warn-bg:#2c220b;--bad:#ff8a7a;--bad-bg:#2e1513;
+--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#6b6565;--nav:#8f8a8a;--faint:#8f8a8a;
+--ok:#1f7a45;--ok-bg:#e3f3e8;--warn:#875800;--warn-bg:#fbf0d4;--bad:#b02a1f;--bad-bg:#fbe4e1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.frame{max-width:1080px;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+section,header{border-bottom:1px solid var(--line);padding:56px clamp(16px,7.5vw,80px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:20px;min-height:80px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.logo{font-weight:700;font-size:26px;letter-spacing:-.06em;line-height:1}
+.logo span{color:var(--nav)}
+nav{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+nav a{color:var(--nav);text-decoration:none}nav a:hover,nav a.on{color:var(--fg)}
+.theme{font:inherit;font-size:16px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:36px;height:36px;cursor:pointer;flex:none}
+@media (hover:hover){.theme:hover{border-color:var(--fg)}}
+button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin:0 0 12px;text-wrap:balance}
+h2{font-size:18px;margin:0 0 6px;text-wrap:balance}
+h3{font-size:14px;margin:0}
+p{margin:0;max-width:70ch}
+.m{color:var(--muted)}
+.lead{color:var(--muted);max-width:62ch;margin:0 0 28px;line-height:2}
+.hd2{margin-bottom:24px;max-width:70ch}
+.eyebrow{color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px}
+.formula{border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:16px 20px;font-size:clamp(13px,2.4vw,16px);overflow-x:auto;white-space:nowrap}
+.p{color:var(--ok)}.mi{color:var(--bad)}.o{color:var(--warn)}
+code{color:var(--muted);overflow-wrap:anywhere}
+
+/* day */
+.day{display:grid;border-left:1px solid var(--line);margin-left:5px}
+.step{position:relative;padding:0 0 24px 24px;display:grid;gap:2px}
+.step:last-child{padding-bottom:0}
+.step::before{content:"";position:absolute;left:-5px;top:7px;width:9px;height:9px;background:var(--bg);border:1px solid var(--fg);border-radius:2px}
+.step .when{font-size:12px;color:var(--muted)}
+.step p{color:var(--muted)}
+
+/* commands */
+.cmds{border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.cmd{display:grid;grid-template-columns:130px minmax(0,1fr);gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);align-items:start}
+.cmd:last-child{border-bottom:0}
+.cmd > div{min-width:0;display:grid;gap:2px}
+.tag{display:inline-block;font-size:11px;line-height:1.5;border:1px solid var(--line);border-radius:3px;padding:1px 7px;color:var(--muted);white-space:nowrap;justify-self:start}
+.tag.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+.tag.bad{color:var(--bad);border-color:var(--bad);background:var(--bad-bg)}
+.tag.w{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
+.tag.fg{color:var(--bg);background:var(--fg);border-color:var(--fg)}
+.cmd small{color:var(--muted);font-size:13px}
+
+/* chat */
+.chat{border:1px solid var(--line);border-radius:6px;background:var(--panel2);padding:20px;display:grid;gap:10px}
+.msg{max-width:min(88%,520px);padding:10px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.msg.me{justify-self:end;background:var(--bg)}
+.msg .who{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.btns span{font-size:12px;border:1px solid var(--fg);border-radius:4px;padding:3px 10px}
+.btns span:first-child{background:var(--fg);color:var(--bg)}
+
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel2)}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right}
+td.fin{font-weight:700}
+.note{margin-top:14px;font-size:13px;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;margin-top:20px}
+.flow span{border:1px solid var(--line);border-radius:3px;padding:4px 10px;background:var(--panel)}
+.flow i{font-style:normal;color:var(--faint)}
+
+/* cards */
+.src{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.src article{border:1px solid var(--line);border-radius:6px;padding:16px;background:var(--panel);display:grid;gap:6px;align-content:start;min-width:0}
+.src article p{font-size:13px;color:var(--muted)}
+.src .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+ol.plan{margin:0;padding-left:22px;display:grid;gap:12px;max-width:75ch}
+ol.plan small{display:block;color:var(--muted);font-size:13px}
+
+.bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+@media (max-width:640px){
+  body{padding-left:0;padding-right:0;font-size:13px}
+  .frame{border:0}
+  section,header{padding:40px 16px}
+  header{padding-block:14px;min-height:0}
+  nav a{display:none}
+  .logo{font-size:20px}
+  h1{font-size:22px}
+  .cmd{grid-template-columns:1fr;gap:6px;padding:12px 16px}
+  .src{grid-template-columns:1fr}
+  .bottom{gap:14px;padding:32px 16px;font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div class="logo"><span>delicia</span>sklad</div>
+    <nav><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+  </header>
+
+  <section>
+    <div class="eyebrow">Ідея автоматизації · чернетка 27.10.2026</div>
+    <h1>Голосовий журнал видачі</h1>
+    <p class="lead">Telegram-бот, якому надиктовують добори, повернення і списання по лініях. Увечері він складає фінальну накладну в тому самому форматі, що й зараз, і автозаповнювач вносить її в 1С.</p>
+    <div class="formula">фінальна вимога = за накладною <span class="p">+ добори</span> <span class="mi">− повернення</span></div>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>Як проходить день</h2></div>
+    <div class="day">
+      <div class="step"><span class="when">ранок</span><h3>Накладна з 1С</h3><p>Бот бере ранкову вимогу з вивантаження 1С. Вручну її не диктують.</p></div>
+      <div class="step"><span class="when">протягом зміни</span><h3>Добори голосом</h3><p>Прийшли з лінії по ще — комірник наговорює в чат, бот перепитує, людина підтверджує кнопкою.</p></div>
+      <div class="step"><span class="when">кінець зміни</span><h3>Зважування і повернення</h3><p>Що здали — мінус. Що списали — окремою командою з причиною.</p></div>
+      <div class="step"><span class="when">вечір</span><h3>Бот питає про пропуски</h3><p>По кожному матеріалу без повернення: «повернення 0?» Одне натискання — і нуль стає фактом.</p></div>
+      <div class="step"><span class="when">закриття дня</span><h3>Фінальні документи</h3><p>Вимога по кожній лінії і накладна на списання → звіт → автозаповнювач у 1С → людина перевіряє і проводить.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>Команди</h2></div>
+    <div class="cmds">
+      <div class="cmd"><span class="tag ok">+ добір</span><div><span>лінія 9 плюс 100 кг цукру</span><small>Додається до вимоги лінії.</small></div></div>
+      <div class="cmd"><span class="tag bad">− повернення</span><div><span>лінія 9 мінус 53 цукор, здали</span><small>Віднімається від вимоги.</small></div></div>
+      <div class="cmd"><span class="tag w">списання</span><div><span>лінія 9 списання 5 цукор, просипали</span><small>Окремий документ списання (новий тип накладної від адміна).</small></div></div>
+      <div class="cmd"><span class="tag">залишок</span><div><span>лінія 9 залишок 30 борошно</span><small>Лежить на лінії до завтра. Не повернення і не витрата.</small></div></div>
+      <div class="cmd"><span class="tag fg">звіт</span><div><span>звіт лінія 9 · звіт за день</span><small>Таблиця в будь-який момент.</small></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>Як це виглядає в чаті</h2></div>
+    <div class="chat">
+      <div class="msg me"><span class="who">комірник · голосове 0:04</span>лінія дев'ять плюс сто кіло цукру</div>
+      <div class="msg"><span class="who">бот</span>Лінія 9 <b class="p">+100 кг</b> Цукор білий кристалічний<div class="btns"><span>Вірно</span><span>Виправити</span></div></div>
+      <div class="msg me"><span class="who">комірник · голосове 0:05</span>лінія дев'ять мінус п'ятдесят три цукор здали</div>
+      <div class="msg"><span class="who">бот</span>Лінія 9 <b class="mi">−53 кг</b> Цукор — повернення на склад<div class="btns"><span>Вірно</span><span>Виправити</span></div></div>
+      <div class="msg"><span class="who">бот · кінець дня</span>Лінія 9, яєчний порошок — повернень не було. Повернення 0?<div class="btns"><span>Так, 0</span><span>Ввести кількість</span><span>Лежить на лінії</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>Фінальна вимога за день</h2><p class="m">Умовний приклад, лінія 9.</p></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Матеріал</th><th class="n">Накладна</th><th class="n">Добори</th><th class="n">Повернення</th><th class="n">Фінальна</th><th class="n">Списання</th></tr></thead>
+      <tbody>
+        <tr><td>Цукор</td><td class="n">1000</td><td class="n p">+100</td><td class="n mi">−53</td><td class="n fin">1047</td><td class="n o">5</td></tr>
+        <tr><td>Борошно в/г</td><td class="n">1000</td><td class="n p">+120</td><td class="n mi">−20</td><td class="n fin">1100</td><td class="n">—</td></tr>
+        <tr><td>Яєчний порошок</td><td class="n">1000</td><td class="n">0</td><td class="n">0 ✓</td><td class="n fin">1000</td><td class="n">—</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">«0 ✓» — нуль, підтверджений кнопкою. Правила округлення до фінальної вимоги не застосовуємо: це факт, а не розрахунок. Пізніше можна додати колонку «Норма» (норма × порції) і побачити перевитрату.</p>
+    <div class="flow"><span>журнал бота</span><i>→</i><span>фінальна вимога</span><i>→</i><span>друк вимоги</span><i>→</i><span>автозаповнювач</span><i>→</i><span>1С, проводить людина</span></div>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>Правила</h2></div>
+    <div class="src">
+      <article><div class="row"><b>Кожен запис підтверджується</b><span class="tag fg">головне</span></div><p>Голос може сплутати «сто» і «двісті». Без кнопки «Вірно» запис не рахується.</p></article>
+      <article><div class="row"><b>Мовчання ≠ нуль</b><span class="tag fg">головне</span></div><p>Якщо не здали, невідомо: використали, забули сказати чи лежить на лінії. Тому ввечері бот сам питає по кожному такому матеріалу.</p></article>
+      <article><b>Назви — як в 1С</b><p>«Борошно в/г» бот шукає в довіднику номенклатури серед матеріалів цієї лінії. Кілька збігів — показує кнопки.</p></article>
+      <article><b>Від'ємний підсумок — помилка</b><p>Повернули більше, ніж видали — бот показує це, а не записує.</p></article>
+      <article><b>Хто і коли</b><p>Бот бачить автора кожного повідомлення, тож журнал ведеться сам. Доступ — лише працівникам зі списку.</p></article>
+    </div>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>Технічно</h2></div>
+    <div class="src">
+      <article><b>Розпізнавання</b><p>Whisper добре розуміє українську. Можна запустити локально на складському ПК (whisper.cpp), тоді голос нікуди не йде.</p></article>
+      <article><b>Telegram</b><p>Повідомлення проходять через сервери Telegram. Бот може працювати на локальному ПК, але йому потрібен інтернет.</p></article>
+      <article><b>Вдома</b><p>Хмарний Supabase (безкоштовний) — для тестів.</p></article>
+      <article><b>На складі</b><p>Той самий Supabase у Docker на складському ПК, код не змінюється. Без Docker — PocketBase (один .exe).</p></article>
+    </div>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>З чого почати</h2></div>
+    <ol class="plan">
+      <li>Текстові команди для однієї лінії: <code>л6 +100 цукор</code>.<small>Перевірка: бот правильно знаходить матеріал і рахує підсумок.</small></li>
+      <li>Фінальна вимога з журналу у форматі, який читає автозаповнювач.<small>Перевірка: тест на прикладі вище дає 1047 / 1100 / 1000.</small></li>
+      <li>Вечірнє питання «повернення 0?».<small>Перевірка: жодного матеріалу без підтвердженого повернення.</small></li>
+      <li>Голос (Whisper) поверх текстових команд.<small>Перевірка: 20 записаних фраз розпізнаються в правильну команду.</small></li>
+      <li>Списання окремим документом.<small>Перевірка: після зразка нової накладної від адміна.</small></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="hd2"><h2>Відкриті питання</h2></div>
+    <div class="src">
+      <article><div class="row"><b>Ранкова накладна в 1С</b><span class="tag w">питання</span></div><p>Висить непроведеною до вечора — автозаповнювач просто переписує кількості. Проводять зранку — на різницю потрібен окремий документ.</p></article>
+      <article><div class="row"><b>Добір не з накладної</b><span class="tag w">питання</span></div><p>Автозаповнювач не додає нових рядків. Чи буває таке на практиці?</p></article>
+      <article><div class="row"><b>Новий документ списання</b><span class="tag w">питання</span></div><p>Як називається в 1С, які в ньому колонки, списують з лінії чи зі складу? Потрібен зразок.</p></article>
+      <article><div class="row"><b>Чи можна через Telegram</b><span class="tag w">питання</span></div><p>Якщо дані не можна пускати через Telegram — диктування робимо у власному веб-застосунку на планшеті.</p></article>
+    </div>
+  </section>
+</div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Голосовий журнал · цифри в прикладах умовні</span></div>
+<script>
+// theme: ☀/☾ toggles light/dark, remembered in this browser for all pages
+const themeBtn = document.getElementById('theme');
+const showTheme = () => { const l = document.documentElement.dataset.theme === 'light'; themeBtn.textContent = l ? '☾' : '☀'; themeBtn.title = l ? 'Темна тема' : 'Світла тема'; };
+themeBtn.onclick = () => {
+  const l = document.documentElement.dataset.theme !== 'light';
+  if (l) document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem('theme', l ? 'light' : 'dark'); } catch (e) {}
+  showTheme();
+};
+showTheme();
+</script>
+</body>
+</html>
