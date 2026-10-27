@@ -188,6 +188,9 @@ dialog .fullbtn{width:100%}
 .series .ctl .btn{width:100%}
 @media (max-width:640px){.series{padding:16px}.srows li{padding:0}}
 body.full .series{display:none}
+/* full screen: a line with series shows its series in place of the list; typing in the search brings the list back */
+body.full.lineon:not(.q) .series{display:block!important;order:1;flex:1;overflow:auto;padding:12px 16px;border:0}
+body.full.lineon:not(.q) .lst{display:none}
 @page{size:60mm 30mm;margin:0}
 @media print{
   body{background:#fff;padding:0}
@@ -220,7 +223,6 @@ body.full .series{display:none}
 :root[data-theme="light"] .box{--panel:#ffffff;--faint:#8f8a8a;--muted:#6b6565}
 .theme{font:inherit;font-size:16px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:36px;height:36px;cursor:pointer;flex:none}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
-@media (min-width:641px){#clear+.theme{margin-left:-16px}}  /* desktop: ☀ sits close to «Очистити» (8px, not the nav's 24px) */
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
 </style>
 </head>
@@ -228,7 +230,7 @@ body.full .series{display:none}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -1026,7 +1028,6 @@ function pick(c) {
   $('print').disabled = false;
   $('remote').disabled = false;
   render();
-  syncClear();
   document.body.classList.add('picked');
   if (full || matchMedia('(max-width:640px)').matches) $('q').blur();  // phone: hide keyboard, bottom bar shows the sticker
   else $('sample').scrollIntoView({behavior:'smooth', block:'center'});
@@ -1051,6 +1052,7 @@ function render() {
 }
 
 $('q').addEventListener('input', () => {
+  document.body.classList.toggle('q', !!$('q').value.trim());
   const q = $('q').value.trim().toLowerCase();
   hits = q ? codes.filter(c => c.toLowerCase().includes(q) || ITEMS[c].article.includes(q)) : codes;
   shown = PAGE;
@@ -1105,17 +1107,6 @@ $('exitFull').onclick = e => { e.preventDefault(); setFull(false); };
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && full) setFull(false); });
 
 $('more').onclick = () => { shown += PAGE; render(); };
-// «Очистити»: active only when something is typed or picked; resets both
-const syncClear = () => { $('clear').disabled = !$('q').value && !current; };
-$('q').addEventListener('input', syncClear);
-$('clear').onclick = () => {
-  current = null;
-  $('print').disabled = $('remote').disabled = true;
-  $('cur').textContent = 'Так виглядатиме стікер 60×30 мм. Оберіть товар у списку нижче.';
-  $('sample').style.opacity = .5;
-  document.body.classList.remove('picked');
-  $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus();
-};
 
 const copiesOf = v => Math.min(50, Math.max(1, parseInt(v) || 1));
 
@@ -1396,14 +1387,20 @@ const lineTabs = Object.keys(LINES).sort().map(l => {
   b.onclick = () => pickLine(b.classList.contains('on') ? '' : l);
   return b;
 });
-$('tabs').append(...lineTabs);
+// «Без лінії» first: one tab is always underlined, so it is clear whether a line goes on the sticker
+const noLine = document.createElement('button');
+noLine.type = 'button'; noLine.textContent = 'Без лінії'; noLine.className = 'on';
+noLine.onclick = () => pickLine('');
+$('tabs').append(noLine, ...lineTabs);
 function pickLine(l) {
   curLine = l;
+  noLine.classList.toggle('on', !l);
   for (const b of lineTabs) b.classList.toggle('on', b.textContent === l);
   const name = $('sample').querySelector('.name');  // the preview shows the line too
   if (ITEMS[name.textContent]) fill($('sample'), name.textContent, stamp());
   const ps = [].concat(LINES[l] || []);  // lines from config/labels.json have no series
   $('series').hidden = !ps.length;
+  document.body.classList.toggle('lineon', !!ps.length);
   $('sTitle').textContent = 'Серія: ' + l;
   if (ps.length) $('series').scrollIntoView({behavior: 'smooth', block: 'start'});
   $('sSel').hidden = !ps.length; $('sPick').hidden = ps.length < 2;  // a single product still gets its tab, as on line 6
@@ -1492,7 +1489,6 @@ $('lNoArt').textContent = '[' + (codes.length - withArt) + ']';
 // sample sticker until an item is picked
 fill($('sample'), ITEMS['Цукор'] ? 'Цукор' : codes[0], stamp());
 $('sample').style.opacity = .5;
-syncClear();
 </script>
 <script>
 // phone menu: ☰ toggles it, any link closes it
