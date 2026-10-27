@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="uk" translate="no">
-<head><meta name="google" content="notranslate">
+<html lang="uk">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Стікери</title>
@@ -40,7 +40,7 @@ h3{margin:0;font-size:16px}
 .prompt{display:flex;align-items:center;gap:12px;padding:16px 22px;color:var(--muted)}
 .prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;outline:none}
 .prompt input::placeholder{color:var(--faint)}
-/* quick filters above the search, as in liquids-map */
+/* line tabs above the search, styled like liquids-map quick filters */
 .tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);padding:0 12px}
 .tabs button{font:inherit;background:none;border:0;color:var(--muted);padding:12px 10px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
 .tabs button.on,.tabs button:hover{color:var(--fg);border-bottom-color:var(--fg)}
@@ -77,8 +77,6 @@ body.full .prompt kbd{display:none}
 .links div:last-child{border-right:0}
 .links div span{color:var(--muted)}
 .bottom{text-align:center;color:var(--muted);padding:56px 16px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
-.bottom button{font:inherit;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}  /* language switch */
-@media (hover:hover){.bottom button:hover{color:var(--fg)}}
 body.full .links{display:none}
 /* full screen (as in liquids-map, on any device): search box is the header with an exit button,
    list fills the screen, print bar at the bottom after a pick */
@@ -168,15 +166,11 @@ dialog .fullbtn{width:100%}
   .ctl .relay{grid-column:1/-1}
 }
 /* series for a line: product from config/lines.json, tick off what is not needed, adjust counts */
-/* line → product: two rows of pills, the product row is a size smaller */
-.ltabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
-.ltabs button{font:inherit;font-size:15px;min-height:44px;padding:8px 16px;background:none;color:var(--fg);border:1px solid var(--line);border-radius:22px;cursor:pointer}
-@media (hover:hover){.ltabs button:hover{border-color:var(--fg)}}
-.ltabs button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.sub{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
-.sub button{font:inherit;font-size:14px;min-height:40px;padding:8px 16px;background:none;color:var(--fg);border:1px solid var(--line);border-radius:22px;cursor:pointer}
-@media (hover:hover){.sub button:hover{border-color:var(--fg)}}
-.sub button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.chips button{font:inherit;font-size:15px;min-height:44px;padding:8px 16px;background:none;color:var(--fg);border:1px solid var(--line);border-radius:22px;cursor:pointer}
+@media (hover:hover){.chips button:hover{border-color:var(--fg)}}
+.chips button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+#sSel button{font-size:14px;min-height:40px}
 .srows{list-style:none;margin:0 0 16px;padding:0}
 .srows li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;min-height:52px;border-bottom:1px solid var(--line)}
 .srows li.off span{color:var(--nav);text-decoration:line-through}
@@ -220,15 +214,13 @@ body.full .series{display:none}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
 @media (min-width:641px){#clear+.theme{margin-left:-16px}}  /* desktop: ☀ sits close to «Очистити» (8px, not the nav's 24px) */
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
-.prompt .clr{flex:none;font-size:12px;padding:4px 10px}  /* «Очистити» lives in the search box */
-.prompt .clr:disabled{display:none}  /* shown only when there is something to clear, so it never squeezes the search field */
 </style>
 </head>
 <body>
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+    <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="btn" id="clear">✕ Очистити</button><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -244,7 +236,7 @@ body.full .series{display:none}
     <ul class="m log" id="log" hidden></ul>
     <div class="box">
       <div class="tabs" id="tabs"></div>
-      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><button class="btn clr" id="clear" type="button">✕ Очистити</button><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="ваніль, 6096200, борошно…" autocomplete="off"><kbd>/</kbd><button class="exit" id="exitFull" type="button" aria-label="Вийти з повного екрана">✕ Вийти</button></label>
       <ul class="dd" id="dd" hidden></ul>
     </div>
   </section>
@@ -260,13 +252,10 @@ body.full .series{display:none}
     </div>
   </section>
 
-  <section class="series">
-    <div class="sidehd"><h3>Серія на лінію</h3></div>
-    <div class="ltabs" id="sLine" role="radiogroup" aria-label="Лінія"></div>
-    <div class="spanel" id="sPanel" hidden>
-      <div class="sub" id="sSel" role="tablist" aria-label="Продукт" hidden></div>
-      <ul class="srows" id="sRows"></ul>
-    </div>
+  <section class="series" id="series" hidden>
+    <div class="sidehd"><h3 id="sTitle">Серія на лінію</h3></div>
+    <div class="chips" id="sSel" hidden></div>
+    <ul class="srows" id="sRows"></ul>
     <div class="ctl" id="sCtl" hidden>
       <button class="btn" id="sRemote" hidden>Друкувати серію</button>
       <button class="btn" id="sPrint">Друкувати серію</button>
@@ -283,7 +272,7 @@ body.full .series{display:none}
     <div>Сировини <span id="lTotal"></span></div><div>Знайдено <span id="lFound"></span></div><div>З артикулом <span id="lArt"></span></div><div>Без артикулу <span id="lNoArt"></span></div><div>Стікер 60×30</div>
   </section>
 </div>
-<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><button id="lang" type="button" aria-label="Мова / Language">English</button></div>
+<div class="bottom"><span>©2026 Delicia</span><span>Склад сировини</span><span>Стікери</span><span>Українська</span></div>
 <dialog id="dlg">
   <form method="dialog" class="dlg-hd"><b>⚙ Налаштування</b><button class="x" aria-label="Закрити">✕</button></form>
   <div id="dLock">
@@ -1054,17 +1043,10 @@ $('q').addEventListener('input', () => {
   hits = q ? codes.filter(c => c.toLowerCase().includes(q) || ITEMS[c].article.includes(q)) : codes;
   shown = PAGE;
   $('ptitle').textContent = q ? 'Знайдено' : 'Уся сировина';
-  for (const b of $('tabs').children) b.classList.toggle('on', b.textContent === q);
   render();
   dropdown(q);
 });
-// quick filters (tap again to clear) and «/» to jump into the search, as in liquids-map
-for (const w of ['ароматизатор', 'барвник', 'борошно', 'молоко', 'шоколад', 'ваніль', 'олія', 'жир']) {
-  const b = document.createElement('button');
-  b.type = 'button'; b.textContent = w;
-  b.onclick = () => { $('q').value = $('q').value.trim().toLowerCase() === w ? '' : w; $('q').dispatchEvent(new Event('input')); $('dd').hidden = true; };
-  $('tabs').append(b);
-}
+// «/» jumps into the search, as in liquids-map
 document.addEventListener('keydown', e => { if (e.key === '/' && !e.target.closest('input,textarea,dialog')) { e.preventDefault(); $('q').focus(); } });
 
 // suggestions right under the search field
@@ -1383,22 +1365,30 @@ $('dForget').onclick = async () => {
 // series on a line: product from config/lines.json (embedded by build-labels.ps1), each row on/off with its own count
 const SERIES = {"Деліція":[{"name":"Сік концентрований Вишня","art":"8544437568","n":1},{"name":"Барвник АНТОЦІАН","art":"6090479","n":1},{"name":"Ароматизатор Вишня","art":"8544444043","n":1},{"name":"Лимонна кислота","art":"8544448568","n":1},{"name":"Сік концентрований Апельсин","art":"8544434003","n":1},{"name":"Ароматизатор апельсин","art":"6099064","n":1},{"name":"Барвник АНАТО порошок","art":"6088289","n":1},{"name":"Борошно в/г","art":"6096223","n":23},{"name":"Меланж яєчний","art":"6096204","n":34},{"name":"Крохмаль кукурудзяний","art":"6096208","n":4},{"name":"Олія соняшникова високоолеїнова","art":"8544435501","n":7},{"name":"Крохмаль картопляний","art":"6096207","n":3},{"name":"Глюкоза","art":"6096218","n":2},{"name":"Молоко сухе знежирене","art":"6096192","n":2},{"name":"Емульгатор (Паста для збивання бісквіту (Грааль)","art":"8544444571","n":2},{"name":"Сіль вуглеамонійна","art":"8544448566","n":1},{"name":"Гліцерин","art":"6096217","n":1},{"name":"Сорбіт харчовий (сорбітол)","art":"6096199","n":1},{"name":"Ароматизатор ваніль 913790 (бісквіт)","art":"8544443392","n":1},{"name":"Сода харчова","art":"8544448569","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Кальцію пропіонат","art":"7000019708","n":1},{"name":"Барвник В-каротин (провітамін А в олії)","art":"6096225","n":1},{"name":"Калій сорбат харчовий","art":"6096171","n":1},{"name":"Емульгатор Е 475 (PG E 55 SG )","art":"6107401","n":1}],"Маргаритка":[{"name":"Сік концентрований Чорна смородина","art":"8544437570","n":1},{"name":"Барвник АНТОЦІАН","art":"6090479","n":1},{"name":"Ароматизатор смородина","art":"6093603","n":1},{"name":"Лимонна кислота","art":"8544448568","n":1},{"name":"Сік концентрований Малина","art":"8544437567","n":1},{"name":"Ароматизатор малина","art":"6094017","n":1},{"name":"Борошно 1 гатунок","art":"6096222","n":39},{"name":"Цукор","art":"6096200","n":10},{"name":"Жир рослинний РВД олія пальмова","art":"6099930","n":1},{"name":"Сода харчова","art":"8544448569","n":1},{"name":"Ароматизатор ванільно-вершковий 913790 А","art":"8544443393","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Молоко сухе знежирене","art":"6096192","n":1},{"name":"Барвник В-каротин (провітамін А в олії)","art":"6096225","n":1}],"Ялинкові прикраси":[{"name":"Борошно 1 гатунок","art":"6096222","n":1},{"name":"Жир рослинний РВД олія пальмова","art":"6099930","n":1},{"name":"Глюкозно-фруктозний сироп ГФС-42","art":"6089505","n":1},{"name":"Суміш прянощів для пряника (BOWIKA PREMIUM)","art":"8544436040","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Сода харчова","art":"8544448569","n":1},{"name":"Ароматизатор апельсин","art":"6099064","n":1},{"name":"Імбир","art":"6096213","n":1},{"name":"Коріандр","art":"8544448118","n":1}],"Європейські":[{"name":"Глюкозно-фруктозний сироп ГФС-42","art":"6089505","n":1},{"name":"Меланж яєчний","art":"6096204","n":1},{"name":"Емульгатор Е 475 (PG E 55 SG )","art":"6107401","n":1},{"name":"Борошно 1 гатунок","art":"6096222","n":1},{"name":"Олія соняшникова високоолеїнова","art":"8544435501","n":1},{"name":"Суміш прянощів для пряника (BOWIKA PREMIUM)","art":"8544436040","n":1},{"name":"Гліцерин","art":"6096217","n":1},{"name":"Сіль вуглеамонійна","art":"8544448566","n":1},{"name":"Сода харчова","art":"8544448569","n":1},{"name":"Кальцію пропіонат","art":"7000019708","n":1},{"name":"Натрію пірофосфат Е450","art":"6096189","n":1},{"name":"Калій сорбат харчовий","art":"6096171","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Молочна кислота","art":"6096191","n":1},{"name":"Акрілавей 3500BG","art":"8544435742","n":1}],"Ля-Мурчики":[{"name":"Повидло яблучне (не термостабільне)","art":"8544446516","n":1},{"name":"Жир для глазурі","art":"6096211","n":1},{"name":"Барвник КАРМІН OSL 12 екстракт","art":"8544434613","n":1},{"name":"Барвник Паприки екстракт 3550","art":"8544444359","n":1},{"name":"Емульгатор PGPR (E476)","art":"6096215","n":1},{"name":"Лимонна кислота","art":"8544448568","n":1},{"name":"Ароматизатор абрикос 911008","art":"7000019271","n":1},{"name":"Ароматизатор полуниця вершки 910357","art":"7000002643","n":1},{"name":"Барвник АНТОЦІАН","art":"6090479","n":1},{"name":"Борошно житнє","art":"6096224","n":1},{"name":"Жир рослинний РВД олія пальмова","art":"6099930","n":1},{"name":"Олія соняшникова високоолеїнова","art":"8544435501","n":6},{"name":"Сіль вуглеамонійна","art":"8544448566","n":1},{"name":"Суміш прянощів для пряника (BOWIKA PREMIUM)","art":"8544436040","n":2},{"name":"Гліцерин","art":"6096217","n":1},{"name":"Сода харчова","art":"8544448569","n":1},{"name":"Натрію пірофосфат Е450","art":"6096189","n":1},{"name":"Лецитин соєвий","art":"6096206","n":1},{"name":"Кальцію пропіонат","art":"7000019708","n":1},{"name":"Молочна кислота","art":"6096191","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Калій сорбат харчовий","art":"6096171","n":1},{"name":"Хлібопекарський поліпшувач","art":"6088753","n":1},{"name":"Акрілавей 3500BG","art":"8544435742","n":1},{"name":"Ароматизатор Ваніль-Молоко (947310)","art":"6105321","n":1},{"name":"Сік концентрований Полуниця","art":"8544437569","n":1}],"Райські яблучка":[{"name":"Цукор на посипку (1.5-2.0 mm)","art":"7000021681","n":1},{"name":"Барвник АНТОЦІАН","art":"6090479","n":1},{"name":"Ароматизатор Вишня","art":"8544444043","n":1},{"name":"Сік концентрований Вишня","art":"8544437568","n":1},{"name":"Лимонна кислота","art":"8544448568","n":1},{"name":"Ароматизатор полуниця 587116 (печиво)","art":"6102595","n":1},{"name":"Сік концентрований Полуниця","art":"8544437569","n":1},{"name":"Ароматизатор шоколад 913612","art":"6099076","n":1},{"name":"Кунжут","art":"8544447890","n":1},{"name":"Борошно 1 гатунок","art":"6096222","n":1},{"name":"Цукор","art":"6096200","n":1},{"name":"Жир рослинний РВД олія пальмова","art":"6099930","n":1},{"name":"Лецитин соєвий","art":"6096206","n":1},{"name":"Сода харчова","art":"8544448569","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Натрію пірофосфат Е450","art":"6096189","n":1},{"name":"Барвник В-каротин (провітамін А в олії)","art":"6096225","n":1},{"name":"Молоко сухе знежирене","art":"6096192","n":1},{"name":"Ароматизатор ванільно-вершковий 913790 А","art":"8544443393","n":1},{"name":"Крохмаль кукурудзяний","art":"6096208","n":1}],"Трубочки":[{"name":"Борошно в/г","art":"6096223","n":1},{"name":"Цукор","art":"6096200","n":1},{"name":"Барвник карамельний колір Е150С (ТИП-ІІІ)","art":"6096699","n":1},{"name":"Олія соняшникова високоолеїнова","art":"8544435501","n":1},{"name":"Лецитин соєвий","art":"6096206","n":1},{"name":"Яєчний порошок","art":"6096202","n":1},{"name":"Сіль кухонна","art":"6096198","n":1},{"name":"Сироватка молочна суха","art":"6096197","n":1},{"name":"Жир Замінник Молочного Жиру Z102 \"TM Sania\"","art":"8544447116","n":1},{"name":"Жир \"КАПРОМІЛК\"","art":"8544435489","n":1},{"name":"Жир рослинний РВД олія пальмова","art":"6099930","n":1},{"name":"Молоко сухе знежирене","art":"6096192","n":1},{"name":"Кокосова стружка (Fine знежирена)","art":"8544444044","n":1},{"name":"Ароматизатор кокос тип Рафаелло","art":"8544443395","n":1},{"name":"Ароматизатор пряжене молоко 095,4","art":"6100068","n":1},{"name":"Антиоксидант Grindox 552","art":"7000017497","n":1},{"name":"Антиоксидант Guardian Toco50","art":"8544438149","n":1},{"name":"Етилованілін","art":"6096214","n":1}]}, LINES = {"Лінія №6":["Деліція","Маргаритка"],"Лінія №8":"Ялинкові прикраси","Лінія №5":"Європейські","Лінія №4":["Ля-Мурчики","Райські яблучка"],"Трубочки":"Трубочки"};  // product → rows; line → [products]
 let sProd = '';
-// line pills first, then the product tabs inside the line's panel (picked at once when the line has only one)
+// chips: line first, then its product (picked at once when the line has only one)
 function chips(box, names, on, onPick) {
   box.innerHTML = '';
   for (const n of names) {
     const b = document.createElement('button');
     b.type = 'button'; b.textContent = n; b.className = n === on ? 'on' : '';
-    if (box.id === 'sLine') { b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', n === on); }
-    else { b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', n === on); }
     b.onclick = () => onPick(n);
     box.append(b);
   }
 }
+// line tabs above the search (in place of the old quick filters); tap again to close the series
+const lineTabs = Object.keys(LINES).sort().map(l => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = l;
+  b.onclick = () => pickLine(b.classList.contains('on') ? '' : l);
+  return b;
+});
+$('tabs').append(...lineTabs);
 function pickLine(l) {
-  chips($('sLine'), Object.keys(LINES).sort(), l, pickLine);
-  const ps = [].concat(LINES[l]);
-  $('sPanel').hidden = false;
+  for (const b of lineTabs) b.classList.toggle('on', b.textContent === l);
+  $('series').hidden = !l;
+  $('sTitle').textContent = 'Серія: ' + l;
+  if (l) $('series').scrollIntoView({behavior: 'smooth', block: 'start'});
+  const ps = [].concat(LINES[l] || []);
   $('sSel').hidden = ps.length < 2;
   pickProd(ps.length === 1 ? ps[0] : '', ps);
 }
@@ -1407,7 +1397,6 @@ function pickProd(p, ps) {
   if (ps.length > 1) chips($('sSel'), ps, p, x => pickProd(x, ps));
   showSeries();
 }
-chips($('sLine'), Object.keys(LINES).sort(), '', pickLine);
 const sPicked = () => [...$('sRows').children].map((li, i) => [i, li.querySelector('[type=checkbox]').checked ? parseInt(li.querySelector('[type=number]').value) || 0 : 0]).filter(([, n]) => n > 0);
 function syncSeries() {
   const total = sPicked().reduce((s, [, n]) => s + Math.min(50, n), 0), paired = !!myDevice();
@@ -1425,7 +1414,7 @@ function showSeries() {
     li.innerHTML = '<input type="checkbox" checked><span><b></b><code></code></span><input type="number" min="0" max="50" inputmode="numeric">';
     li.querySelector('b').textContent = r.name;
     li.querySelector('code').textContent = r.art ? 'Арт. ' + r.art : 'без артикулу';
-    li.querySelector('[type=number]').value = 1;  // rule: one label per material by default; change the count or untick by hand
+    li.querySelector('[type=number]').value = r.n;
     li.querySelector('[type=checkbox]').onchange = e => { li.classList.toggle('off', !e.target.checked); syncSeries(); };
     li.querySelector('[type=number]').oninput = syncSeries;
     $('sRows').append(li);
@@ -1475,30 +1464,6 @@ themeBtn.onclick = () => {
   showTheme();
 };
 showTheme();
-</script>
-<script>
-// language: UA / EN, remembered in this browser for all pages (like the theme). EN swaps text nodes and labels by the dictionary;
-// raw-material names stay Ukrainian (1C names — the search works on them). Text drawn later by the page is translated as it appears.
-(()=>{
-const EN={"Рідини": "Liquids", "Склад №1": "Warehouse 1", "Склад №2": "Warehouse 2", "Довідка": "Reference", "Стікери": "Labels", "Бочки": "Barrels", "✕ Очистити": "✕ Clear", "✕ Вийти": "✕ Exit", "✕ Згорнути": "✕ Collapse", "⤢ Весь склад": "⤢ Whole warehouse", "⤢ Весь стелаж": "⤢ Whole rack", "Уся сировина": "All raw materials", "Збіги": "Matches", "Згорнути список": "Collapse list", "Нічого не знайдено. Спробуй коротший запит.": "Nothing found. Try a shorter query.", "Місць": "Places", "Позицій": "Items", "Вибрано": "Selected", "Неточних": "Uncertain", "Склад сировини": "Raw materials warehouse", "Українська": "English", "Джерело: рукописна схема складу · «?» = прочитано неточно": "Source: handwritten warehouse sketch · “?” = read uncertainly", "Світла або темна тема": "Light or dark theme", "Світла тема": "Light theme", "Темна тема": "Dark theme", "Меню": "Menu", "Вийти з повного екрана": "Exit full screen", "Віддалити": "Zoom out", "Наблизити": "Zoom in", "мапа рідин ↗": "liquids map ↗", "Рідини · аромати": "Liquids · flavourings", "Рідини · аромати ·": "Liquids · flavourings ·", "ПРОХІД": "AISLE", "Стікери на сировину": "Raw material labels", "Введи назву або артикул і обери товар. Стікер 60×30 мм: назва товару, дата й час друку, артикул.": "Type a name or article and pick an item. Label 60×30 mm: item name, print date and time, article.", "⤢ На весь екран": "⤢ Full screen", "Так виглядатиме стікер 60×30 мм. Оберіть товар у списку нижче.": "This is how the 60×30 mm label will look. Pick an item in the list below.", "Копій": "Copies", "Друкувати": "Print", "Серія на лінію": "Series for a line", "Друкувати серію": "Print series", "Знайдено": "Found", "Сировини": "Raw materials", "З артикулом": "With article", "Без артикулу": "No article", "Стікер 60×30": "Label 60×30", "Нічого не знайдено": "Nothing found", "без артикулу": "no article", "або надрукувати на цьому пристрої": "or print on this device", "Надрукує планшет-принтер": "The printer tablet will print it", "Надсилаю на планшет…": "Sending to the tablet…", "Надсилаю серію на планшет…": "Sending the series to the tablet…", "✕ Не вдалося надіслати. Перевірте інтернет.": "✕ Could not send. Check the internet connection.", "Телефон не підключено до планшета. Попросіть адміністратора показати QR-код.": "This phone is not paired with the tablet. Ask the administrator to show the QR code.", "Телефон треба підключити заново: попросіть новий QR-код.": "The phone needs to be paired again: ask for a new QR code.", "✕ Посилання підключення пошкоджене. Попросіть новий QR-код.": "✕ The pairing link is broken. Ask for a new QR code.", "● Принтер на зв'язку, чекаю завдань з телефонів": "● Printer online, waiting for jobs from phones", "○ Немає зв'язку, перепідключаюсь…": "○ Offline, reconnecting…", "⚠ Відхилено завдання з невідомого або відключеного телефона": "⚠ Rejected a job from an unknown or unpaired phone", "🖨 Вимкнути режим принтера": "🖨 Turn off printer mode", "🖨 Зробити цей пристрій принтером": "🖨 Make this device the printer", "Поки жодного": "None yet", "✕ Відключити": "✕ Unpair", "Введіть ключ складу, щоб відкрити налаштування.": "Enter the warehouse key to open settings.", "Новий пристрій. Введіть ключ складу.": "New device. Enter the warehouse key.", "✕ Невірний ключ.": "✕ Wrong key.", "✓ Ключ складу змінено. Телефони працюють далі.": "✓ Warehouse key changed. Phones keep working.", "Пристрій відключено.": "Device unpaired.", "⚙ Налаштування": "⚙ Settings", "Закрити": "Close", "Ключ складу": "Warehouse key", "Відкрити": "Open", "Забули ключ? Скинути цей пристрій": "Forgot the key? Reset this device", "Друк з телефонів": "Printing from phones", "Підключити телефон працівника": "Pair a worker’s phone", "Ім'я працівника": "Worker’s name", "QR-код": "QR code", "Працівник наводить камеру телефона на код і відкриває посилання. Телефон отримає власний ключ та ім'я, вводити нічого не треба. Код не пересилайте: він лише для цього працівника.": "The worker points the phone camera at the code and opens the link. The phone gets its own key and name, nothing to type. Don’t forward the code: it is for this worker only.", "Підключені телефони": "Paired phones", "Новий ключ, від 12 символів": "New key, 12+ characters", "Змінити": "Change", "Ключ складу відкриває ці налаштування. Телефони від нього не залежать.": "The warehouse key opens these settings. Phones don’t depend on it.", "Цей пристрій": "This device", "Відключити цей пристрій": "Unpair this device", "Оберіть товар": "Pick an item", "ваніль, 6096200, борошно…": "ваніль, 6096200, борошно…"},RX=[["^✓ Надіслано на планшет: серія (.*)$", "✓ Sent to the tablet: series $1"], ["^✓ Надіслано на планшет: (.*)$", "✓ Sent to the tablet: $1"], ["^● Надруковано: серія (.*)$", "● Printed: series $1"], ["^● Надруковано: (.*)$", "● Printed: $1"], ["^✓ Телефон підключено: (.*)\\. Стікери друкуватиме планшет-принтер\\.$", "✓ Phone paired: $1. The printer tablet will print labels."], ["^Журнал друку \\[(\\d+)\\]$", "Print log [$1]"], ["^Хто заходив \\[(\\d+)\\]$", "Who visited [$1]"], ["^Цей пристрій: принтер, друкує завдання з телефонів$", "This device: printer, prints jobs from phones"], ["^Цей пристрій: телефон «(.*)»$", "This device: phone “$1”"], ["^Цей пристрій: адміністратор, не принтер$", "This device: administrator, not a printer"], ["^Друкувати серію: (.*?) шт\\.$", "Print series: $1 pcs"], ["^(\\d+) поз\\.$", "$1 items"], ["^(\\d+) поз\\. · клікни, щоб вибрати$", "$1 items · click to select"], ["^(\\d+) шт$", "$1 pcs"], ["^Подивитися всі \\((\\d+)\\)$", "Show all ($1)"], ["^Показати ще \\((\\d+)\\)$", "Show more ($1)"], ["^Вибрано (\\d+)$", "Selected $1"], ["^Місце (.+)$", "Place $1"], ["^✓ Застосувати \\[(\\d+)\\]$", "✓ Apply [$1]"], ["^↺ Повернути переміщення \\[(\\d+)\\]$", "↺ Undo moves [$1]"], ["^⇄ Поміняти: (.*)$", "⇄ Swap: $1"], ["^Секція ([ABC]) · полиця (\\d)$", "Section $1 · shelf $2"], ["^СЕКЦІЯ ([ABC])$", "SECTION $1"], ["^(\\d+) з (\\d+)$", "$1 of $2"]].map(([r,v])=>[new RegExp(r),v]),SKIP="script,style,#tabs,#sLine,#sSel,#sample,#paper,#sRows,#list li span:first-child",ATTR=["placeholder","aria-label","title"];
-const btn=document.getElementById("lang"),seen=new Map();let en=false;
-const tr=s=>{const k=s.trim();if(!k)return null;let t=EN[k];if(t===undefined)for(const [r,v] of RX)if(r.test(k)){t=k.replace(r,v);break}return t===undefined||t===k?null:s.replace(k,t)};
-function text(n){if(n.parentNode&&n.parentNode.closest&&n.parentNode.closest(SKIP))return;const t=tr(n.nodeValue);if(t!==null){seen.set(n,[n.nodeValue,t]);n.nodeValue=t}}
-function el(e){if(e.closest(SKIP))return;ATTR.forEach(a=>{const v=e.getAttribute(a);if(!v)return;const t=tr(v);if(t!==null){e.dataset["uk"+a.replace("-","")]=v;e.setAttribute(a,t)}})}
-function run(root){if(root.nodeType===3){text(root);return}if(root.nodeType!==1)return;
-  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))text(n);
-  [root,...root.querySelectorAll("*")].forEach(el)}
-const mo=new MutationObserver(ms=>{if(!en)return;ms.forEach(m=>{if(m.type==="characterData")text(m.target);else if(m.type==="attributes")el(m.target);else m.addedNodes.forEach(run)})});
-function setLang(l){en=l==="en";document.documentElement.lang=en?"en":"uk";
-  if(en){run(document.body);mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR})}
-  else{mo.disconnect();seen.forEach(([uk,t],n)=>{if(n.nodeValue===t)n.nodeValue=uk});seen.clear();
-    document.querySelectorAll("*").forEach(e=>ATTR.forEach(a=>{const k="uk"+a.replace("-",""),v=e.dataset[k];if(v!==undefined){e.setAttribute(a,v);delete e.dataset[k]}}))}
-  document.title=en?"Labels":"Стікери";btn.textContent=en?"Українська":"English";
-  try{localStorage.setItem("lang",l)}catch(e){}}
-btn.onclick=()=>setLang(en?"uk":"en");
-let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}
-if(saved==="en")setLang("en");
-})();
 </script>
 </body>
 </html>
