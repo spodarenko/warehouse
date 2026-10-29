@@ -200,7 +200,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
 @media (min-width:641px){#clear+.theme{margin-left:-16px}}  /* desktop: ☀ sits close to «Очистити» (8px, not the nav's 24px) */
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
-.ref h3{font-size:15px;margin:36px 0 10px}.lang{font-size:12px;margin-left:-16px}@media (max-width:640px){.lang{margin-left:0}}.ref .scroll+.scroll{margin-top:16px}
+.ref h3{font-size:15px;margin:36px 0 10px}.lang{font-size:12px;margin-left:-16px}@media (max-width:640px){.lang{margin-left:0}}.ref .scroll+.scroll{margin-top:16px}#lineTabs{margin:0 0 16px;padding:0}
 .prompt .clr{flex:none;font-size:12px;padding:4px 10px}  /* «Очистити» lives in the search box */
 .prompt .clr:disabled{display:none}  /* shown only when there is something to clear, so it never squeezes the search field */
 </style>
@@ -266,6 +266,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 
   <section class="ref" id="lines">
     <div class="hd2"><h2>Лінії та продукти</h2><p class="m">Як 1С рахує «Требование» і як склад його округлює. 1С: матеріал = норма специфікації на 1 порцію × порції; власні напівфабрикати (стаття «Напівфабрикати власні») склад не видає. Кожне печиво записане окремо: в один день на лінії буває 1–3 види, програма складає їх в одну вимогу (або дві, де є желе/начинка), а спільну сировину рахує разом. Стан на 29.10.2026.</p></div>
+    <div class="tabs" id="lineTabs"></div>
     <div class="scroll"><table>
       <thead><tr><th>Лінія · продукт</th><th>Накладні</th><th>Як рахується</th><th>Не видаємо</th></tr></thead>
       <tbody>
@@ -843,5 +844,29 @@ let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}
 if(saved==="en")setLang("en");
 </script>
 <script src="../assets/search.js?v=5"></script>
-</body>
+<script>
+// «Лінії та продукти»: tabs by line, as on the Stickers page; a tab shows its rows of the table and its tables below
+(() => {
+  const sec = document.getElementById('lines'), bar = document.getElementById('lineTabs');
+  const key = s => { s = s.trim(); if (/^(13 · )?Трубочки/.test(s)) return 'Трубочки'; if (/^10 · /.test(s)) return 'Вафлі'; const m = s.match(/^(?:Лінія )?(\d+) · /); return m ? 'Лінія №' + m[1] : ''; };
+  const rows = [...sec.querySelectorAll('table')[0].tBodies[0].rows].map(r => [key(r.cells[0].textContent), r]);
+  const blocks = []; let cur = null;  // a block: h3 and the tables after it
+  for (const el of sec.children) {
+    if (el.tagName === 'H3') { cur = [key(el.textContent), [el]]; blocks.push(cur); }
+    else if (cur && el.classList.contains('scroll')) cur[1].push(el);
+  }
+  const lines = [...new Set([...rows, ...blocks].map(x => x[0]).filter(Boolean))]
+    .sort((a, b) => (parseInt(a.replace(/\D/g, '')) || 99) - (parseInt(b.replace(/\D/g, '')) || 99) || a.localeCompare(b));
+  const pick = l => {
+    for (const b of bar.children) b.classList.toggle('on', b.dataset.l === l);
+    for (const [k, r] of rows) r.hidden = !!l && k !== l;
+    for (const [k, els] of blocks) for (const e of els) e.hidden = !!l && k !== l;
+  };
+  for (const l of ['', ...lines]) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = l || 'Усі'; b.dataset.l = l;
+    b.onclick = () => pick(l); bar.append(b);
+  }
+  pick('');
+})();
+</script></body>
 </html>
