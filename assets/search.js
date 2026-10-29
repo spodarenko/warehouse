@@ -100,7 +100,9 @@
   // «Пошук» first in the site menu
   const nav = document.querySelector('.mnav nav') || document.querySelector('nav.mnav') || document.querySelector('nav');
   if (nav) {
-    const a = document.createElement('a'); a.href = '#'; a.textContent = 'Пошук'; a.title = 'Пошук по всіх складах (Ctrl+K)';
+    const a = document.createElement('a'); a.href = '#'; a.title = 'Пошук по всіх складах (Ctrl+K)';
+    // Phosphor «magnifying-glass» (regular), as all icons on the site
+    a.innerHTML = '<svg viewBox="0 0 256 256" width="1.1em" height="1.1em" fill="currentColor" aria-hidden="true" style="vertical-align:-.2em;margin-right:6px"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></svg>Пошук';
     a.onclick = e => { e.preventDefault(); document.body.classList.remove('menu'); open(); };
     nav.prepend(a);
   }
