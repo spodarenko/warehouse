@@ -35,49 +35,50 @@
 
   const css = document.createElement('style');
   css.textContent = `
-.gs{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);display:flex;justify-content:center;align-items:flex-start;padding:8vh 16px 16px}
+/* same pattern as the search on the warehouse pages (box, «>» prompt, list rows), docked at the bottom of the screen */
+.gs{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.45);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
 .gs[hidden]{display:none}
-.gs .gsb{width:min(720px,100%);max-height:84vh;display:flex;flex-direction:column;background:var(--bg,#131010);color:var(--fg,#f1ecec);border:1px solid var(--line,#2f2b2b);border-radius:8px;overflow:hidden;font-family:inherit}
-.gs label{display:flex;align-items:center;gap:8px;padding:0 16px;height:56px;border-bottom:1px solid var(--line,#2f2b2b)}
-.gs input::-webkit-search-cancel-button{display:none}
-.gs input{flex:1;font:inherit;font-size:18px;background:none;border:0;outline:0;color:inherit;min-width:0}
-.gs button{font:inherit;font-size:13px;background:none;color:inherit;border:1px solid var(--line,#2f2b2b);border-radius:4px;padding:6px 10px;cursor:pointer}
-.gs ul{list-style:none;margin:0;padding:0;overflow:auto}
-.gs li{padding:12px 16px;border-bottom:1px solid var(--line,#2f2b2b)}
-.gs li b{display:block;font-size:16px}
-.gs li a{display:flex;justify-content:space-between;gap:12px;color:inherit;text-decoration:none;padding:8px 0 0;font-size:14px}
-.gs li a:hover span:first-child,.gs li a.cur span:first-child{text-decoration:underline}
-.gs li small{color:var(--muted,#8f8a8a);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gs .m{padding:16px;color:var(--muted,#8f8a8a);font-size:14px}`;
+.gs .gsb{width:min(960px,100%);max-height:80vh;display:flex;flex-direction:column;color:var(--fg,#f1ecec);font-family:inherit}
+.gs ul{list-style:none;margin:0 0 8px;padding:8px;overflow:auto;background:var(--bg,#131010);border:1px solid var(--line,#2f2b2b);border-radius:6px}
+.gs ul:empty{display:none}
+.gs li{display:grid;grid-template-columns:220px minmax(0,1fr);column-gap:12px;padding:9px 6px;border-radius:3px;cursor:pointer}
+.gs li:hover{background:var(--panel,#1b1818)}
+.gs li .p{color:var(--muted,#8f8a8a)}
+.gs li code{grid-column:2;color:var(--faint,#4a4545);font:inherit;font-size:13px;overflow-wrap:anywhere}
+.gs li.cur{outline:1px solid var(--muted,#8f8a8a)}
+.gs li.m{display:block;color:var(--muted,#8f8a8a);cursor:default}
+.gs .box{border:1px solid var(--line,#2f2b2b);border-radius:6px;background:var(--panel,#1b1818)}
+.gs .prompt{display:flex;align-items:center;gap:12px;padding:16px 22px;color:var(--muted,#8f8a8a)}
+.gs .prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg,#f1ecec);font:inherit;font-size:16px;outline:none;-webkit-appearance:none;appearance:none}
+.gs .prompt input::-webkit-search-cancel-button{display:none}
+.gs .prompt input::placeholder{color:var(--faint,#4a4545)}
+.gs .prompt button{font:inherit;font-size:13px;background:var(--fg,#f1ecec);color:var(--bg,#131010);border:1px solid var(--fg,#f1ecec);border-radius:4px;padding:6px 14px;cursor:pointer}
+.gs .prompt kbd{font:inherit;font-size:12px;border:1px solid var(--line,#2f2b2b);padding:0 6px;border-radius:3px}
+@media (max-width:640px){.gs{padding:0}.gs .gsb{max-height:100%}.gs ul,.gs .box{border-radius:0}.gs ul{margin:0;flex:1}.gs li{grid-template-columns:minmax(0,1fr)}.gs li code{grid-column:1}.gs .prompt kbd{display:none}}`;
   document.head.append(css);
 
   const box = document.createElement('div');
   box.className = 'gs'; box.hidden = true;
-  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по всіх складах"><label><input type="search" placeholder="Що шукаємо на всіх складах: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕</button></label><ul></ul></div>';
+  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по всіх складах"><ul></ul><div class="box"><label class="prompt">&gt;<input type="search" placeholder="усі склади: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕ Закрити</button><kbd>Esc</kbd></label></div></div>';
   document.body.append(box);
   const input = box.querySelector('input'), ul = box.querySelector('ul');
   let data = [], cur = 0;
 
+  // rows as in the list on the warehouse pages: place · name · tare/article; one row per place
   function show() {
     const t = norm(input.value);
     const hits = t ? data.filter(r => norm(r.name).includes(t) || norm(r.sub).includes(t)) : [];
-    const groups = new Map();  // one card per material, all its places inside
-    for (const r of hits) { const k = norm(r.name); if (!groups.has(k)) groups.set(k, { name: r.name, places: [] }); groups.get(k).places.push(r); }
     ul.innerHTML = '';
-    if (!t) { ul.innerHTML = '<li class="m">Пошук по Складу №1 (бочки, сипучка) і Складу №2 (склад, рідини). Enter — відкрити перше місце.</li>'; return; }
-    if (!groups.size) { ul.innerHTML = '<li class="m">Ніде не знайдено. Спробуй коротше слово або артикул.</li>'; return; }
-    let i = 0;
-    for (const g of groups.values()) {
-      const li = document.createElement('li'), b = document.createElement('b');
-      b.textContent = g.name; li.append(b);
-      for (const r of g.places) {
-        const a = document.createElement('a'); a.href = r.href; if (i++ === cur) a.className = 'cur';
-        const w = document.createElement('span'), s = document.createElement('small');
-        w.textContent = r.where; s.textContent = r.sub;
-        a.append(w, s); li.append(a);
-      }
+    if (!t) return;
+    if (!hits.length) { ul.innerHTML = '<li class="m">Ніде не знайдено. Спробуй коротше слово або артикул.</li>'; return; }
+    hits.forEach((r, i) => {
+      const li = document.createElement('li'); if (i === cur) li.className = 'cur';
+      li.innerHTML = '<span class="p"></span><span></span><code></code>';
+      li.children[0].textContent = r.where; li.children[1].textContent = r.name; li.children[2].textContent = r.sub;
+      li.onclick = () => { location.href = r.href; };
       ul.append(li);
-    }
+    });
+    const c = ul.querySelector('.cur'); if (c) c.scrollIntoView({ block: 'nearest' });
   }
   async function open() {
     await loaded; data = rows();
@@ -86,9 +87,9 @@
   const close = () => { box.hidden = true; };
   input.addEventListener('input', () => { cur = 0; show(); });
   input.addEventListener('keydown', e => {
-    const links = [...ul.querySelectorAll('a')];
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (links.length) { cur = (cur + (e.key === 'ArrowDown' ? 1 : links.length - 1)) % links.length; show(); } }
-    if (e.key === 'Enter' && links[cur]) location.href = links[cur].href;
+    const n = ul.querySelectorAll('li:not(.m)').length;
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && n) { e.preventDefault(); cur = (cur + (e.key === 'ArrowDown' ? 1 : n - 1)) % n; show(); }
+    if (e.key === 'Enter' && n) ul.children[cur].click();
   });
   box.querySelector('button').onclick = close;
   box.addEventListener('click', e => { if (e.target === box) close(); });
