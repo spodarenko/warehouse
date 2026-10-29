@@ -53,7 +53,7 @@
 
   const box = document.createElement('div');
   box.className = 'gs'; box.hidden = true;
-  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по всіх складах"><label>🔍<input type="search" placeholder="Що шукаємо на всіх складах: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕</button></label><ul></ul></div>';
+  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по всіх складах"><label><input type="search" placeholder="Що шукаємо на всіх складах: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕</button></label><ul></ul></div>';
   document.body.append(box);
   const input = box.querySelector('input'), ul = box.querySelector('ul');
   let data = [], cur = 0;
@@ -100,7 +100,7 @@
   // «🔍 Пошук» first in the site menu
   const nav = document.querySelector('.mnav nav') || document.querySelector('nav.mnav') || document.querySelector('nav');
   if (nav) {
-    const a = document.createElement('a'); a.href = '#'; a.textContent = '🔍 Пошук'; a.title = 'Пошук по всіх складах (Ctrl+K)';
+    const a = document.createElement('a'); a.href = '#'; a.textContent = 'Пошук'; a.title = 'Пошук по всіх складах (Ctrl+K)';
     a.onclick = e => { e.preventDefault(); document.body.classList.remove('menu'); open(); };
     nav.prepend(a);
   }
