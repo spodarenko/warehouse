@@ -213,7 +213,7 @@ body.dragging{cursor:grabbing;user-select:none}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <div class="hr mnav"><nav><a href="../liquids-map/">Рідини</a><a class="on" href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a></nav><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></div>
+    <div class="hr mnav"><nav><a class="on" href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a></nav><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></div>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -308,7 +308,7 @@ const toggle=r=>{pick.has(r)?pick.delete(r):pick.add(r)};
 
 function buildCells(){rack.innerHTML="";PL().forEach(p=>{const c=document.createElement("div");c.className="cell";c.id="c"+p;c.tabIndex=0;c.setAttribute("role","button");
   const g=GA[p];c.style.gridColumn=g[0]+" / span "+(g[2]||1);c.style.gridRow=(p>100?g[1]-4:g[1])+" / span "+(g[3]||1);if((g[2]||1)>1||(g[3]||1)>1)c.style.aspectRatio="auto";
-  c.innerHTML='<span class="hd"><b>'+lbl(p)+'</b><span class="cnt"></span><button class="del" type="button" aria-label="Видалити місце">✕</button></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../liquids-map/">мапа рідин ↗</a></span>':'')+'<span class="chips"></span>';
+  c.innerHTML='<span class="hd"><b>'+lbl(p)+'</b><span class="cnt"></span><button class="del" type="button" aria-label="Видалити місце">✕</button></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../sklad-2/#ridyny">рідини, склад №2 ↗</a></span>':'')+'<span class="chips"></span>';
   c.onclick=e=>{if(e.target.closest("a"))return;if(e.target.closest(".del")){delPlace(p);return}const chip=e.target.closest("i[data-i]");
     if(chip){toggle(D[+chip.dataset.i]);sel=0}else{sel=sel===p?0:p;pick.clear()}render()};
   rack.appendChild(c)});

@@ -51,6 +51,11 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .rack{display:grid;grid-template-columns:repeat(2,minmax(0,.8fr)) repeat(2,minmax(0,1fr)) minmax(0,1.2fr);grid-auto-rows:minmax(150px,auto);gap:10px;padding:16px;background:var(--panel2)}
 .aisle{grid-column:3/5;grid-row:2/5;border:1px dashed var(--line);border-radius:4px;display:grid;place-items:center;color:var(--faint);font-size:12px;letter-spacing:.08em}
 .cell .zl{font-size:11px;color:var(--muted)}.cell a{color:var(--fg)}
+/* zone «Рідини» (former liquids-map): 3 sections A–C × 4 shelves */
+body.zr .rack{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(200px,auto)}
+body.zr .aisle{display:none}
+.zsw button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.cell .warn{font-weight:400;color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:0 3px}
 .cell{color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:20px;cursor:pointer;display:grid;grid-template-rows:auto auto 1fr;gap:10px;transition:opacity .2s,background .2s}
 .cell:hover{background:var(--panel)}
 .cell .hd{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
@@ -182,7 +187,7 @@ body.full .vp{overflow:auto}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <div class="hr mnav"><nav><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a class="on" href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a></nav><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></div>
+    <div class="hr mnav"><nav><a href="../sklad-1/">Склад №1</a><a class="on" href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a></nav><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></div>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -199,6 +204,7 @@ body.full .vp{overflow:auto}
   <section class="work" id="map">
     <div class="cap">
       <span class="hint">План складу №2 · на місцях 01 і 04 лежить багато різного, однакові матеріали не плутати · тягни назву на інше місце, щоб перемістити</span>
+      <div class="acts zsw"><button class="ubtn on" id="zS" type="button">Склад</button><button class="ubtn" id="zR" type="button">Рідини</button></div>
       <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
       <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
     </div>
@@ -231,17 +237,46 @@ const D=[[1,"Молоко сухе","25 кг"],[2,"Жир пальм. Sania","20
 [16,"Ароматизатор Полуниця","10 кг · 5.87116.901"],[16,"Апельсин","10 кг · 5.87001.694"],[16,"Ароматизатор Масло","10 кг · 5.86903.901"],[16,"Манго","25 кг · 5.82T04.364 ?"],
 [17,"Кунжут","25 кг"],[18,"Льон","25 кг"]];
 D.forEach(r=>{r[4]="";r[5]=""});
+// zone «Рідини» (moved here from liquids-map, list of 16.10.2026): shelf p is place 100+p; [shelf, name, code]
+const L=[[1,"Молоко пряжене","095,4"],[1,"Смородина чорна","116,7"],[1,"Рідкий мед","090,13"],[1,"Ром","582650,42"],[1,"Ром натуральний","913.505"],
+[2,"Ваніль-вершки","913790A"],[2,"Шоколад молочний","735,1 ?"],[2,"Кокос Рафаелло","931101"],[2,"Ваніль","913790"],
+[3,"Дульче де лече","914328"],[3,"Смак мілкшейку","934325"],[3,"Toco 50","1208172"],[3,"Шоколад гіркий","734,6"],[3,"Масло","586963,907"],
+[4,"Grindox","1205195"],[4,"PGRP 90","033624"],[4,"Anthocian / Антоціан","193852"],[4,"Ваніль-молоко","947310"],[4,"Топлене молоко","675995 ?"],[4,"Манго","582104,36 ?"],[4,"Лимон","652046"],[4,"Сахомол ?","20306…"],
+[5,"Лайм","511474,901"],[6,"Пломбір","914323"],[6,"Шоколад","913612"],[7,"Vanilya / Ваніль","587235,012"],
+[8,"Молочна кислота","L2604281296"],[8,"Вишня","203406"],[8,"B-Carotin / Каротин","09260381"],
+[9,"Cola Base / Кола","200257,792"],[9,"Груша","911623"],[9,"Виноград","914213"],[9,"Карамельне печиво","911250 ?"],[9,"Білий персик","911764"],[9,"Кола","912401 ?"],
+[10,"Полуниця-вершки","910357"],[10,"Полуниця","587116,907"],[10,"Жувальна гумка","944101"],[10,"Абрикос","911008"],[10,"Горіх волоський","293,2"],
+[11,"Паприка","C00F3550"],[11,"Екстракт аннато","NC012692A"],[11,"Curcumin / Куркумін","59223"],[11,"Кармін","NC019285A"],[11,"Яблуко натуральне","910918"],[11,"Хлорофіл","05260210"],
+[12,"Fruit Mex Pink 1100 OS","716620"],[12,"Апельсин","587001,694"],[12,"Малина","872274"],[12,"Карамельний колер","3716ZH200423"],[12,"Спіруліна","TRCF012837A"],
+[4,"Ароматизатор карамель","артикул ?"]];
+// verified against 1С nomenclature: [article, 1С name without "Ароматизатор"/"Барвник", mismatch note]
+const NOM={"Молоко пряжене":["6100068","Пряжене молоко 095,4"],"Ваніль-вершки":["8544443393","Ванільно-вершковий 913790 А"],
+"Ваніль":["8544443392","Ваніль 913790 (бісквіт)"],"Ваніль-молоко":["6105321","Ваніль-Молоко (947310)"],"Шоколад":["6099076","Шоколад 913612"],
+"Полуниця-вершки":["7000002643","Полуниця вершки 910357"],"Полуниця":["6102595","Полуниця 587116 (печиво)"],
+"Жувальна гумка":["8544434577","Жувальна гумка (944101)"],"Абрикос":["7000019271","Абрикос 911008"],
+"Паприка":["8544444359","Паприки екстракт 3550"],"Спіруліна":["7000021304","Спіруліна CFO 12837A"],
+"Vanilya / Ваніль":["8544448277","Ванільний 5.87235.901","У 1С — 5.87235.901, на тарі — 587235,012 (замінили)"]};
+const LOFF=D.length;
+L.forEach(r=>{const n=NOM[r[1]];D.push([100+r[0],n?n[1]:r[1],r[2],0,n?n[0]:"",n&&n[2]||""])});
 // floor plan from the sketch: [column, row, column span]; left wall 11–18, right wall 10…1, centre 9, 8, 4
 const N=18,GA={1:[5,7],2:[5,6],3:[5,5],4:[4,5],5:[5,4],6:[5,3],7:[5,2],8:[4,1],9:[3,1],10:[5,1],
 11:[1,1,2],12:[1,2,2],13:[1,3,2],14:[1,4,2],15:[1,5,2],16:[1,7,2],17:[1,6],18:[2,6]};
 const ZONE={16:"Рідини · аромати"};
+// liquids: section A–C = column, shelf 1–4 = row from top
+for(let p=1;p<=12;p++)GA[100+p]=[Math.ceil(p/4),(p-1)%4+1];
 const $=id=>document.getElementById(id),norm=s=>s.toLowerCase().replace(/[\s.,?]/g,""),pad=n=>String(n).padStart(2,"0");
-const loc=p=>"№"+pad(p);
+const loc=p=>p>100?"ABC"[Math.ceil((p-100)/4)-1]+"-"+((p-101)%4+1):"№"+pad(p);
+let zn=location.hash==="#ridyny"?"r":"s";
+const PL=()=>zn==="r"?[...Array(12)].map((_,i)=>101+i):[...Array(N)].map((_,i)=>1+i);
+const zoneOf=p=>p>100?"r":"s";
 D.forEach((r,i)=>r[3]=i); // r[3] = order inside a place
 const byPlace=p=>D.filter(r=>r[0]===p).sort((a,b)=>a[3]-b[3]);
 // moves and swaps: kept in this browser only
 const O=D.map(r=>r[0]),MK="warehouse2-moves";
 try{const m=JSON.parse(localStorage.getItem(MK)||"{}");for(const i in m)if(D[i]){const v=[].concat(m[i]);D[i][0]=v[0];if(v.length>1)D[i][3]=v[1]}}catch(e){}
+// moves made on the old liquids-map page: same rows, shifted into this list once
+try{const m=JSON.parse(localStorage.getItem("liquid-moves")||"null");if(m){for(const i in m){const r=D[LOFF+ +i];if(r){const v=[].concat(m[i]);r[0]=100+v[0];if(v.length>1)r[3]=LOFF+v[1]}}
+  localStorage.removeItem("liquid-moves");const s={};D.forEach((r,i)=>{if(r[0]!==O[i]||r[3]!==i)s[i]=[r[0],r[3]]});localStorage.setItem(MK,JSON.stringify(s))}}catch(e){}
 const changed=(r,i)=>r[0]!==O[i]||r[3]!==i;
 function saveMoves(){try{const m={};D.forEach((r,i)=>{if(changed(r,i))m[i]=[r[0],r[3]]});localStorage.setItem(MK,JSON.stringify(m))}catch(e){}}
 let S=D.map(r=>[r[0],r[3]]);
@@ -249,8 +284,8 @@ const dirtyN=()=>D.filter((r,i)=>r[0]!==S[i][0]||r[3]!==S[i][1]).length;
 const applyMoves=()=>{saveMoves();S=D.map(r=>[r[0],r[3]]);pick.clear();sel=0;cur=-1;render()};
 const commit=()=>{if(matchMedia("(max-width:600px)").matches)applyMoves()};
 const swapRows=(a,b)=>{[a[0],b[0]]=[b[0],a[0]];[a[3],b[3]]=[b[3],a[3]];commit()};
-const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t);
-const sub=r=>r[2];
+const match=(r,t)=>!t||norm(r[1]).includes(t)||norm(r[2]).includes(t)||r[4].includes(t);
+const sub=r=>(r[4]?"арт. "+r[4]+" · ":"")+r[2];
 const q=$("q"),rack=$("rack"),list=$("list"),vp=$("vp"),stage=$("stage");
 let sel=0,pick=new Set(),cur=-1,showAll=false;const LIMIT=8;
 const toggle=r=>{pick.has(r)?pick.delete(r):pick.add(r)};
@@ -261,23 +296,32 @@ $("lQ").textContent="["+D.filter(r=>r[1].includes("?")||r[2].includes("?")).leng
 ["борошно","жир","арахіс","ароматизатор","ваніль","25 кг","мішок"].forEach(w=>{const b=document.createElement("button");b.textContent=w;
   b.onclick=()=>{q.value=q.value===w?"":w;sel=0;cur=-1;render(true);focusLit()};$("tabs").appendChild(b)});
 
-for(let p=1;p<=N;p++){const c=document.createElement("div");c.className="cell";c.id="c"+p;c.tabIndex=0;c.setAttribute("role","button");
+for(const p of Object.keys(GA).map(Number)){const c=document.createElement("div");c.className="cell";c.id="c"+p;c.tabIndex=0;c.setAttribute("role","button");
   const g=GA[p];c.style.gridColumn=g[0]+" / span "+(g[2]||1);c.style.gridRow=g[1];
-  c.innerHTML='<span class="hd"><b>'+pad(p)+'</b><span class="cnt"></span></span>'+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="../liquids-map/">мапа рідин ↗</a></span>':'')+'<span class="chips"></span>';
-  c.onclick=e=>{if(e.target.closest("a"))return;const chip=e.target.closest("i[data-i]");
+  c.innerHTML='<span class="hd"><b>'+(p>100?pad(p-100):pad(p))+'</b><span class="cnt"></span></span>'+(p>100?'<span class="loc">Секція '+loc(p)[0]+' · полиця '+loc(p)[2]+'</span>':'')+(ZONE[p]?'<span class="zl">'+ZONE[p]+' · <a href="#ridyny">рідини ↗</a></span>':'')+'<span class="chips"></span>';
+  c.onclick=e=>{if(e.target.closest("a")){e.preventDefault();setZone("r");return}const chip=e.target.closest("i[data-i]");
     if(chip){toggle(D[+chip.dataset.i]);sel=0}else{sel=sel===p?0:p;pick.clear()}render()};
   rack.appendChild(c)}
+// zone switch, as «Бочки / Сипучка» on Склад №1; #ridyny opens the liquids
+function setZone(v){zn=v;document.body.classList.toggle("zr",v==="r");history.replaceState(null,"",v==="r"?"#ridyny":location.pathname);
+  $("zS").classList.toggle("on",v==="s");$("zR").classList.toggle("on",v==="r");sel=0;render();fitAll()}
+$("zS").onclick=()=>setZone("s");$("zR").onclick=()=>setZone("r");
+document.body.classList.toggle("zr",zn==="r");$("zS").classList.toggle("on",zn==="s");$("zR").classList.toggle("on",zn==="r");
 
 function render(pulse){
   const t=norm(q.value),hits=D.filter(r=>match(r,t));
   const lit=pick.size?[...pick]:(t?hits:[]),places=new Set(lit.map(r=>r[0]));
+  // a search that finds only the other zone switches to it
+  if(lit.length&&!lit.some(r=>zoneOf(r[0])===zn)){zn=zoneOf(lit[0][0]);document.body.classList.toggle("zr",zn==="r");$("zS").classList.toggle("on",zn==="s");$("zR").classList.toggle("on",zn==="r")}
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",norm(b.textContent)===t));
-  for(let p=1;p<=N;p++){const c=$("c"+p),box=c.querySelector(".chips");
+  for(const p of Object.keys(GA).map(Number))$("c"+p).hidden=zoneOf(p)!==zn;
+  for(const p of PL()){const c=$("c"+p),box=c.querySelector(".chips");
     c.className="cell"+(lit.length?(places.has(p)?" on":" dim"):"")+(sel===p?" sel":"")+(pulse&&places.has(p)?" pulse":"");
     box.innerHTML="";c.querySelector(".cnt").textContent=byPlace(p).length+" поз.";
     byPlace(p).forEach(r=>{const i=document.createElement("i");i.dataset.i=D.indexOf(r);
       const h=document.createElement("span");h.className="h";h.textContent="⋮⋮";i.append(h,r[1]);
       const s=document.createElement("small");s.textContent=sub(r);i.appendChild(s);
+      if(r[5]){const w=document.createElement("b");w.className="warn";w.textContent="≠ 1С";w.title=r[5];s.append(" ",w);i.title=r[5]}
       if(lit.includes(r))i.className="lit";box.appendChild(i)});}
   const all=sel&&!pick.size?byPlace(sel):[...new Set([...pick,...(t?hits:D)])];
   const short=!t&&!pick.size&&!sel&&!showAll&&all.length>LIMIT,rows=short?all.slice(0,LIMIT):all;
@@ -310,7 +354,7 @@ function fitBox(x,y,w,h,max,anim){const W=vp.clientWidth,H=vp.clientHeight,m=32;
   z=clampZ(Math.min((W-2*m)/w,(H-2*m)/h,max));tx=(W-w*z)/2-x*z;ty=(H-h*z)/2-y*z;apply(anim)}
 const fitAll=anim=>fitBox(0,0,rack.offsetWidth,rack.offsetHeight,1.5,anim);
 function focusLit(){const ps=[...new Set([...(pick.size?pick:D.filter(r=>match(r,norm(q.value))))].map(r=>r[0]))];
-  if(!ps.length||ps.length===N||(!pick.size&&!q.value)){fitAll(true);return}
+  if(!ps.length||ps.length>=PL().length||(!pick.size&&!q.value)){fitAll(true);return}
   let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
   ps.forEach(p=>{const c=$("c"+p);x1=Math.min(x1,c.offsetLeft);y1=Math.min(y1,c.offsetTop);x2=Math.max(x2,c.offsetLeft+c.offsetWidth);y2=Math.max(y2,c.offsetTop+c.offsetHeight)});
   fitBox(x1,y1,x2-x1,y2-y1,1.6,true)}
