@@ -35,18 +35,18 @@
 
   const css = document.createElement('style');
   css.textContent = `
-/* same pattern as the search on the warehouse pages (box, «>» prompt, list rows), docked at the bottom of the screen */
-.gs{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.45);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+/* same pattern as the search on the warehouse pages (box, «>» prompt, list rows), opened at the top: box with tabs and «>» prompt, results drop down under it */
+.gs{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.45);display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding:72px 16px 16px}
 .gs[hidden]{display:none}
 .gs .gsb{width:min(960px,100%);max-height:80vh;display:flex;flex-direction:column;color:var(--fg,#f1ecec);font-family:inherit}
-.gs ul{list-style:none;margin:0 0 4px;padding:4px;overflow:auto;background:var(--panel,#1b1818);border:1px solid #6b6565;border-radius:6px;box-shadow:0 -8px 24px rgba(0,0,0,.35)}
+.gs ul{list-style:none;margin:4px 0 0;padding:4px;overflow:auto;background:var(--panel,#1b1818);border:1px solid #6b6565;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .gs ul:empty{display:none}
 .gs li{padding:10px 12px;border-radius:3px;cursor:pointer}
 .gs li.cur,.gs li:hover{background:var(--line,#2f2b2b)}
 .gs .tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line,#2f2b2b);padding:0 12px}
 .gs .tabs button{font:inherit;background:none;border:0;color:var(--muted,#8f8a8a);padding:12px 10px;cursor:pointer;border-bottom:2px solid transparent;border-radius:0;white-space:nowrap}
 .gs .tabs button.on,.gs .tabs button:hover{color:var(--fg,#f1ecec);border-bottom-color:var(--fg,#f1ecec)}
-.gs li code{display:block;color:var(--faint,#4a4545);font:inherit;font-size:12px;overflow-wrap:anywhere}
+.gs li code{display:block;color:var(--muted,#8f8a8a);font:inherit;font-size:12px;overflow-wrap:anywhere}
 .gs li.m{display:block;color:var(--muted,#8f8a8a);cursor:default}
 .gs .box{border:1px solid var(--line,#2f2b2b);border-radius:6px;background:var(--panel,#1b1818)}
 .gs .prompt{display:flex;align-items:center;gap:12px;padding:16px 22px;color:var(--muted,#8f8a8a)}
@@ -60,7 +60,7 @@
 
   const box = document.createElement('div');
   box.className = 'gs'; box.hidden = true;
-  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по всіх складах"><ul></ul><div class="box"><div class="tabs"></div><label class="prompt">&gt;<input type="search" placeholder="усі склади: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕ Закрити</button><kbd>Esc</kbd></label></div></div>';
+  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по всіх складах"><div class="box"><div class="tabs"></div><label class="prompt">&gt;<input type="search" placeholder="усі склади: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕ Закрити</button><kbd>Esc</kbd></label></div><ul></ul></div>';
   document.body.append(box);
   const input = box.querySelector('input'), ul = box.querySelector('ul');
   let data = [], cur = 0, tab = '';
