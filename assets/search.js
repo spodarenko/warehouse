@@ -73,7 +73,7 @@
       for (const r of g.places) {
         const a = document.createElement('a'); a.href = r.href; if (i++ === cur) a.className = 'cur';
         const w = document.createElement('span'), s = document.createElement('small');
-        w.textContent = '📍 ' + r.where; s.textContent = r.sub;
+        w.textContent = r.where; s.textContent = r.sub;
         a.append(w, s); li.append(a);
       }
       ul.append(li);
