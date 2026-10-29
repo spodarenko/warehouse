@@ -7,6 +7,26 @@
   const loaded = Promise.all(need.map(n => new Promise(ok => {
     const s = document.createElement('script'); s.src = root + 'data/' + n + '.js'; s.onload = s.onerror = ok; document.head.append(s);
   })));
+  // the Reference page (products, norms, tare) and the Stickers page (1С nomenclature) are searched too
+  const page = p => fetch(root + p + '/').then(r => r.ok ? r.text() : '').catch(() => '');
+  const extra = Promise.all([page('reference'), page('labels')]).then(([ref, lab]) => {
+    const out = [], doc = new DOMParser().parseFromString(ref, 'text/html');
+    const lineOf = s => /Трубочки/.test(s) ? 'Трубочки' : /Вафлі/.test(s) ? 'Вафлі' : (s.match(/^Лінія (\d+)/) || [])[1] ? 'Лінія №' + s.match(/^Лінія (\d+)/)[1] : '';
+    let h = null;
+    for (const el of doc.querySelectorAll('#lines > h3, #lines > .scroll')) {
+      if (el.tagName === 'H3') { h = el.textContent.trim(); out.push({ name: h.replace(/^Лінія \d+ · /, ''), sub: h, where: 'Довідка · вид печива', tab: 'ref', href: root + 'reference/?line=' + encodeURIComponent(lineOf(h)) + '#lines' }); continue; }
+      if (!h) continue;
+      for (const tr of el.querySelectorAll('tbody tr')) {
+        const c = [...tr.cells].map(td => td.textContent.trim());
+        out.push({ name: c[0], sub: c.slice(1).join(' · '), where: 'Довідка · ' + h, tab: 'ref', href: root + 'reference/?line=' + encodeURIComponent(lineOf(h)) + '#lines' });
+      }
+    }
+    const pk = ref.match(/const PK=(\[\[[\s\S]*?\]\]);/);
+    try { for (const r of JSON.parse(pk[1])) out.push({ name: r[0], sub: [r[1] && 'арт. ' + r[1], r[2], r[3] && r[3] + ' кг'].filter(Boolean).join(' · '), where: 'Довідка · тара', tab: 'ref', href: root + 'reference/#tare' }); } catch (e) {}
+    const it = lab.match(/const ITEMS = (\{[\s\S]*?\n\});/);
+    try { const items = JSON.parse(it[1]); for (const n in items) out.push({ name: n, sub: [items[n].article && 'арт. ' + items[n].article, items[n].unit, items[n].group].filter(Boolean).join(' · '), where: 'Стікери', tab: 'lab', href: root + 'labels/?item=' + encodeURIComponent(n) }); } catch (e) {}
+    return out;
+  });
   const norm = s => String(s).toLowerCase().replace(/[\s.,?]/g, '');
   const pad = n => String(n).padStart(2, '0');
   const read = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
@@ -60,12 +80,12 @@
 
   const box = document.createElement('div');
   box.className = 'gs'; box.hidden = true;
-  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по всіх складах"><div class="box"><div class="tabs"></div><label class="prompt">&gt;<input type="search" placeholder="усі склади: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕ Закрити</button><kbd>Esc</kbd></label></div><ul></ul></div>';
+  box.innerHTML = '<div class="gsb" role="dialog" aria-label="Пошук по складах, довідці й стікерах"><div class="box"><div class="tabs"></div><label class="prompt">&gt;<input type="search" placeholder="склади, довідка, стікери: сіль, ваніль, 6100068…" autocomplete="off"><button type="button">✕ Закрити</button><kbd>Esc</kbd></label></div><ul></ul></div>';
   document.body.append(box);
   const input = box.querySelector('input'), ul = box.querySelector('ul');
   let data = [], cur = 0, tab = '';
-  // tabs as on the Stickers page: narrow the search to one warehouse or zone
-  const TABS = [['', 'Усі склади'], ['s1', 'Склад №1'], ['s2', 'Склад №2'], ['r', 'Рідини']];
+  // tabs as on the Stickers page: narrow the search to one warehouse, zone or page
+  const TABS = [['', 'Усе'], ['s1', 'Склад №1'], ['s2', 'Склад №2'], ['r', 'Рідини'], ['ref', 'Довідка'], ['lab', 'Стікери']];
   const tabs = box.querySelector('.tabs');
   for (const [k, n] of TABS) {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = n; b.dataset.k = k;
@@ -91,7 +111,7 @@
     const c = ul.querySelector('.cur'); if (c) c.scrollIntoView({ block: 'nearest' });
   }
   async function open() {
-    await loaded; data = rows();
+    await loaded; data = rows().concat(await extra);
     box.hidden = false; cur = 0; tab = ''; input.select(); input.focus(); show();
   }
   const close = () => { box.hidden = true; };
@@ -101,7 +121,7 @@
     if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && n) { e.preventDefault(); cur = (cur + (e.key === 'ArrowDown' ? 1 : n - 1)) % n; show(); }
     if (e.key === 'Enter' && n) ul.children[cur].click();
   });
-  box.querySelector('button').onclick = close;
+  box.querySelector('.prompt > button').onclick = e => { e.preventDefault(); close(); };  // the first button in the box is a tab
   box.addEventListener('click', e => { if (e.target === box) close(); });
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); open(); }
@@ -111,7 +131,7 @@
   // «Пошук» first in the site menu
   const nav = document.querySelector('.mnav nav') || document.querySelector('nav.mnav') || document.querySelector('nav');
   if (nav) {
-    const a = document.createElement('a'); a.href = '#'; a.title = 'Пошук по всіх складах (Ctrl+K)';
+    const a = document.createElement('a'); a.href = '#'; a.title = 'Пошук по складах, довідці й стікерах (Ctrl+K)';
     // Phosphor «magnifying-glass» (regular), as all icons on the site
     a.innerHTML = '<svg viewBox="0 0 256 256" width="1.1em" height="1.1em" fill="currentColor" aria-hidden="true" style="vertical-align:-.2em;margin-right:6px"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></svg>Пошук';
     a.onclick = e => { e.preventDefault(); document.body.classList.remove('menu'); open(); };

@@ -843,7 +843,7 @@ langBtn.onclick=()=>setLang(document.documentElement.lang==="en"?"uk":"en");
 let saved="uk";try{saved=localStorage.getItem("lang")||"uk"}catch(e){}
 if(saved==="en")setLang("en");
 </script>
-<script src="../assets/search.js?v=5"></script>
+<script src="../assets/search.js?v=6"></script>
 <script>
 // «Лінії та продукти»: tabs by line, as on the Stickers page; a tab shows its rows of the table and its tables below
 (() => {
@@ -866,7 +866,7 @@ if(saved==="en")setLang("en");
     const b = document.createElement('button'); b.type = 'button'; b.textContent = l || 'Усі'; b.dataset.l = l;
     b.onclick = () => pick(l); bar.append(b);
   }
-  pick('');
+  pick(lines.includes(new URLSearchParams(location.search).get('line')) ? new URLSearchParams(location.search).get('line') : '');  // ?line= from the global search
 })();
 </script></body>
 </html>
