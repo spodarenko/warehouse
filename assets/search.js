@@ -97,7 +97,7 @@
     if (e.key === 'Escape' && !box.hidden) { e.stopPropagation(); close(); }
   }, true);
 
-  // «🔍 Пошук» first in the site menu
+  // «Пошук» first in the site menu
   const nav = document.querySelector('.mnav nav') || document.querySelector('nav.mnav') || document.querySelector('nav');
   if (nav) {
     const a = document.createElement('a'); a.href = '#'; a.textContent = 'Пошук'; a.title = 'Пошук по всіх складах (Ctrl+K)';
