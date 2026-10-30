@@ -868,5 +868,23 @@ if(saved==="en")setLang("en");
   }
   pick(lines.includes(new URLSearchParams(location.search).get('line')) ? new URLSearchParams(location.search).get('line') : '');  // ?line= from the global search
 })();
+</script><button class="totop" id="toTop" type="button" hidden><svg viewBox="0 0 256 256" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z"/></svg><span></span></button>
+<style>
+.totop{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;align-items:center;gap:8px;font:inherit;font-size:14px;min-height:44px;padding:0 16px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+.totop[hidden]{display:none}
+</style>
+<script>
+// floating button: inside «Лінії та продукти» back to the line tabs, elsewhere to the top (Phosphor arrow-up)
+(() => {
+  const b = document.getElementById('toTop'), tabs = document.getElementById('lineTabs'), sec = document.getElementById('lines');
+  const update = () => {
+    const y = window.scrollY, inLines = sec && tabs && tabs.getBoundingClientRect().top < 0 && sec.getBoundingClientRect().bottom > 0;
+    b.hidden = y < 600;
+    b.querySelector('span').textContent = inLines ? 'До табів ліній' : 'Вгору';
+    b.dataset.to = inLines ? 'tabs' : 'top';
+  };
+  b.onclick = () => b.dataset.to === 'tabs' ? tabs.scrollIntoView({ behavior: 'smooth', block: 'start' }) : window.scrollTo({ top: 0, behavior: 'smooth' });
+  addEventListener('scroll', update, { passive: true }); update();
+})();
 </script></body>
 </html>
