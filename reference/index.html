@@ -710,6 +710,25 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
       <tr><td>Разом / вихід</td><td class="n">1059,8 / 1041,43</td></tr>
       </tbody>
     </table></div>
+
+    <h3 data-tab="Начинка Артек">Начинка кондитерська для вафель «Артек», цукерок «Нямочка»</h3>
+    <p class="m">Рукописний стовпець: сума позицій 1019,32 кг, на карті вказано 1010,84 — уточнити в технолога.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Хто бере — уточнити</th><th>кг, друк</th><th>кг, від руки</th></tr></thead>
+      <tbody>
+      <tr><td>Жир рослинний (пальмова олія)</td><td class="n">240</td><td class="n">320</td></tr>
+      <tr><td>Пудра цукрова</td><td class="n">360</td><td class="n">480</td></tr>
+      <tr><td>Сироватка молочна суха</td><td class="n">15</td><td class="n">20</td></tr>
+      <tr><td>Какао-порошок натуральний</td><td class="n">15</td><td class="n">20</td></tr>
+      <tr><td>Какао-порошок алкалізований</td><td class="n">15</td><td class="n">20</td></tr>
+      <tr><td>Крихта цих вафель</td><td class="n">114</td><td class="n">150</td></tr>
+      <tr><td>Лецитин соєвий</td><td class="n">4</td><td class="n">5,2</td></tr>
+      <tr><td>Ароматизатор «Молочний шоколад»</td><td class="n">0,85</td><td class="n">1,1</td></tr>
+      <tr><td>Ароматизатор «Гіркий шоколад»</td><td class="n">1,8</td><td class="n">2,4</td></tr>
+      <tr><td>Етилванілін</td><td class="n">0,47</td><td class="n">0,62</td></tr>
+      <tr><td>Разом / вихід</td><td class="n">766,12 / 757,9</td><td class="n">1010,84 / 1000</td></tr>
+      </tbody>
+    </table></div>
   </section>
   <section class="ref" id="data">
     <div class="hd2"><h2>Які дані в нас є</h2><p class="m">Вивантаження з 1С містять дані підприємства й не публікуються.</p></div>
@@ -1008,7 +1027,7 @@ if(saved==="en")setLang("en");
   const blocks = []; let cur = null;
   for (const el of sec.children) {
     if (el.tagName === 'H3') { cur = [el.dataset.tab, [el]]; blocks.push(cur); }
-    else if (cur && el.classList.contains('scroll')) cur[1].push(el);
+    else if (cur && el.tagName !== 'DIV' || cur && el.classList.contains('scroll')) cur[1].push(el);
   }
   const pick = t => {
     for (const b of bar.children) b.classList.toggle('on', b.textContent === t);
