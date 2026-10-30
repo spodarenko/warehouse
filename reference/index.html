@@ -193,6 +193,8 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
   body.menu .mnav nav{display:flex!important;flex-direction:column;align-items:stretch;gap:0}
   body.menu nav a{display:block!important;width:100%;padding:14px 0;border-top:1px solid var(--line);font-size:16px}
   body.menu .mnav .btn{flex:1;min-height:44px;margin-top:12px}
+  body.menu{overflow:hidden}
+  body.menu header{height:100dvh;align-content:flex-start;overflow-y:auto}  /* phone: the open menu fills the screen */
 }
 /* light theme (config/ui-tokens.json → semantic.light): ☀/☾ in the header, remembered in this browser for all pages */
 :root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#6b6565;--faint:#8f8a8a}
@@ -209,7 +211,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav class="mnav"><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+    <nav class="mnav"><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/#semis">Глазурі</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
@@ -224,7 +226,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 
   <section class="ref" id="tare">
     <div class="hd2"><h2>Тара: розмір місця і вага тари</h2><p class="m">«Місце» — одна одиниця, яку несе комірник (мішок, упаковка, каністра). Кількість місць = кількість ÷ розмір місця, мінімум 1. Брутто = нетто + тара. Пошук угорі фільтрує й цю таблицю. Стан на 20.10.2026.</p>
-    <div class="toc"><a href="#tare">Тара</a><a href="#rules">Округлення</a><a href="#norms">Норми</a><a href="#lines">Лінії</a><a href="#data">Дані</a><a href="#model">Модель</a><a href="#gaps">Чого бракує</a></div></div>
+    <div class="toc"><a href="#tare">Тара</a><a href="#rules">Округлення</a><a href="#norms">Норми</a><a href="#lines">Лінії</a><a href="#semis">Напівфабрикати</a><a href="#data">Дані</a><a href="#model">Модель</a><a href="#gaps">Чого бракує</a></div></div>
     <div class="scroll"><table>
       <thead><tr><th>Матеріал</th><th>Арт. 1С</th><th>Тара</th><th>Нетто, кг</th><th>Тара, кг</th><th>Брутто, кг</th><th>Де лежить</th></tr></thead>
       <tbody id="packs"></tbody>
@@ -599,6 +601,28 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
       </tbody>
     </table></div>
   </section>
+  <section class="ref" id="semis">
+    <div class="hd2"><h2>Напівфабрикати: глазурі й начинки</h2><p class="m">Технологічні карти Ф 17-04 (закладка на 1 завантаження кульового млина, кг). Хто що бере — записано там, де склад це підтвердив. Стан на 30.10.2026.</p></div>
+
+    <h3>Глазур кондитерська коричневого кольору («Чорна»)</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Сировина</th><th>кг</th><th>Хто бере</th></tr></thead>
+      <tbody>
+      <tr><td>Жир рослинний (замінник какао-масла)</td><td class="n">360</td><td>робітники самі</td></tr>
+      <tr><td>Пудра цукрова</td><td class="n">550</td><td>робітники самі</td></tr>
+      <tr><td>Какао-порошок алкалізований</td><td class="n">75</td><td>робітники самі</td></tr>
+      <tr><td>Какао-порошок натуральний</td><td class="n">25</td><td>робітники самі</td></tr>
+      <tr><td>Сіль кухонна</td><td class="n">0,5</td><td>склад — «Сипучка»</td></tr>
+      <tr><td>Антиоксидант E306 (TOCO 50)</td><td class="n">0,5</td><td>склад — «Сипучка»</td></tr>
+      <tr><td>Етилванілін</td><td class="n">0,2</td><td>склад — «Сипучка»</td></tr>
+      <tr><td>Емульгатор PGPR (E476)</td><td class="n">1</td><td>склад — «Рідина»</td></tr>
+      <tr><td>Ароматизатор «Мілкшейк» (замість «Молоко тип Густард»)</td><td class="n">1</td><td>склад — «Рідина»</td></tr>
+      <tr><td>Ароматизатор «Гіркий шоколад» (замість «Шоколад» Есаром)</td><td class="n">1</td><td>склад — «Рідина»</td></tr>
+      <tr><td>Лецитин соєвий (E322) · STS-30 (E492)</td><td class="n">1,5 · 1</td><td>— уточнити</td></tr>
+      <tr><td>Разом / вихід</td><td class="n">1016,7 / 1000</td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
   <section class="ref" id="data">
     <div class="hd2"><h2>Які дані в нас є</h2><p class="m">Вивантаження з 1С містять дані підприємства й не публікуються.</p></div>
     <div class="src">
@@ -685,6 +709,7 @@ filter();
 // phone menu: ☰ toggles it, any link closes it
 const burger = document.getElementById('burger');
 burger.onclick = () => burger.setAttribute('aria-expanded', document.body.classList.toggle('menu'));
+for (const a of document.querySelectorAll('.mnav a')) a.addEventListener('click', () => burger.setAttribute('aria-expanded', document.body.classList.toggle('menu', false)));  // #semis is on this page: close the menu
 document.querySelectorAll('nav a').forEach(a => a.addEventListener('click', () => { document.body.classList.remove('menu'); burger.setAttribute('aria-expanded', false); }));
 </script>
 <script>

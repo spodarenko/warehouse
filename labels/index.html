@@ -217,6 +217,8 @@ body.full.lineon:not(.q) .lst{display:none}
   body.menu .mnav nav{display:flex!important;flex-direction:column;align-items:stretch;gap:0}
   body.menu nav a{display:block!important;width:100%;padding:14px 0;border-top:1px solid var(--line);font-size:16px}
   body.menu .mnav .btn{flex:1;min-height:44px;margin-top:12px}
+  body.menu{overflow:hidden}
+  body.menu header{height:100dvh;align-content:flex-start;overflow-y:auto}  /* phone: the open menu fills the screen */
 }
 /* light theme (config/ui-tokens.json → semantic.light): ☀/☾ in the header, remembered in this browser for all pages */
 :root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#6b6565;--faint:#8f8a8a}
@@ -231,7 +233,7 @@ body.full.lineon:not(.q) .lst{display:none}
 <div class="frame">
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
-    <nav class="mnav"><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
+    <nav class="mnav"><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/#semis">Глазурі</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
     <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
