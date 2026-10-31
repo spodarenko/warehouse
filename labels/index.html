@@ -204,6 +204,8 @@ body.full.lineon:not(.q) .lst{display:none}
 .burger span::before,.burger span::after{content:"";position:absolute;left:0}
 .burger span::before{top:-6px}
 .burger span::after{top:6px}
+.hfull{display:none;margin:0 -8px 0 auto;padding:0;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;font-size:18px;cursor:pointer}
+@media (max-width:600px){.hfull{display:block}body.menu .hfull{display:none}#full{display:none}}
 /* open menu: bars become a cross */
 body.menu .burger span{background:none}
 body.menu .burger span::before{top:0;transform:rotate(45deg)}
@@ -237,7 +239,7 @@ body.menu .burger span::after{top:0;transform:rotate(-45deg)}
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
     <nav class="mnav"><a href="../liquids-map/">Рідини</a><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/#semis">Глазурі</a><a href="../reference/">Довідка</a><a class="on" href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
-    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
+    <button class="hfull" id="hFull" type="button" aria-label="На весь екран">⤢</button><button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
   <section class="intro">
@@ -1134,6 +1136,7 @@ function setFull(on) {
   document.body.classList.toggle('full', on);
 }
 $('full').onclick = () => { setFull(true); $('q').focus(); };
+$('hFull').onclick = () => { setFull(true); $('q').focus(); };
 $('exitFull').onclick = e => { e.preventDefault(); setFull(false); };
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && full) setFull(false); });
 
