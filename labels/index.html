@@ -10,7 +10,7 @@
 <style>
 /* Same look as liquids-map: framed column, hairline borders, single dark theme (config/ui-tokens.json).
    Label size: 60x30 mm (Citizen CMP-30IIL via RawBT). */
-:root{--bg:#131010;--panel:#262222;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#ddd7d7;--nav:#8f8a8a;--faint:#b8b2b2;--line:#2f2b2b;
+:root{--bg:#131010;--panel:#262222;--panel2:#0e0c0c;--fg:#f1ecec;--muted:#ddd7d7;--nav:#b8b2b2;--faint:#b8b2b2;--line:#2f2b2b;
 --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -31,7 +31,7 @@ h3{margin:0;font-size:16px}
 .m{color:var(--muted);font-size:12px}
 .lead{color:var(--muted);max-width:62ch;margin:0 0 28px;line-height:2}
 /* search box: same tones as liquids-map / sklad-2 (the rest of this page keeps its brighter tokens) */
-.box{--panel:#1b1818;--faint:#4a4545;--muted:#8f8a8a;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.box{--panel:#1b1818;--faint:#8f8a8a;--muted:#b8b2b2;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
 .box{position:relative}
 .dd{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:10;list-style:none;margin:0;padding:4px;background:var(--panel);border:1px solid #6b6565;border-radius:6px;max-height:50vh;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .dd li{padding:10px 12px;border-radius:3px;cursor:pointer}
@@ -220,9 +220,9 @@ body.full.lineon:not(.q) .lst{display:none}
   body.menu header{height:100dvh;align-content:flex-start;overflow-y:auto}  /* phone: the open menu fills the screen */
 }
 /* light theme (config/ui-tokens.json → semantic.light): ☀/☾ in the header, remembered in this browser for all pages */
-:root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#6b6565;--faint:#8f8a8a}
+:root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#4a4545;--faint:#6b6565}
 :root[data-theme="light"]{--nav:#6b6565}
-:root[data-theme="light"] .box{--panel:#ffffff;--faint:#8f8a8a;--muted:#6b6565}
+:root[data-theme="light"] .box{--panel:#ffffff;--faint:#6b6565;--muted:#4a4545}
 .theme{font:inherit;font-size:16px;line-height:1;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:36px;height:36px;cursor:pointer;flex:none}
 @media (hover:hover){.theme:hover{border-color:var(--fg)}}
 @media (max-width:640px){.theme{display:none}body.menu .mnav .theme{display:block;width:44px;height:44px;margin-top:12px}}  /* phone: theme only inside the ☰ menu */
