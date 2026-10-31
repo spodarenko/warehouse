@@ -212,7 +212,7 @@ body.full .vp{overflow:auto}
       <span class="hint">План складу №2 · на місцях 01 і 04 лежить багато різного, однакові матеріали не плутати · тягни назву на інше місце, щоб перемістити</span>
       <div class="acts zsw"><button class="ubtn on" id="zS" type="button">Склад</button><button class="ubtn" id="zR" type="button">Рідини</button></div>
       <div class="acts"><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
-      <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
+      <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit" aria-label="На весь екран">⤢</button></div>
     </div>
     <div class="vp" id="vp"><div class="stage" id="stage">
       <div class="rack" id="rack"><div class="aisle">ПРОХІД</div></div>
@@ -348,7 +348,7 @@ $("zOut").onclick=()=>zoomAt(z/1.25,...center(),true);
 const box=document.querySelector(".box"),boxHome=box.parentNode,work=$("map");let full=false;
 function setFull(on){full=on;document.body.classList.toggle("full",on);
   if(on)work.prepend(box);else boxHome.appendChild(box);
-  $("zFit").textContent=on?"✕ Згорнути":"⤢ Весь склад";requestAnimationFrame(()=>fitAll())}
+  requestAnimationFrame(()=>fitAll())}
 $("zFit").onclick=()=>phone.matches?setFull(!full):fitAll(true);
 $("full").onclick=()=>{setFull(true);q.focus()};
 $("exitFull").onclick=e=>{e.preventDefault();setFull(false)};

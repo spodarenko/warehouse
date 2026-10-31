@@ -237,7 +237,7 @@ body.dragging{cursor:grabbing;user-select:none}
       <span class="hint">План складу №1 · дві карти: бочки (верхній ряд 34→20, нижній 1→19) і сипучка С1–С37 за зошитом · колесо або −/+ — масштаб, тягни — зсунути · «✎ Переставити» — тоді квадрат тягнеться на інший (міняються місцями) або на вільну клітинку сітки (на телефоні: затисни)</span>
       <div class="acts zsw"><button class="ubtn on" id="zB" type="button">Бочки</button><button class="ubtn" id="zS" type="button">Сипучка</button></div>
       <div class="acts"><button class="ubtn" id="edit" type="button">✎ Переставити</button><button class="ubtn" id="add" type="button">+ Додати</button><button class="ubtn" id="swap" hidden></button><button class="ubtn" id="undo" hidden></button></div>
-      <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit">⤢ Весь склад</button></div>
+      <div class="zoom"><button id="zOut" aria-label="Віддалити">−</button><output id="zl">100%</output><button id="zIn" aria-label="Наблизити">+</button><button id="zFit" aria-label="На весь екран">⤢</button></div>
     </div>
     <div class="vp" id="vp"><div class="stage" id="stage">
       <div class="rack" id="rack"></div>
@@ -374,7 +374,7 @@ $("zOut").onclick=()=>zoomAt(z/1.25,...center(),true);
 const box=document.querySelector(".box"),boxHome=box.parentNode,work=$("map");let full=false;
 function setFull(on){full=on;document.body.classList.toggle("full",on);
   if(on)work.prepend(box);else boxHome.appendChild(box);
-  $("zFit").textContent=on?"✕ Згорнути":"⤢ Весь склад";requestAnimationFrame(()=>fitAll())}
+  requestAnimationFrame(()=>fitAll())}
 $("zFit").onclick=()=>small.matches?setFull(!full):fitAll(true);
 $("full").onclick=()=>{setFull(true);q.focus()};
 $("exitFull").onclick=e=>{e.preventDefault();setFull(false)};
