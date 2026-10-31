@@ -203,6 +203,10 @@ body.menu .burger span::after{top:0;transform:rotate(-45deg)}
   body.menu .mnav .btn{flex:1;min-height:44px;margin-top:12px}
   body.menu{overflow:hidden}
   body.menu header{height:100dvh;align-content:flex-start;overflow-y:auto}  /* phone: the open menu fills the screen */
+  /* open menu: its top line sits exactly where the header line was */
+  body.menu header{row-gap:14px}
+  body.menu .mnav{border-top:1px solid var(--line);margin-inline:-16px;padding:0 16px;width:calc(100% + 32px)}
+  body.menu .mnav a:first-child{border-top:0}
 }
 /* light theme (config/ui-tokens.json → semantic.light): ☀/☾ in the header, remembered in this browser for all pages */
 :root[data-theme="light"]{color-scheme:light;--bg:#f7f5f4;--panel:#ffffff;--panel2:#efebea;--line:#ddd6d5;--fg:#131010;--muted:#4a4545;--faint:#6b6565}
