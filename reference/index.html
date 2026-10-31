@@ -37,6 +37,8 @@ h1{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:-.02em;line-hei
 .prompt input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;outline:none}
 .prompt input::placeholder{color:var(--faint)}
 .prompt kbd{font:inherit;font-size:12px;border:1px solid var(--line);padding:0 6px;border-radius:3px}
+/* clear: bare cross inside the field; solid only as «Apply» */
+.btn.clr:not(.go){background:none;color:var(--muted);border-color:transparent;font-size:18px;padding:6px 10px}
 .exit{display:none;flex:none;font:inherit;font-size:13px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);border-radius:4px;padding:6px 12px;cursor:pointer}
 .exit:active{opacity:.8}
 
@@ -220,7 +222,7 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
     <p class="lead">Тара й вага місць, правила округлення, норми. Пошук фільтрує таблицю тари.</p>
     <div class="box">
       <div class="tabs" id="tabs"></div>
-      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="борошно, 6096223, мішок…" autocomplete="off"><button class="btn clr" id="clear" type="button">✕ Очистити</button><kbd>/</kbd></label>
+      <label class="prompt" for="q">&gt;<input id="q" type="search" placeholder="борошно, 6096223, мішок…" autocomplete="off"><button class="btn clr" id="clear" type="button" aria-label="Очистити">✕</button><kbd>/</kbd></label>
     </div>
   </section>
 
@@ -1033,7 +1035,7 @@ showTheme();
 // language: UA / EN, remembered in this browser like the theme. EN swaps text nodes by the dictionary below;
 // the tare table and quick filters stay Ukrainian (1C names — the search works on them).
 const EN={
-"Рідини":"Liquids","Склад №1":"Warehouse 1","Склад №2":"Warehouse 2","Довідка":"Reference","Стікери":"Labels","✕ Очистити":"✕ Clear",
+"Рідини":"Liquids","Склад №1":"Warehouse 1","Склад №2":"Warehouse 2","Довідка":"Reference","Стікери":"Labels","Очистити":"Clear",
 "Довідка складу":"Warehouse reference","Знайдено":"Found","З артикулом 1С":"With 1C article","Типів правил":"Rule types",
 "Тара й вага місць, правила округлення, норми. Пошук фільтрує таблицю тари.":"Packaging and unit weights, rounding rules, norms. The search filters the packaging table.",
 "Тара: розмір місця і вага тари":"Packaging: unit size and tare weight",
