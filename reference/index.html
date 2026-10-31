@@ -183,6 +183,8 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 .burger span::before,.burger span::after{content:"";position:absolute;left:0}
 .burger span::before{top:-6px}
 .burger span::after{top:6px}
+.hfull{display:none;margin:0 -8px 0 auto;padding:0;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;font-size:18px;cursor:pointer}
+@media (max-width:600px){.hfull{display:block}body.menu .hfull{display:none}body.full h1,body.full .lead{display:none}}
 /* open menu: bars become a cross */
 body.menu .burger span{background:none}
 body.menu .burger span::before{top:0;transform:rotate(45deg)}
@@ -218,7 +220,7 @@ body.menu .burger span::after{top:0;transform:rotate(-45deg)}
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
     <nav class="mnav"><a href="../sklad-1/">Склад №1</a><a href="../sklad-2/">Склад №2</a><a href="../reference/#semis">Глазурі</a><a class="on" href="../reference/">Довідка</a><a href="../labels/">Стікери</a><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></nav>
-    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
+    <button class="hfull" id="hFull" type="button" aria-label="На весь екран">⤢</button><button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
   <section>
@@ -1019,6 +1021,7 @@ filter();
 <script>
 // phone menu: ☰ toggles it, any link closes it
 const burger = document.getElementById('burger');
+document.getElementById('hFull').onclick = e => { e.currentTarget.textContent = document.body.classList.toggle('full') ? '⤡' : '⤢'; };  // phone: more room for the tables
 burger.onclick = () => burger.setAttribute('aria-expanded', document.body.classList.toggle('menu'));
 for (const a of document.querySelectorAll('.mnav a')) a.addEventListener('click', () => burger.setAttribute('aria-expanded', document.body.classList.toggle('menu', false)));  // #semis is on this page: close the menu
 document.querySelectorAll('nav a').forEach(a => a.addEventListener('click', () => { document.body.classList.remove('menu'); burger.setAttribute('aria-expanded', false); }));
