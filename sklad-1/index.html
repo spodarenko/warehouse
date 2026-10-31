@@ -161,7 +161,10 @@ body.dragging{cursor:grabbing;user-select:none}
     background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px}
   .vp.panning{cursor:grabbing}
   .stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
-  .acts{width:100%}
+  .acts{width:100%;order:3}
+  .acts.zsw{width:auto;order:1}
+  .cap{gap:8px}.zoom button{min-width:30px;padding:0 7px}.zoom output{min-width:42px}
+  .zoom{order:2;margin-left:auto}  /* zoom on the right, opposite the zone tabs */
   .links{grid-template-columns:repeat(2,minmax(0,1fr))}
   .links div{padding:18px 8px;font-size:12px;border-bottom:1px solid var(--line)}
   .links div:nth-child(2n){border-right:0}
