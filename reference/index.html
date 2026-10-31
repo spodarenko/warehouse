@@ -183,6 +183,10 @@ ol.gaps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
 .burger span::before,.burger span::after{content:"";position:absolute;left:0}
 .burger span::before{top:-6px}
 .burger span::after{top:6px}
+/* open menu: bars become a cross */
+body.menu .burger span{background:none}
+body.menu .burger span::before{top:0;transform:rotate(45deg)}
+body.menu .burger span::after{top:0;transform:rotate(-45deg)}
 /* no built-in search icon / clear cross (iPhone adds a magnifier to type=search) */
 .prompt input{-webkit-appearance:none;appearance:none}
 .prompt input::-webkit-search-decoration,.prompt input::-webkit-search-cancel-button{-webkit-appearance:none}
