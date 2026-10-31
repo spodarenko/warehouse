@@ -138,7 +138,7 @@ body.dragging{cursor:grabbing;user-select:none}
   .rack{grid-template-columns:repeat(2,200px) repeat(2,240px) 280px;width:max-content}
   body.zr .rack{grid-template-columns:repeat(3,340px)}  /* fixed width, else chips never wrap and the map shrinks to nothing */
   .acts{width:100%;order:3}
-  button.fullbtn{display:none}  /* phone: full screen is the ⤢ next to zoom */
+  button.fullbtn,#zFit{display:none}  /* phone: full screen is the ⤢ in the header */
   .acts.zsw{width:auto;order:1}
   .cap{gap:8px}.zoom button{min-width:30px;padding:0 7px}.zoom output{min-width:42px}
   .zoom{order:2;margin-left:auto}  /* zoom on the right, opposite the zone tabs */
@@ -170,6 +170,8 @@ body.full .vp{overflow:auto}
 .burger span::before,.burger span::after{content:"";position:absolute;left:0}
 .burger span::before{top:-6px}
 .burger span::after{top:6px}
+.hfull{display:none;margin:0 8px 0 auto;padding:0;background:none;border:1px solid var(--line);color:var(--fg);border-radius:4px;width:44px;height:44px;font-size:18px;cursor:pointer}
+@media (max-width:600px){.hfull{display:block}body.menu .hfull{display:none}}
 /* open menu: bars become a cross */
 body.menu .burger span{background:none}
 body.menu .burger span::before{top:0;transform:rotate(45deg)}
@@ -201,7 +203,7 @@ body.menu .burger span::after{top:0;transform:rotate(-45deg)}
   <header>
     <div class="logo"><span>delicia</span>sklad</div>
     <div class="hr mnav"><nav><a href="../sklad-1/">Склад №1</a><a class="on" href="../sklad-2/">Склад №2</a><a href="../reference/#semis">Глазурі</a><a href="../reference/">Довідка</a><a href="../labels/">Стікери</a></nav><button class="theme" id="theme" type="button" aria-label="Світла або темна тема">☀</button></div>
-    <button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
+    <button class="hfull" id="hFull" type="button" aria-label="На весь екран">⤢</button><button class="burger" id="burger" type="button" aria-label="Меню" aria-expanded="false"><span></span></button>
   </header>
 
   <section>
@@ -356,6 +358,7 @@ const box=document.querySelector(".box"),boxHome=box.parentNode,work=$("map");le
 function setFull(on){full=on;document.body.classList.toggle("full",on);
   if(on)work.prepend(box);else boxHome.appendChild(box);
   requestAnimationFrame(()=>fitAll())}
+$("hFull").onclick=()=>setFull(true);
 $("zFit").onclick=()=>phone.matches?setFull(!full):fitAll(true);
 $("full").onclick=()=>{setFull(true);q.focus()};
 $("exitFull").onclick=e=>{e.preventDefault();setFull(false)};
