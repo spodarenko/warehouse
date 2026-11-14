@@ -291,6 +291,7 @@ body.menu .burger span::after{top:0;transform:rotate(-45deg)}
 
   <section class="lst">
     <div class="sidehd"><h3 id="ptitle">Уся сировина</h3><div class="m" id="psub"></div></div>
+    <div class="tabs" id="flt"></div>
     <ul class="list" id="list"></ul>
     <button class="more" id="more" hidden></button>
   </section>
@@ -1093,21 +1094,53 @@ function render() {
     li.onclick = () => pick(c);
     $('list').append(li);
   }
-  if (!hits.length) $('list').innerHTML = '<li class="e">Нічого не знайдено</li>';
+  if (!hits.length) $('list').innerHTML = '<li class="e">' + (mode !== 'all' && !$('q').value.trim() ? 'З цього телефону ще нічого не друкували' : 'Нічого не знайдено') + '</li>';
   $('psub').textContent = hits.length + ' з ' + codes.length;
   $('lFound').textContent = '[' + hits.length + ']';
   $('more').hidden = hits.length <= shown;
   $('more').textContent = 'Показати ще (' + (hits.length - shown) + ')';
 }
 
+// list filter: all / recent / frequent — from this phone's own print history (localStorage, never sent anywhere)
+const HIST = 'labels.hist', TOP = 15;
+const hist = () => { try { return JSON.parse(localStorage.getItem(HIST) || '[]').filter(e => ITEMS[e.c]); } catch (e) { return []; } };
+function remember(name) {
+  if (!ITEMS[name]) return;
+  try { localStorage.setItem(HIST, JSON.stringify([{c: name, t: Date.now()}, ...hist()].slice(0, 300))); } catch (e) {}
+  if (mode !== 'all') filter();
+}
+let mode = 'all';
+const MODES = {all: 'Уся сировина', recent: 'Останні', freq: 'Часті'};
+function pool() {
+  if (mode === 'all') return codes;
+  const h = hist();
+  if (mode === 'recent') return [...new Set(h.map(e => e.c))].slice(0, TOP);
+  const n = {};
+  for (const e of h) n[e.c] = (n[e.c] || 0) + 1;
+  return Object.keys(n).sort((a, b) => n[b] - n[a]).slice(0, TOP);
+}
+function filter() {
+  const q = $('q').value.trim().toLowerCase();
+  const base = pool();
+  hits = q ? base.filter(c => c.toLowerCase().includes(q) || ITEMS[c].article.includes(q)) : base;
+  shown = PAGE;
+  $('ptitle').textContent = q && mode === 'all' ? 'Знайдено' : MODES[mode];
+  for (const b of $('flt').children) b.classList.toggle('on', b.dataset.m === mode);
+  render();
+  return q;
+}
+for (const m in MODES) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.m = m;
+  b.textContent = m === 'all' ? 'Усі ' + codes.length : MODES[m];
+  b.onclick = () => { mode = m; filter(); };
+  $('flt').append(b);
+}
+$('flt').firstChild.classList.add('on');
+
 $('q').addEventListener('input', () => {
   document.body.classList.toggle('q', !!$('q').value.trim());
-  const q = $('q').value.trim().toLowerCase();
-  hits = q ? codes.filter(c => c.toLowerCase().includes(q) || ITEMS[c].article.includes(q)) : codes;
-  shown = PAGE;
-  $('ptitle').textContent = q ? 'Знайдено' : 'Уся сировина';
-  render();
-  dropdown(q);
+  dropdown(filter());
 });
 // «/» jumps into the search, as in liquids-map
 document.addEventListener('keydown', e => { if (e.key === '/' && !e.target.closest('input,textarea,dialog')) { e.preventDefault(); $('q').focus(); } });
@@ -1177,6 +1210,7 @@ const printLabels = (name, n, line) => printRows([{name, n, art: ITEMS[name].art
 $('print').addEventListener('click', () => {
   printLabels(current, copiesOf($('copies').value));
   fill($('sample'), current, stamp());
+  remember(current);
 });
 
 // remote printing: every worker phone gets its own random AES key once, through the admin's QR code.
@@ -1248,6 +1282,7 @@ $('remote').addEventListener('click', async () => {
     const r = await send({name, copies: n, line: curLine});
     if (!r.ok) throw r.status;
     relay('✓ Надіслано на планшет: ' + name + ' × ' + n + (curLine ? ' · ' + curLine : ''));
+    remember(name);
   } catch (e) { relay('✕ Не вдалося надіслати. Перевірте інтернет.'); }
 });
 
