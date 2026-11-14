@@ -109,7 +109,9 @@ a{color:var(--brand); text-decoration:underline; text-underline-offset:4px; text
 }
 .top .mark{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace; font-weight:700; color:var(--strong); letter-spacing:-.06em; white-space:nowrap;
   font-size:26px; line-height:1; text-decoration:none; user-select:none; -webkit-user-select:none}
-.top .mark span{color:var(--faint)}
+.top .mark{color:#131010} .top .mark span{color:#6b6565}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .top .mark{color:#f1ecec} :root:not([data-theme="light"]) .top .mark span{color:#b8b2b2}}
+:root[data-theme="dark"] .top .mark{color:#f1ecec} :root[data-theme="dark"] .top .mark span{color:#b8b2b2}
 .top .mark:hover{text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px}
 @media (max-width:60rem){ .top .mark{font-size:20px} }
 .top nav{display:flex; gap:32px}
